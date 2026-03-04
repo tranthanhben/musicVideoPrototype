@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Music Video Agent — System Architecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+:root {
+  --bg: #000000; --bg2: #080810; --bg3: #0c0c18;
+  --surf: #111120; --surf2: #16162a; --surf3: #1c1c36;
+  --brd: #1e1e3a; --brd2: #2c2c52; --brd3: #3a3a6a;
+  --p: #7c3aed; --p2: #a78bfa; --p3: #c4b5fd; --pg: linear-gradient(135deg,#7c3aed,#a855f7);
+  --g: #10b981; --g2: #34d399; --gg: linear-gradient(135deg,#10b981,#34d399);
+  --b: #3b82f6; --b2: #60a5fa; --bg-b: linear-gradient(135deg,#3b82f6,#60a5fa);
+  --c: #06b6d4; --c2: #22d3ee;
+  --y: #eab308; --y2: #facc15;
+  --pk: #ec4899; --pk2: #f472b6;
+  --o: #f97316; --o2: #fb923c;
+  --r: #ef4444; --r2: #f87171;
+  --t: #f1f5f9; --td: #94a3b8; --tm: #64748b; --tx: #475569;
+  --ff: 'Space Grotesk', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --rad: 16px; --rad2: 12px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+::selection{background:rgba(124,58,237,.3);color:#fff}
+html{scroll-behavior:smooth}
+body{font-family:var(--ff);background:var(--bg);color:var(--t);min-height:100vh;overflow-x:hidden}
+
+/* Grain overlay */
+body::before{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:.03;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+.ctn{max-width:1500px;margin:0 auto;padding:0 2rem}
+
+/* === HERO HEADER === */
+.hero{position:relative;padding:4rem 0 3rem;text-align:center;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-40%;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(124,58,237,.08) 0%,transparent 70%);pointer-events:none}
+.hero h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:700;letter-spacing:-.03em;background:linear-gradient(135deg,#c4b5fd 0%,#a78bfa 30%,#f472b6 70%,#fb923c 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1;margin-bottom:.6rem}
+.hero .tagline{font-size:1.15rem;color:var(--td);font-weight:300;letter-spacing:.01em;max-width:600px;margin:0 auto .5rem}
+.hero .sub{font-size:.85rem;color:var(--tm);font-style:italic}
+.stats{display:flex;gap:1.5rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap}
+.stat{padding:.6rem 1.5rem;border-radius:var(--rad);backdrop-filter:blur(8px);text-align:center}
+.stat .n{font-size:1.8rem;font-weight:700;display:block;line-height:1}
+.stat .l{font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem;display:block}
+.s-p{background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.15)}.s-p .n{color:var(--p2)}.s-p .l{color:var(--p)}
+.s-g{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.15)}.s-g .n{color:var(--g2)}.s-g .l{color:var(--g)}
+.s-c{background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.15)}.s-c .n{color:var(--c2)}.s-c .l{color:var(--c)}
+.s-pk{background:rgba(236,72,153,.08);border:1px solid rgba(236,72,153,.15)}.s-pk .n{color:var(--pk2)}.s-pk .l{color:var(--pk)}
+
+/* === NAV === */
+.nav{position:sticky;top:0;z-index:100;background:rgba(0,0,0,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--brd);padding:.5rem 0}
+.nav-inner{display:flex;gap:.25rem;overflow-x:auto;padding:.25rem;max-width:1500px;margin:0 auto}
+.nav-inner::-webkit-scrollbar{display:none}
+.nb{padding:.55rem 1.1rem;border-radius:8px;background:none;border:none;color:var(--tm);font-size:.82rem;cursor:pointer;font-family:var(--ff);font-weight:500;transition:.2s;white-space:nowrap}
+.nb:hover{color:var(--td);background:var(--surf)}
+.nb.on{color:var(--p2);background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.15)}
+
+/* === SECTIONS === */
+.sec{display:none;padding:2.5rem 0}.sec.on{display:block}
+.sh{font-size:1.6rem;font-weight:600;letter-spacing:-.02em;margin-bottom:.3rem}
+.ss{color:var(--td);font-size:.9rem;margin-bottom:2rem;max-width:700px}
+
+/* === MERMAID CONTAINER === */
+.mermaid-wrap{background:var(--surf);border:1px solid var(--brd);border-radius:var(--rad);padding:2rem;margin-bottom:2rem;overflow-x:auto;position:relative}
+.mermaid-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--pg);border-radius:var(--rad) var(--rad) 0 0}
+.mermaid-wrap .label{position:absolute;top:.75rem;right:1rem;font-size:.65rem;color:var(--tm);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em}
+pre.mermaid{display:flex;justify-content:center;background:transparent !important}
+.mermaid svg{max-width:100%;height:auto}
+
+/* === BIG PICTURE CUSTOM LAYOUT === */
+.bp{position:relative;padding:1.5rem 0}
+.bp-main{display:grid;grid-template-columns:1fr 280px;gap:1.5rem;align-items:start}
+.bp-pipeline{display:flex;flex-direction:column;gap:0}
+.bp-cross{position:sticky;top:6rem}
+
+/* Layer band */
+.bp-layer{background:var(--surf);border:1px solid var(--brd);border-radius:var(--rad);padding:1.5rem;position:relative;overflow:visible}
+.bp-layer::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:var(--rad) var(--rad) 0 0}
+.bp-l1::before{background:linear-gradient(90deg,#3b82f6,#60a5fa)}.bp-l1{border-color:rgba(59,130,246,.2)}
+.bp-l2::before{background:linear-gradient(90deg,#7c3aed,#a855f7)}.bp-l2{border-color:rgba(124,58,237,.2)}
+.bp-l3::before{background:linear-gradient(90deg,#06b6d4,#22d3ee)}.bp-l3{border-color:rgba(6,182,212,.2)}
+.bp-l4::before{background:linear-gradient(90deg,#eab308,#facc15)}.bp-l4{border-color:rgba(234,179,8,.2)}
+.bp-l5::before{background:linear-gradient(90deg,#ec4899,#f472b6)}.bp-l5{border-color:rgba(236,72,153,.2)}
+
+.bp-layer-hdr{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem}
+.bp-layer-num{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;font-family:var(--mono);flex-shrink:0}
+.bp-l1 .bp-layer-num{background:rgba(59,130,246,.15);color:#60a5fa}
+.bp-l2 .bp-layer-num{background:rgba(124,58,237,.15);color:#a78bfa}
+.bp-l3 .bp-layer-num{background:rgba(6,182,212,.15);color:#22d3ee}
+.bp-l4 .bp-layer-num{background:rgba(234,179,8,.15);color:#facc15}
+.bp-l5 .bp-layer-num{background:rgba(236,72,153,.15);color:#f472b6}
+.bp-layer-title{font-size:1rem;font-weight:600;letter-spacing:-.01em}
+.bp-layer-meta{margin-left:auto;font-size:.7rem;color:var(--tm);font-family:var(--mono)}
+
+.bp-nodes{display:flex;flex-wrap:wrap;gap:.6rem}
+.bp-node{display:flex;align-items:center;gap:.5rem;padding:.5rem .85rem;border-radius:10px;font-size:.82rem;font-weight:500;transition:all .25s;cursor:default;position:relative}
+.bp-node:hover{transform:translateY(-1px)}
+.bp-node .bp-icon{font-size:1rem;flex-shrink:0}
+.bp-node .bp-name{white-space:nowrap}
+.bp-node .bp-type{font-size:.55rem;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;padding:.15rem .35rem;border-radius:4px;margin-left:.25rem;font-weight:600}
+
+/* Node colors by type */
+.bp-agent{background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25)}
+.bp-agent .bp-name{color:#34d399}
+.bp-agent .bp-type{background:rgba(16,185,129,.15);color:#6ee7b7}
+
+.bp-mcp{background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.25)}
+.bp-mcp .bp-name{color:#a78bfa}
+.bp-mcp .bp-type{background:rgba(124,58,237,.15);color:#c4b5fd}
+
+.bp-skill{background:rgba(6,182,212,.06);border:1px dashed rgba(6,182,212,.3)}
+.bp-skill .bp-name{color:#22d3ee}
+.bp-skill .bp-type{background:rgba(6,182,212,.15);color:#67e8f9}
+
+.bp-svc{background:rgba(236,72,153,.08);border:1px solid rgba(236,72,153,.25)}
+.bp-svc .bp-name{color:#f472b6}
+.bp-svc .bp-type{background:rgba(236,72,153,.15);color:#fbcfe8}
+
+/* Output artifact */
+.bp-output{display:flex;align-items:center;justify-content:center;gap:.4rem;margin-top:.75rem;padding:.5rem 1.2rem;background:rgba(245,158,11,.06);border:1.5px solid rgba(245,158,11,.25);border-radius:20px;font-size:.82rem;font-weight:600;color:#fcd34d;width:fit-content;font-family:var(--mono)}
+.bp-output::before{content:'';width:8px;height:8px;border-radius:50%;background:#f59e0b}
+
+/* Quality gate connector */
+.bp-qg{display:flex;align-items:center;justify-content:center;padding:.6rem 0;position:relative}
+.bp-qg-line{width:2px;height:18px;background:linear-gradient(to bottom,var(--brd2),rgba(245,158,11,.4))}
+.bp-qg-diamond{width:38px;height:38px;transform:rotate(45deg);border:2px solid rgba(245,158,11,.5);background:rgba(245,158,11,.06);display:flex;align-items:center;justify-content:center;margin:0 .5rem;flex-shrink:0}
+.bp-qg-diamond span{transform:rotate(-45deg);font-size:.65rem;font-weight:700;color:#fcd34d;font-family:var(--mono)}
+.bp-qg-label{font-size:.65rem;color:var(--tm);font-family:var(--mono);letter-spacing:.04em;margin-left:.5rem}
+.bp-qg-actions{display:flex;gap:.4rem;margin-left:.75rem}
+.bp-qg-act{font-size:.6rem;padding:.15rem .4rem;border-radius:4px;font-family:var(--mono);font-weight:600}
+.bp-qg-pass{background:rgba(16,185,129,.12);color:#34d399;border:1px solid rgba(16,185,129,.2)}
+.bp-qg-rev{background:rgba(245,158,11,.12);color:#fcd34d;border:1px solid rgba(245,158,11,.2)}
+.bp-qg-rej{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2)}
+
+/* User inputs band */
+.bp-user{background:var(--surf);border:1px solid var(--brd);border-radius:var(--rad);padding:1.25rem 1.5rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+.bp-user-label{font-size:.9rem;font-weight:600;color:var(--t);display:flex;align-items:center;gap:.5rem}
+.bp-user-inputs{display:flex;gap:.5rem;flex-wrap:wrap}
+.bp-user-item{padding:.4rem .75rem;border-radius:8px;font-size:.78rem;background:rgba(255,255,255,.04);border:1px solid var(--brd2);color:var(--td)}
+
+/* Cross-layer sidebar */
+.bp-cross-card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--rad2);padding:1rem;margin-bottom:.75rem;position:relative}
+.bp-cross-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:var(--rad2) 0 0 var(--rad2)}
+.bp-cross-qg::before{background:#f59e0b}
+.bp-cross-rev::before{background:#ef4444}
+.bp-cross-orch::before{background:#ec4899}
+.bp-cross-data::before{background:#64748b}
+.bp-cross-title{font-size:.82rem;font-weight:600;margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem}
+.bp-cross-nodes{display:flex;flex-direction:column;gap:.35rem}
+.bp-cross-node{display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--td)}
+.bp-cross-node .bp-type{font-size:.5rem}
+
+/* Backward arrows */
+.bp-backward{position:relative;margin:-.25rem 0;padding-left:2.5rem}
+.bp-backward-line{position:absolute;left:1rem;top:0;bottom:0;width:2px;background:repeating-linear-gradient(to bottom,rgba(239,68,68,.4) 0,rgba(239,68,68,.4) 4px,transparent 4px,transparent 8px)}
+.bp-backward-label{font-size:.6rem;color:rgba(239,68,68,.6);font-family:var(--mono);padding:.15rem 0;letter-spacing:.04em}
+
+/* Final output */
+.bp-final{background:var(--surf);border:2px solid rgba(16,185,129,.3);border-radius:var(--rad);padding:1.25rem;text-align:center}
+.bp-final-title{font-size:1.1rem;font-weight:700;color:#34d399;margin-bottom:.3rem}
+.bp-final-sub{font-size:.78rem;color:var(--td)}
+
+/* Data layer */
+.bp-data{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-top:.5rem}
+.bp-data-item{background:var(--surf);border:1px solid var(--brd);border-radius:var(--rad2);padding:.85rem;text-align:center}
+.bp-data-item h5{font-size:.82rem;font-weight:600;margin-bottom:.2rem}
+.bp-data-item p{font-size:.68rem;color:var(--tm);line-height:1.4}
+
+/* Flow arrow between user/layers/final */
+.bp-flow-arrow{display:flex;align-items:center;justify-content:center;padding:.3rem 0}
+.bp-flow-arrow svg{width:20px;height:20px}
+
+@media(max-width:900px){
+  .bp-main{grid-template-columns:1fr}
+  .bp-cross{position:static}
+  .bp-data{grid-template-columns:1fr}
+}
+
+/* === CARDS === */
+.grid{display:grid;gap:1rem;margin-bottom:2rem}
+.g4{grid-template-columns:repeat(auto-fill,minmax(300px,1fr))}
+.g3{grid-template-columns:repeat(auto-fill,minmax(340px,1fr))}
+.g2{grid-template-columns:repeat(auto-fill,minmax(420px,1fr))}
+
+.card{background:var(--surf);border:1px solid var(--brd);border-radius:var(--rad2);padding:1.25rem;transition:all .3s;cursor:pointer;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity .3s}
+.card:hover{background:var(--surf2);border-color:var(--brd2);transform:translateY(-2px)}.card:hover::before{opacity:1}
+.card.exp .cdet{display:block}
+.card-p::before{background:var(--pg)}.card-g::before{background:var(--gg)}.card-c::before{background:linear-gradient(90deg,var(--c),var(--c2))}.card-y::before{background:linear-gradient(90deg,var(--y),var(--y2))}.card-pk::before{background:linear-gradient(90deg,var(--pk),var(--pk2))}.card-b::before{background:var(--bg-b)}
+.card-p{border-left:2px solid var(--p)}.card-g{border-left:2px solid var(--g)}.card-c{border-left:2px solid var(--c)}.card-y{border-left:2px solid var(--y)}.card-pk{border-left:2px solid var(--pk)}.card-b{border-left:2px solid var(--b)}.card-r{border-left:2px solid var(--r)}
+
+.ch{display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem}
+.ci{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.ch h4{font-size:.88rem;font-weight:600;letter-spacing:-.01em}
+.ct{margin-left:auto;font-size:.6rem;padding:.2rem .5rem;border-radius:4px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;font-family:var(--mono)}
+.cdesc{font-size:.78rem;color:var(--td);line-height:1.5;margin-bottom:.6rem}
+.chips{display:flex;flex-wrap:wrap;gap:.3rem}
+.chip{padding:.2rem .45rem;border-radius:4px;font-size:.65rem;font-family:var(--mono);font-weight:500}
+.chip-p{background:rgba(124,58,237,.1);color:var(--p2);border:1px solid rgba(124,58,237,.15)}
+.chip-g{background:rgba(16,185,129,.1);color:var(--g2);border:1px solid rgba(16,185,129,.15)}
+.chip-c{background:rgba(6,182,212,.1);color:var(--c2);border:1px solid rgba(6,182,212,.15)}
+.chip-pk{background:rgba(236,72,153,.1);color:var(--pk2);border:1px solid rgba(236,72,153,.15)}
+.cdet{display:none;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--brd);font-size:.75rem;color:var(--td);line-height:1.6}
+.cdet h5{color:var(--t);margin-bottom:.3rem;font-size:.78rem;font-weight:600}.cdet ul{padding-left:1rem;margin-bottom:.5rem}.cdet li{margin-bottom:.15rem}
+.exp-h{font-size:.6rem;color:var(--tx);text-align:right;margin-top:.4rem;font-family:var(--mono)}
+
+/* === LAYER HEADER === */
+.lhdr{display:flex;align-items:center;gap:.75rem;padding:.75rem 1.25rem;border-radius:var(--rad2) var(--rad2) 0 0;border:1px solid var(--brd);border-bottom:none;margin-top:2rem}
+.lhdr .ln{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;font-family:var(--mono)}
+.lhdr h3{font-size:.95rem;font-weight:600}.lhdr .ld{margin-left:auto;font-size:.7rem;color:var(--tm);font-family:var(--mono)}
+.lbody{border:1px solid var(--brd);border-radius:0 0 var(--rad2) var(--rad2);padding:1rem;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.75rem;margin-bottom:.25rem}
+
+.lb-b{background:rgba(59,130,246,.03);border-color:rgba(59,130,246,.12)}
+.lb-p{background:rgba(124,58,237,.03);border-color:rgba(124,58,237,.12)}
+.lb-c{background:rgba(6,182,212,.03);border-color:rgba(6,182,212,.12)}
+.lb-y{background:rgba(234,179,8,.03);border-color:rgba(234,179,8,.12)}
+.lb-pk{background:rgba(236,72,153,.03);border-color:rgba(236,72,153,.12)}
+.lb-r{background:rgba(239,68,68,.03);border-color:rgba(239,68,68,.12)}
+
+.ln-b{background:rgba(59,130,246,.15);color:var(--b2)}.ln-p{background:rgba(124,58,237,.15);color:var(--p2)}
+.ln-c{background:rgba(6,182,212,.15);color:var(--c2)}.ln-y{background:rgba(234,179,8,.15);color:var(--y2)}
+.ln-pk{background:rgba(236,72,153,.15);color:var(--pk2)}.ln-r{background:rgba(239,68,68,.15);color:var(--r2)}
+
+/* Type badges */
+.t-mcp{background:rgba(124,58,237,.12);color:var(--p2)}
+.t-agent{background:rgba(16,185,129,.12);color:var(--g2)}
+.t-skill{background:rgba(6,182,212,.12);color:var(--c2)}
+.t-svc{background:rgba(236,72,153,.12);color:var(--pk2)}
+
+/* === TABLE === */
+.tbl{width:100%;border-collapse:separate;border-spacing:0;background:var(--surf);border-radius:var(--rad2);overflow:hidden;border:1px solid var(--brd);margin-bottom:2rem}
+.tbl th{text-align:left;padding:.65rem 1rem;font-size:.75rem;color:var(--p2);font-weight:600;border-bottom:1px solid var(--brd);background:rgba(124,58,237,.05);font-family:var(--mono);text-transform:uppercase;letter-spacing:.04em}
+.tbl td{padding:.55rem 1rem;font-size:.78rem;border-bottom:1px solid rgba(30,30,58,.5)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl td:first-child{color:var(--td);font-weight:600;white-space:nowrap}
+
+/* === PROVIDERS === */
+.pcat{font-size:.68rem;color:var(--tm);text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-top:1.25rem;margin-bottom:.4rem}
+.provs{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.75rem}
+.prov{padding:.4rem .7rem;border-radius:8px;font-size:.73rem;background:var(--surf);border:1px solid var(--brd);transition:.2s;font-weight:500}
+.prov:hover{border-color:var(--p);background:var(--surf2)}
+
+/* === CALLOUT === */
+.callout{padding:1rem 1.25rem;border-radius:var(--rad2);margin-bottom:1.5rem;font-size:.82rem;line-height:1.6;position:relative;overflow:hidden}
+.callout::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px}
+.co-p{background:rgba(124,58,237,.05);border:1px solid rgba(124,58,237,.12)}.co-p::before{background:var(--p)}.co-p strong{color:var(--p2)}
+.co-g{background:rgba(16,185,129,.05);border:1px solid rgba(16,185,129,.12)}.co-g::before{background:var(--g)}.co-g strong{color:var(--g2)}
+
+/* Footer */
+.footer{text-align:center;padding:3rem 0;border-top:1px solid var(--brd);margin-top:3rem;color:var(--tx);font-size:.75rem}
+
+@media(max-width:768px){.ctn{padding:0 1rem}.hero h1{font-size:1.8rem}.lbody,.g2,.g3,.g4{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ====== HERO ====== -->
+<div class="hero">
+  <div class="ctn">
+    <h1>Music Video Agent</h1>
+    <p class="tagline">An agentic creative tool for producing music videos — powered by LLMs, MCP servers, and specialized skills</p>
+    <p class="sub">Like Claude Code for developers, but for content creators making music videos</p>
+    <div class="stats">
+      <div class="stat s-g"><span class="n">6</span><span class="l">Agents</span></div>
+      <div class="stat s-p"><span class="n">14</span><span class="l">MCP Servers</span></div>
+      <div class="stat s-c"><span class="n">7</span><span class="l">Skills</span></div>
+      <div class="stat s-pk"><span class="n">3</span><span class="l">Services</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== NAV ====== -->
+<div class="nav">
+  <div class="nav-inner ctn">
+    <button class="nb on" onclick="go('big',this)">Big Picture</button>
+    <button class="nb" onclick="go('pipe',this)">Pipeline Flow</button>
+    <button class="nb" onclick="go('comms',this)">Communication</button>
+    <button class="nb" onclick="go('state',this)">State Machine</button>
+    <button class="nb" onclick="go('comps',this)">Components</button>
+    <button class="nb" onclick="go('data',this)">Data Architecture</button>
+    <button class="nb" onclick="go('models',this)">Model Providers</button>
+    <button class="nb" onclick="go('stack',this)">Tech Stack</button>
+  </div>
+</div>
+
+<div class="ctn">
+
+<!-- ====== BIG PICTURE ====== -->
+<div id="big" class="sec on">
+  <h2 class="sh">Big Picture Architecture</h2>
+  <p class="ss">The complete system — 5 processing layers, cross-layer quality and revision systems, all connected through a central orchestrator.</p>
+
+  <!-- Legend -->
+  <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem;padding:.75rem 1rem;background:var(--surf);border:1px solid var(--brd);border-radius:10px">
+    <div style="display:flex;align-items:center;gap:.4rem;font-size:.72rem"><span style="width:12px;height:12px;border-radius:3px;background:rgba(16,185,129,.3);border:1.5px solid #10b981;display:inline-block"></span><span style="color:#34d399;font-weight:600">Agent</span><span style="color:var(--tm)">— intelligence, decides what</span></div>
+    <div style="display:flex;align-items:center;gap:.4rem;font-size:.72rem"><span style="width:12px;height:12px;border-radius:3px;background:rgba(124,58,237,.3);border:1.5px solid #7c3aed;display:inline-block"></span><span style="color:#a78bfa;font-weight:600">MCP Server</span><span style="color:var(--tm)">— tools, executes how</span></div>
+    <div style="display:flex;align-items:center;gap:.4rem;font-size:.72rem"><span style="width:12px;height:12px;border-radius:3px;background:rgba(6,182,212,.2);border:1.5px dashed #06b6d4;display:inline-block"></span><span style="color:#22d3ee;font-weight:600">Skill</span><span style="color:var(--tm)">— domain knowledge context</span></div>
+    <div style="display:flex;align-items:center;gap:.4rem;font-size:.72rem"><span style="width:12px;height:12px;border-radius:3px;background:rgba(236,72,153,.3);border:1.5px solid #ec4899;display:inline-block"></span><span style="color:#f472b6;font-weight:600">Service</span><span style="color:var(--tm)">— infrastructure</span></div>
+    <div style="display:flex;align-items:center;gap:.4rem;font-size:.72rem"><span style="width:12px;height:12px;border-radius:50%;background:rgba(245,158,11,.3);border:1.5px solid #f59e0b;display:inline-block"></span><span style="color:#fcd34d;font-weight:600">Artifact</span><span style="color:var(--tm)">— output per layer</span></div>
+  </div>
+
+  <div class="bp">
+    <div class="bp-main">
+      <!-- LEFT: Pipeline flow -->
+      <div class="bp-pipeline">
+
+        <!-- USER INPUTS -->
+        <div class="bp-user">
+          <div class="bp-user-label"><span style="font-size:1.2rem">&#x1F464;</span> User Inputs</div>
+          <div class="bp-user-inputs">
+            <div class="bp-user-item">&#x1F3B5; Music Audio</div>
+            <div class="bp-user-item">&#x1F464; Character Refs</div>
+            <div class="bp-user-item">&#x1F3A8; Style References</div>
+            <div class="bp-user-item">&#x1F4DD; Text Prompt</div>
+            <div class="bp-user-item">&#x2699; Preferences</div>
+          </div>
+        </div>
+
+        <!-- Arrow -->
+        <div class="bp-flow-arrow"><svg viewBox="0 0 20 20" fill="none"><path d="M10 4v12M6 12l4 4 4-4" stroke="#475569" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+
+        <!-- LAYER 1 -->
+        <div class="bp-layer bp-l1">
+          <div class="bp-layer-hdr">
+            <div class="bp-layer-num">L1</div>
+            <div class="bp-layer-title">Input & Understanding</div>
+            <div class="bp-layer-meta">3 MCP + 1 Skill</div>
+          </div>
+          <div class="bp-nodes">
+            <div class="bp-node bp-mcp"><span class="bp-icon">&#x1F3B5;</span><span class="bp-name">music-intelligence</span><span class="bp-type">MCP</span></div>
+            <div class="bp-node bp-mcp"><span class="bp-icon">&#x1F441;</span><span class="bp-name">vision-analyzer</span><span class="bp-type">MCP</span></div>
+            <div class="bp-node bp-mcp"><span class="bp-icon">&#x1F464;</span><span class="bp-name">character-builder</span><span class="bp-type">MCP</span></div>
+            <div class="bp-node bp-skill"><span class="bp-icon">&#x1F4DD;</span><span class="bp-name">prompt-interpreter</span><span class="bp-type">Skill</span></div>
+          </div>
+          <div class="bp-output">ProjectBrief</div>
+        </div>
+
+        <!-- QG1 -->
+        <div class="bp-qg">
+          <div class="bp-qg-line"></div>
+          <div class="bp-qg-diamond"><span>QG1</span></div>
+          <div class="bp-qg-label">Quality Gate 1</div>
+          <div class="bp-qg-actions">
+            <span class="bp-qg-act bp-qg-pass">PASS</span>
+            <span class="bp-qg-act bp-qg-rev">REVISE</span>
+            <span class="bp-qg-act bp-qg-rej">REJECT</span>
+          </div>
+          <div class="bp-qg-line"></div>
+        </div>
+
+        <!-- LAYER 2 -->
+        <div class="bp-layer bp-l2">
+          <div class="bp-layer-hdr">
+            <div class="bp-layer-num">L2</div>
+            <div class="bp-layer-title">Creative Direction</div>
+            <div class="bp-layer-meta">1 Agent + 1 MCP + 2 Skills</div>
+          </div>
+          <div class="bp-nodes">
+            <div class="bp-node bp-agent"><span class="bp-icon">&#x1F3AD;</span><span class="bp-name">creative-director</span><span class="bp-type">Agent</span></div>
+            <div class="bp-node bp-mcp"><span class="bp-icon">&#x1F4D6;</span><span class="bp-name">storyline-writer</span><span class="bp-type">MCP</span></div>
+            <div class="bp-node bp-skill"><span class="bp-icon">&#x1F3AC;</span><span class="bp-name">genre-templates</span><span class="bp-type">Skill</span></div>
+            <div class="bp-node bp-skill"><span class="bp-icon">&#x1F308;</span><span class="bp-name">mood-mapper</span><span class="bp-type">Skill</span></div>
+          </div>
+          <div class="bp-output">CreativeVision</div>
+        </div>
+
+        <!-- QG2 -->
+        <div class="bp-qg">
+          <div class="bp-qg-line"></div>
+          <div class="bp-qg-diamond"><span>QG2</span></div>
+          <div class="bp-qg-label">Quality Gate 2</div>
+          <div class="bp-qg-actions">
+            <span class="bp-qg-act bp-qg-pass">PASS</span>
+            <span class="bp-qg-act bp-qg-rev">REVISE</span>
+            <span class="bp-qg-act bp-qg-rej">REJECT</span>
+          </div>
+          <div class="bp-qg-line"></div>
+        </div>
+
+        <!-- LAYER 3 -->
+        <div class="bp-layer bp-l3">
+          <div class="bp-layer-hdr">
+            <div class="bp-layer-num">L3</div>
+            <div class="bp-layer-title">Pre-Production</div>
+            <div class="bp-layer-meta">1 Agent + 3 MCPs + 1 Skill</div>
+          </div>
+          <div class="bp-nodes">
+            <div class="bp-node bp-agent"><span class="bp-icon">&#x1F4CB;</span><span class="bp-name">storyboard-architect</span><span class="bp-type">Agent</span></div>
+            <div class="bp-node bp-mcp"><span class="bp-icon">&#x1F39E;</span><span class="bp-name">storyboard-builder</span><span class="bp-type">MCP</span></div>
+            <div class="bp-node bp-mcp"><span class="bp-icon">&#x1F3A8;</span><span class="bp-name">style-guide-generator</span><span class="bp-type">MCP</span></div>
+            <div class="bp-node bp-mcp"><span class="bp-icon">&#x1F916;</span><span class="bp-name">model-selector</span><span class="bp-type">MCP</span></div>
+            <div class="bp-node bp-skill"><span class="bp-icon">&#x270D;</span><span class="bp-name">cinematic-prompts</span><span class="bp-type">Skill</span></div>
+          </div>
+          <div class="bp-output">ProductionPlan</div>
+        </div>
+
+        <!-- QG3 -->
+        <div class="bp-qg">
+          <div class="bp-qg-line"></div>
+          <div class="bp-qg-diamond"><span>QG3</span></div>
+          <div class="bp-qg-label">Quality Gate 3</div>
+          <div class="bp-qg-actions">
+            <span class="bp-qg-act bp-qg-pass">PASS</span>
+            <span class="bp-qg-act bp-qg-rev">REVISE</span>
+            <span class="bp-qg-act bp-qg-rej">REJECT</span>
+          </div>
+          <div class="bp-qg-line"></div>
+        </div>
+
+        <!-- LAYER 4 -->
+        <div class="bp-layer bp-l4">
+          <div class="bp-layer-hdr">
+            <div class="bp-layer-num">L4</div>
+            <div class="bp-layer-title">Production</div>
+            <div class="bp-layer-meta">1 Agent + 3 MCPs + 1 Skill</div>
+          </div>
+          <div class="bp-nodes">
+            <div class="bp-node bp-agent"><span class="bp-icon">&#x1F3ED;</span><span class="bp-name">production-supervisor</span><span class="bp-type">Agent</span></div>
+            <div class="bp-node bp-mcp"><span class="bp-icon">&#x1F5BC;</span><span class="bp-name">image-generator</span><span class="bp-type">MCP</span></div>
+            <div class="bp-node bp-mcp"><span class="bp-icon">&#x1F3A5;</span><span class="bp-name">video-generator</span><span class="bp-type">MCP</span></div>
+            <div class="bp-node bp-mcp"><span class="bp-icon">&#x1F444;</span><span class="bp-name">lipsync-processor</span><span class="bp-type">MCP</span></div>
+            <div class="bp-node bp-skill"><span class="bp-icon">&#x1F50D;</span><span class="bp-name">consistency-checker</span><span class="bp-type">Skill</span></div>
+          </div>
+          <div class="bp-output">Raw Assets</div>
+        </div>
+
+        <!-- QG4 -->
+        <div class="bp-qg">
+          <div class="bp-qg-line"></div>
+          <div class="bp-qg-diamond"><span>QG4</span></div>
+          <div class="bp-qg-label">Quality Gate 4</div>
+          <div class="bp-qg-actions">
+            <span class="bp-qg-act bp-qg-pass">PASS</span>
+            <span class="bp-qg-act bp-qg-rev">REVISE</span>
+            <span class="bp-qg-act bp-qg-rej">REJECT</span>
+          </div>
+          <div class="bp-qg-line"></div>
+        </div>
+
+        <!-- LAYER 5 -->
+        <div class="bp-layer bp-l5">
+          <div class="bp-layer-hdr">
+            <div class="bp-layer-num">L5</div>
+            <div class="bp-layer-title">Post-Production</div>
+            <div class="bp-layer-meta">1 Agent + 3 MCPs + 1 Skill</div>
+          </div>
+          <div class="bp-nodes">
+            <div class="bp-node bp-agent"><span class="bp-icon">&#x2702;</span><span class="bp-name">editor</span><span class="bp-type">Agent</span></div>
+            <div class="bp-node bp-mcp"><span class="bp-icon">&#x1F527;</span><span class="bp-name">video-assembler</span><span class="bp-type">MCP</span></div>
+            <div class="bp-node bp-mcp"><span class="bp-icon">&#x1F3A8;</span><span class="bp-name">color-grader</span><span class="bp-type">MCP</span></div>
+            <div class="bp-node bp-mcp"><span class="bp-icon">&#x1F4E6;</span><span class="bp-name">export-manager</span><span class="bp-type">MCP</span></div>
+            <div class="bp-node bp-skill"><span class="bp-icon">&#x2728;</span><span class="bp-name">effects-library</span><span class="bp-type">Skill</span></div>
+          </div>
+          <div class="bp-output">Final Video</div>
+        </div>
+
+        <!-- QG5 -->
+        <div class="bp-qg">
+          <div class="bp-qg-line"></div>
+          <div class="bp-qg-diamond"><span>QG5</span></div>
+          <div class="bp-qg-label">Quality Gate 5</div>
+          <div class="bp-qg-actions">
+            <span class="bp-qg-act bp-qg-pass">PASS</span>
+            <span class="bp-qg-act bp-qg-rev">REVISE</span>
+            <span class="bp-qg-act bp-qg-rej">REJECT</span>
+          </div>
+          <div class="bp-qg-line"></div>
+        </div>
+
+        <!-- FINAL -->
+        <div class="bp-final">
+          <div class="bp-final-title">&#x1F3AC; Delivered to User</div>
+          <div class="bp-final-sub">Final video + thumbnails + multi-platform exports (YouTube 16:9, TikTok 9:16, Instagram 1:1)</div>
+        </div>
+
+        <!-- DATA LAYER -->
+        <div style="margin-top:1.5rem">
+          <div style="font-size:.7rem;color:var(--tm);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem">Data Layer</div>
+          <div class="bp-data">
+            <div class="bp-data-item" style="border-left:3px solid #10b981">
+              <h5 style="color:#34d399">&#x1F418; PostgreSQL</h5>
+              <p>Project state, versioned stage outputs, generation metadata, quality scores, cost tracking</p>
+            </div>
+            <div class="bp-data-item" style="border-left:3px solid #3b82f6">
+              <h5 style="color:#60a5fa">&#x2601; S3 / Cloudflare R2</h5>
+              <p>Audio, references, character anchors, generated images, video clips, finals — version-organized</p>
+            </div>
+            <div class="bp-data-item" style="border-left:3px solid #ef4444">
+              <h5 style="color:#f87171">&#x26A1; Redis</h5>
+              <p>BullMQ job queue, progress pub/sub, rate limits per AI provider, cost counters, cache</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Cross-layer sidebar -->
+      <div class="bp-cross">
+        <div style="font-size:.7rem;color:var(--tm);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem">Cross-Layer Systems</div>
+
+        <!-- Orchestrator -->
+        <div class="bp-cross-card bp-cross-orch">
+          <div class="bp-cross-title" style="color:#f472b6">&#x1F3AF; Pipeline Orchestrator</div>
+          <div class="bp-cross-nodes">
+            <div class="bp-cross-node"><span class="bp-node bp-svc" style="padding:.2rem .5rem;font-size:.7rem"><span class="bp-name">pipeline-orchestrator</span><span class="bp-type">Svc</span></span></div>
+            <div class="bp-cross-node"><span class="bp-node bp-svc" style="padding:.2rem .5rem;font-size:.7rem"><span class="bp-name">progress-streamer</span><span class="bp-type">Svc</span></span></div>
+          </div>
+          <div style="font-size:.65rem;color:var(--tm);margin-top:.5rem;line-height:1.5">Cyclic state machine. Manages forward + backward transitions, job queue (BullMQ), cost tracking, SSE progress events.</div>
+        </div>
+
+        <!-- Quality Gate -->
+        <div class="bp-cross-card bp-cross-qg">
+          <div class="bp-cross-title" style="color:#fcd34d">&#x1F50D; Quality Gate</div>
+          <div class="bp-cross-nodes">
+            <div class="bp-cross-node"><span class="bp-node bp-agent" style="padding:.2rem .5rem;font-size:.7rem"><span class="bp-name">quality-assessor</span><span class="bp-type">Agent</span></span></div>
+            <div class="bp-cross-node"><span class="bp-node bp-skill" style="padding:.2rem .5rem;font-size:.7rem"><span class="bp-name">quality-metrics</span><span class="bp-type">Skill</span></span></div>
+          </div>
+          <div style="font-size:.65rem;color:var(--tm);margin-top:.5rem;line-height:1.5">Evaluates output at every layer boundary. Three verdicts: <span style="color:#34d399;font-weight:600">PASS</span>, <span style="color:#fcd34d;font-weight:600">REVISE</span>, <span style="color:#f87171;font-weight:600">REJECT</span>. Max 3 auto-revisions then escalate to user.</div>
+        </div>
+
+        <!-- Revision Engine -->
+        <div class="bp-cross-card bp-cross-rev">
+          <div class="bp-cross-title" style="color:#f87171">&#x1F504; Revision Engine</div>
+          <div class="bp-cross-nodes">
+            <div class="bp-cross-node"><span class="bp-node bp-agent" style="padding:.2rem .5rem;font-size:.7rem"><span class="bp-name">revision-controller</span><span class="bp-type">Agent</span></span></div>
+            <div class="bp-cross-node"><span class="bp-node bp-mcp" style="padding:.2rem .5rem;font-size:.7rem"><span class="bp-name">version-tracker</span><span class="bp-type">MCP</span></span></div>
+          </div>
+          <div style="font-size:.65rem;color:var(--tm);margin-top:.5rem;line-height:1.5">Backward transitions to ANY previous layer. Smart cascade: only affected downstream scenes re-generated. Version tracking + diff + revert.</div>
+          <div style="margin-top:.5rem;padding:.4rem .6rem;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.15);border-radius:6px;font-size:.62rem;color:rgba(239,68,68,.7);font-family:var(--mono)">
+            REVISE/REJECT &#x2192; backward to L1&#x2013;L4<br>
+            Cascade &#x2192; scene-level re-generation
+          </div>
+        </div>
+
+        <!-- User Bridge -->
+        <div class="bp-cross-card bp-cross-data">
+          <div class="bp-cross-title" style="color:var(--td)">&#x1F310; User Interface</div>
+          <div class="bp-cross-nodes">
+            <div class="bp-cross-node"><span class="bp-node bp-mcp" style="padding:.2rem .5rem;font-size:.7rem"><span class="bp-name">user-bridge</span><span class="bp-type">MCP</span></span></div>
+          </div>
+          <div style="font-size:.65rem;color:var(--tm);margin-top:.5rem;line-height:1.5">User &#x2194; pipeline interface. Submit, review, approve, request revision, override decisions at any checkpoint.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout co-p" style="margin-top:1.5rem">
+    <strong>Design Principle:</strong> Agents decide <em>what</em> to do (intelligence). MCP Servers execute <em>how</em> (tools). Skills provide <em>knowledge</em> (context). The Orchestrator manages <em>when</em> and <em>in what order</em>. Quality gates verify at every layer boundary. Revision loops enable iterative creative refinement.
+  </div>
+</div>
+
+<!-- ====== PIPELINE FLOW ====== -->
+<div id="pipe" class="sec">
+  <h2 class="sh">Pipeline Flow</h2>
+  <p class="ss">Data artifacts flow through 5 layers — each layer produces a key artifact consumed by the next. Quality gates verify at every boundary.</p>
+
+  <div class="mermaid-wrap">
+    <span class="label">Artifact Flow</span>
+    <pre class="mermaid">
+%%{init:{'theme':'dark','themeVariables':{'primaryColor':'#7c3aed','primaryTextColor':'#f1f5f9','primaryBorderColor':'#3a3a6a','lineColor':'#64748b','secondaryColor':'#111120','tertiaryColor':'#16162a','background':'#111120','mainBkg':'#111120','nodeBorder':'#3a3a6a'}}}%%
+flowchart LR
+  U["👤 User Inputs<br/><small>music · characters · refs · prompt</small>"] --> L1
+
+  subgraph L1["L1: Input"]
+    A1[Music Analysis] --> B1((ProjectBrief))
+    A2[Vision Analysis] --> B1
+    A3[Character Build] --> B1
+  end
+
+  L1 -->|"◆ QG1"| L2
+
+  subgraph L2["L2: Creative"]
+    B1b[Creative Director] --> C1((CreativeVision))
+    B2[Storyline Writer] --> C1
+  end
+
+  L2 -->|"◆ QG2"| L3
+
+  subgraph L3["L3: Pre-Prod"]
+    C1b[Storyboard Arch] --> D1((ProductionPlan))
+    C2[Style Guide Gen] --> D1
+    C3[Model Selector] --> D1
+  end
+
+  L3 -->|"◆ QG3"| L4
+
+  subgraph L4["L4: Production"]
+    D1b[Image Gen] --> E1((Raw Assets))
+    D2[Video Gen] --> E1
+    D3[Lipsync] --> E1
+  end
+
+  L4 -->|"◆ QG4"| L5
+
+  subgraph L5["L5: Post-Prod"]
+    E1b[Assembly] --> F1((Final Video))
+    E2[Color Grade] --> F1
+    E3[Export] --> F1
+  end
+
+  L5 -->|"◆ QG5"| OUT["🎬 Delivered"]
+    </pre>
+  </div>
+
+  <div class="callout co-g">
+    <strong>Iterative, not linear:</strong> Every <code>◆ QG</code> (Quality Gate) can send output backward to any previous layer for revision. Only affected scenes are re-processed — not the entire pipeline.
+  </div>
+</div>
+
+<!-- ====== COMMUNICATION ====== -->
+<div id="comms" class="sec">
+  <h2 class="sh">Agent Communication</h2>
+  <p class="ss">How agents, MCP servers, skills, and the orchestrator interact during pipeline execution.</p>
+
+  <div class="mermaid-wrap">
+    <span class="label">Sequence Flow</span>
+    <pre class="mermaid">
+%%{init:{'theme':'dark','themeVariables':{'actorBkg':'#1a0a2e','actorBorder':'#7c3aed','actorTextColor':'#a78bfa','activationBorderColor':'#7c3aed','activationBkgColor':'#16162a','signalColor':'#64748b','signalTextColor':'#f1f5f9','labelBoxBkgColor':'#111120','labelBoxBorderColor':'#3a3a6a','labelTextColor':'#94a3b8','loopTextColor':'#f59e0b','noteBkgColor':'#1a1a2e','noteBorderColor':'#f59e0b','noteTextColor':'#fcd34d','background':'#111120','mainBkg':'#111120'}}}%%
+sequenceDiagram
+  participant U as 👤 User
+  participant UB as 🌐 user-bridge
+  participant O as 🎯 Orchestrator
+  participant A as 🤖 Layer Agent
+  participant M as 🔧 MCP Server
+  participant Q as 🔍 Quality Gate
+  participant R as 🔄 Revision Ctrl
+  participant DB as 💾 DB / S3
+
+  U->>UB: Submit project (music, refs, prompt)
+  UB->>O: Create pipeline job
+  O->>O: Initialize state machine
+
+  loop For each Layer (L1→L5)
+    O->>A: Trigger layer agent
+    activate A
+    Note over A: Skills loaded as context
+    A->>M: Call MCP tools
+    activate M
+    M->>DB: Write versioned output
+    M-->>A: Return result
+    deactivate M
+    A-->>O: Stage complete
+    deactivate A
+
+    O->>Q: Evaluate output
+    activate Q
+    alt PASS
+      Q-->>O: Advance to next layer
+    else REVISE
+      Q->>U: Suggest improvements
+      U-->>Q: Approve or revise
+    else REJECT
+      Q->>R: Auto-retry with feedback
+      R->>A: Re-process (targeted scenes)
+    end
+    deactivate Q
+  end
+
+  O->>UB: Pipeline complete
+  UB->>U: Deliver final video
+    </pre>
+  </div>
+</div>
+
+<!-- ====== STATE MACHINE ====== -->
+<div id="state" class="sec">
+  <h2 class="sh">Cyclic State Machine</h2>
+  <p class="ss">The orchestrator manages a cyclic state machine — supporting forward progression, backward revision, and user intervention at any state.</p>
+
+  <div class="mermaid-wrap">
+    <span class="label">State Transitions</span>
+    <pre class="mermaid">
+%%{init:{'theme':'dark','themeVariables':{'primaryColor':'#7c3aed','primaryTextColor':'#f1f5f9','primaryBorderColor':'#3a3a6a','lineColor':'#64748b','secondaryColor':'#111120','tertiaryColor':'#16162a','background':'#111120','mainBkg':'#111120','labelColor':'#f1f5f9','altBackground':'#16162a'}}}%%
+stateDiagram-v2
+  [*] --> uploaded
+  uploaded --> analyzing: Start pipeline
+  analyzing --> analyzed: L1 complete
+
+  analyzed --> qg1: Quality Gate 1
+  qg1 --> creating_vision: PASS
+  qg1 --> analyzing: REJECT
+
+  creating_vision --> vision_ready: L2 complete
+  vision_ready --> qg2: Quality Gate 2
+  qg2 --> planning: PASS
+  qg2 --> creating_vision: REJECT
+
+  planning --> plan_ready: L3 complete
+  plan_ready --> qg3: Quality Gate 3
+  qg3 --> generating: PASS
+  qg3 --> planning: REJECT
+
+  generating --> assets_ready: L4 complete
+  assets_ready --> qg4: Quality Gate 4
+  qg4 --> post_production: PASS
+  qg4 --> generating: REJECT
+
+  post_production --> assembled: L5 complete
+  assembled --> qg5: Quality Gate 5
+  qg5 --> complete: PASS
+  qg5 --> post_production: REJECT
+
+  complete --> [*]
+
+  state "User Override" as uo
+  analyzed --> uo: User intervenes
+  vision_ready --> uo: User intervenes
+  plan_ready --> uo: User intervenes
+  assets_ready --> uo: User intervenes
+  assembled --> uo: User intervenes
+  uo --> analyzing: Revise L1
+  uo --> creating_vision: Revise L2
+  uo --> planning: Revise L3
+  uo --> generating: Revise L4
+  uo --> post_production: Revise L5
+    </pre>
+  </div>
+</div>
+
+<!-- ====== COMPONENTS ====== -->
+<div id="comps" class="sec">
+  <h2 class="sh">All Components</h2>
+  <p class="ss">30 components across 5 layers + cross-layer systems. Click any card to expand details.</p>
+
+  <!-- L1 -->
+  <div class="lhdr lb-b"><div class="ln ln-b">1</div><h3>Input & Understanding</h3><div class="ld">3 MCP · 1 Skill</div></div>
+  <div class="lbody lb-b">
+    <div class="card card-p" onclick="this.classList.toggle('exp')"><div class="ch"><div class="ci" style="background:rgba(59,130,246,.12)">🎵</div><h4>music-intelligence</h4><span class="ct t-mcp">MCP</span></div><div class="cdesc">Analyzes audio → beats, BPM, key, sections, energy, mood. librosa + essentia + Gemini.</div><div class="chips"><span class="chip chip-p">analyze_music()</span><span class="chip chip-p">detect_beats()</span><span class="chip chip-p">detect_sections()</span></div><div class="cdet"><h5>Output: MusicProfile</h5><ul><li>BPM, key, time signature</li><li>Sections with timestamps + types</li><li>Beat positions, energy curve</li><li>Creative suggestions</li></ul></div><div class="exp-h">expand</div></div>
+    <div class="card card-p" onclick="this.classList.toggle('exp')"><div class="ch"><div class="ci" style="background:rgba(59,130,246,.12)">👁️</div><h4>vision-analyzer</h4><span class="ct t-mcp">MCP</span></div><div class="cdesc">Extracts style, palette, composition, mood from reference images via VLM.</div><div class="chips"><span class="chip chip-p">analyze_style()</span><span class="chip chip-p">extract_palette()</span></div><div class="exp-h">expand</div></div>
+    <div class="card card-p" onclick="this.classList.toggle('exp')"><div class="ch"><div class="ci" style="background:rgba(59,130,246,.12)">👤</div><h4>character-builder</h4><span class="ct t-mcp">MCP</span></div><div class="cdesc">Builds character sheets with anchor images for visual consistency.</div><div class="chips"><span class="chip chip-p">build_character()</span><span class="chip chip-p">generate_anchors()</span></div><div class="exp-h">expand</div></div>
+    <div class="card card-c" onclick="this.classList.toggle('exp')"><div class="ch"><div class="ci" style="background:rgba(6,182,212,.12)">📝</div><h4>prompt-interpreter</h4><span class="ct t-skill">Skill</span></div><div class="cdesc">Domain knowledge for parsing user prompts into structured creative briefs.</div><div class="exp-h">expand</div></div>
+  </div>
+
+  <!-- L2 -->
+  <div class="lhdr lb-p"><div class="ln ln-p">2</div><h3>Creative Direction</h3><div class="ld">1 Agent · 1 MCP · 2 Skills</div></div>
+  <div class="lbody lb-p">
+    <div class="card card-g" onclick="this.classList.toggle('exp')"><div class="ch"><div class="ci" style="background:rgba(16,185,129,.12)">🎭</div><h4>creative-director</h4><span class="ct t-agent">Agent</span></div><div class="cdesc">Creative brain. Reads ProjectBrief, generates CreativeVision — concept, themes, narrative, mood arc.</div><div class="cdet"><h5>Capabilities</h5><ul><li>Interpret music emotional arc</li><li>Generate 2-3 creative directions</li><li>Revise based on feedback</li></ul></div><div class="exp-h">expand</div></div>
+    <div class="card card-p" onclick="this.classList.toggle('exp')"><div class="ch"><div class="ci" style="background:rgba(124,58,237,.12)">📖</div><h4>storyline-writer</h4><span class="ct t-mcp">MCP</span></div><div class="cdesc">Generates narrative storylines matched to music structure.</div><div class="chips"><span class="chip chip-p">write_storyline()</span><span class="chip chip-p">revise_storyline()</span></div><div class="exp-h">expand</div></div>
+    <div class="card card-c"><div class="ch"><div class="ci" style="background:rgba(6,182,212,.12)">🎬</div><h4>genre-templates</h4><span class="ct t-skill">Skill</span></div><div class="cdesc">Proven MV formats per genre: pop dance, rock performance, R&B intimate, etc.</div></div>
+    <div class="card card-c"><div class="ch"><div class="ci" style="background:rgba(6,182,212,.12)">🌈</div><h4>mood-mapper</h4><span class="ct t-skill">Skill</span></div><div class="cdesc">Maps music data (energy, key, tempo) to visual language.</div></div>
+  </div>
+
+  <!-- L3 -->
+  <div class="lhdr lb-c"><div class="ln ln-c">3</div><h3>Pre-Production</h3><div class="ld">1 Agent · 3 MCPs · 1 Skill</div></div>
+  <div class="lbody lb-c">
+    <div class="card card-g" onclick="this.classList.toggle('exp')"><div class="ch"><div class="ci" style="background:rgba(16,185,129,.12)">📋</div><h4>storyboard-architect</h4><span class="ct t-agent">Agent</span></div><div class="cdesc">Designs scene-by-scene storyboard synced to music. Camera, timing, transitions.</div><div class="exp-h">expand</div></div>
+    <div class="card card-p"><div class="ch"><div class="ci" style="background:rgba(124,58,237,.12)">🎞️</div><h4>storyboard-builder</h4><span class="ct t-mcp">MCP</span></div><div class="cdesc">Creates/edits storyboard scenes. Beat-synced timing.</div><div class="chips"><span class="chip chip-p">create_storyboard()</span><span class="chip chip-p">revise_scene()</span></div></div>
+    <div class="card card-p"><div class="ch"><div class="ci" style="background:rgba(124,58,237,.12)">🎨</div><h4>style-guide-generator</h4><span class="ct t-mcp">MCP</span></div><div class="cdesc">Locked prompt templates + color palette + character anchors.</div></div>
+    <div class="card card-p"><div class="ch"><div class="ci" style="background:rgba(124,58,237,.12)">🤖</div><h4>model-selector</h4><span class="ct t-mcp">MCP</span></div><div class="cdesc">Selects optimal AI model per scene. Cost estimation.</div></div>
+    <div class="card card-c"><div class="ch"><div class="ci" style="background:rgba(6,182,212,.12)">✍️</div><h4>cinematic-prompts</h4><span class="ct t-skill">Skill</span></div><div class="cdesc">Model-specific prompt strategies.</div></div>
+  </div>
+
+  <!-- L4 -->
+  <div class="lhdr lb-y"><div class="ln ln-y">4</div><h3>Production</h3><div class="ld">1 Agent · 3 MCPs · 1 Skill</div></div>
+  <div class="lbody lb-y">
+    <div class="card card-g" onclick="this.classList.toggle('exp')"><div class="ch"><div class="ci" style="background:rgba(16,185,129,.12)">🏭</div><h4>production-supervisor</h4><span class="ct t-agent">Agent</span></div><div class="cdesc">Orchestrates parallel generation, quality monitoring, model switching.</div><div class="exp-h">expand</div></div>
+    <div class="card card-p"><div class="ch"><div class="ci" style="background:rgba(124,58,237,.12)">🖼️</div><h4>image-generator</h4><span class="ct t-mcp">MCP</span></div><div class="cdesc">Multi-model images. Flux, DALL-E, SD, Ideogram.</div><div class="chips"><span class="chip chip-p">generate_image()</span><span class="chip chip-p">regenerate()</span></div></div>
+    <div class="card card-p"><div class="ch"><div class="ci" style="background:rgba(124,58,237,.12)">🎥</div><h4>video-generator</h4><span class="ct t-mcp">MCP</span></div><div class="cdesc">Multi-model video. Kling, Runway, Veo, Minimax, Pika.</div><div class="chips"><span class="chip chip-p">generate_clip()</span><span class="chip chip-p">regenerate_clip()</span></div></div>
+    <div class="card card-p"><div class="ch"><div class="ci" style="background:rgba(124,58,237,.12)">👄</div><h4>lipsync-processor</h4><span class="ct t-mcp">MCP</span></div><div class="cdesc">Lip sync for vocal scenes. MuseTalk, Sync.so.</div></div>
+    <div class="card card-c"><div class="ch"><div class="ci" style="background:rgba(6,182,212,.12)">🔍</div><h4>consistency-checker</h4><span class="ct t-skill">Skill</span></div><div class="cdesc">CLIP scoring + VLM visual consistency checks.</div></div>
+  </div>
+
+  <!-- L5 -->
+  <div class="lhdr lb-pk"><div class="ln ln-pk">5</div><h3>Post-Production</h3><div class="ld">1 Agent · 3 MCPs · 1 Skill</div></div>
+  <div class="lbody lb-pk">
+    <div class="card card-g"><div class="ch"><div class="ci" style="background:rgba(16,185,129,.12)">✂️</div><h4>editor</h4><span class="ct t-agent">Agent</span></div><div class="cdesc">Plans cuts, transitions, effects, pacing. Beat-synced editing.</div></div>
+    <div class="card card-p"><div class="ch"><div class="ci" style="background:rgba(124,58,237,.12)">🔧</div><h4>video-assembler</h4><span class="ct t-mcp">MCP</span></div><div class="cdesc">FFmpeg timeline assembly, transitions, audio overlay.</div></div>
+    <div class="card card-p"><div class="ch"><div class="ci" style="background:rgba(124,58,237,.12)">🎨</div><h4>color-grader</h4><span class="ct t-mcp">MCP</span></div><div class="cdesc">Color consistency + creative grading.</div></div>
+    <div class="card card-p"><div class="ch"><div class="ci" style="background:rgba(124,58,237,.12)">📦</div><h4>export-manager</h4><span class="ct t-mcp">MCP</span></div><div class="cdesc">Multi-platform export: YouTube, TikTok, Instagram.</div></div>
+    <div class="card card-c"><div class="ch"><div class="ci" style="background:rgba(6,182,212,.12)">💫</div><h4>effects-library</h4><span class="ct t-skill">Skill</span></div><div class="cdesc">Transition types, beat-sync rules, genre effects.</div></div>
+  </div>
+
+  <!-- Cross -->
+  <div class="lhdr lb-r"><div class="ln ln-r">⟳</div><h3>Cross-Layer Systems</h3><div class="ld">2 Agents · 2 MCPs · 1 Skill · 2 Services</div></div>
+  <div class="lbody lb-r">
+    <div class="card card-g"><div class="ch"><div class="ci" style="background:rgba(16,185,129,.12)">🔍</div><h4>quality-assessor</h4><span class="ct t-agent">Agent</span></div><div class="cdesc">Verifies output at every boundary. PASS / REVISE / REJECT.</div></div>
+    <div class="card card-g"><div class="ch"><div class="ci" style="background:rgba(16,185,129,.12)">🔄</div><h4>revision-controller</h4><span class="ct t-agent">Agent</span></div><div class="cdesc">Routes revisions, smart cascade, scene-level targeting.</div></div>
+    <div class="card card-p"><div class="ch"><div class="ci" style="background:rgba(124,58,237,.12)">📦</div><h4>version-tracker</h4><span class="ct t-mcp">MCP</span></div><div class="cdesc">Track versions, diff, compare, revert.</div></div>
+    <div class="card card-p"><div class="ch"><div class="ci" style="background:rgba(124,58,237,.12)">🌐</div><h4>user-bridge</h4><span class="ct t-mcp">MCP</span></div><div class="cdesc">User ↔ pipeline interface.</div></div>
+    <div class="card card-pk"><div class="ch"><div class="ci" style="background:rgba(236,72,153,.12)">🎯</div><h4>pipeline-orchestrator</h4><span class="ct t-svc">Service</span></div><div class="cdesc">Cyclic state machine, job queue, cost tracking.</div></div>
+    <div class="card card-pk"><div class="ch"><div class="ci" style="background:rgba(236,72,153,.12)">📡</div><h4>progress-streamer</h4><span class="ct t-svc">Service</span></div><div class="cdesc">SSE real-time progress to frontend.</div></div>
+    <div class="card card-c"><div class="ch"><div class="ci" style="background:rgba(6,182,212,.12)">📊</div><h4>quality-metrics</h4><span class="ct t-skill">Skill</span></div><div class="cdesc">Scoring rubrics per stage.</div></div>
+  </div>
+</div>
+
+<!-- ====== DATA ====== -->
+<div id="data" class="sec">
+  <h2 class="sh">Data Architecture</h2>
+  <p class="ss">Three data stores — PostgreSQL for state, S3 for media, Redis for jobs and messaging.</p>
+
+  <div class="mermaid-wrap">
+    <span class="label">Data Flow</span>
+    <pre class="mermaid">
+%%{init:{'theme':'dark','themeVariables':{'primaryColor':'#7c3aed','primaryTextColor':'#f1f5f9','primaryBorderColor':'#3a3a6a','lineColor':'#64748b','secondaryColor':'#111120','tertiaryColor':'#16162a','background':'#111120','mainBkg':'#111120','nodeBorder':'#3a3a6a'}}}%%
+erDiagram
+  PROJECT ||--o{ STAGE_OUTPUT : "has versions"
+  PROJECT {
+    uuid id PK
+    string status
+    json user_preferences
+    json music_profile
+    json style_profile
+    float total_cost
+    timestamp created_at
+  }
+  STAGE_OUTPUT {
+    uuid id PK
+    uuid project_id FK
+    string stage_name
+    int version
+    string status
+    json output_data
+    json quality_score
+    string s3_path
+    timestamp created_at
+  }
+  PROJECT ||--o{ GENERATION_JOB : "queues"
+  GENERATION_JOB {
+    uuid id PK
+    uuid project_id FK
+    string stage
+    string model_provider
+    string status
+    json params
+    json result
+    float cost
+    int attempts
+  }
+  PROJECT ||--o{ CHARACTER_SHEET : "defines"
+  CHARACTER_SHEET {
+    uuid id PK
+    uuid project_id FK
+    string name
+    json features
+    string anchor_s3_path
+    json prompt_fragments
+  }
+  PROJECT ||--|| STORYBOARD : "produces"
+  STORYBOARD ||--o{ SCENE : "contains"
+  STORYBOARD {
+    uuid id PK
+    uuid project_id FK
+    int version
+    json style_guide
+  }
+  SCENE {
+    uuid id PK
+    uuid storyboard_id FK
+    int scene_order
+    float start_time
+    float end_time
+    string description
+    string camera_angle
+    string transition_type
+    string assigned_model
+    string image_s3_path
+    string video_s3_path
+  }
+    </pre>
+  </div>
+
+  <div class="grid g3">
+    <div class="card card-g"><div class="ch"><div class="ci" style="background:rgba(16,185,129,.12)">🐘</div><h4>PostgreSQL</h4></div><div class="cdesc">Project state, versioned stage outputs, generation metadata, quality scores, cost tracking, character sheets, storyboards.</div></div>
+    <div class="card card-b"><div class="ch"><div class="ci" style="background:rgba(59,130,246,.12)">☁️</div><h4>S3 / Cloudflare R2</h4></div><div class="cdesc">Audio, references, character anchors, generated images, video clips, finals — organized by project/stage/version.</div></div>
+    <div class="card card-r"><div class="ch"><div class="ci" style="background:rgba(239,68,68,.12)">⚡</div><h4>Redis</h4></div><div class="cdesc">BullMQ job queue, progress pub/sub, rate limits per AI provider, cost counters, cache.</div></div>
+  </div>
+</div>
+
+<!-- ====== MODELS ====== -->
+<div id="models" class="sec">
+  <h2 class="sh">Model Providers</h2>
+  <p class="ss">All providers behind adapter interfaces. Model-selector picks optimal per scene based on capability, cost, and availability.</p>
+
+  <div class="mermaid-wrap">
+    <span class="label">Routing Architecture</span>
+    <pre class="mermaid">
+%%{init:{'theme':'dark','themeVariables':{'primaryColor':'#7c3aed','primaryTextColor':'#f1f5f9','primaryBorderColor':'#3a3a6a','lineColor':'#64748b','secondaryColor':'#111120','tertiaryColor':'#16162a','background':'#111120','mainBkg':'#111120','nodeBorder':'#3a3a6a'}}}%%
+flowchart LR
+  REQ["Scene Request<br/><small>type · resolution · style</small>"] --> ROUTER
+
+  subgraph ROUTER["🤖 MediaRouter"]
+    R1[Capability Match]
+    R2[Cost Optimize]
+    R3[Rate Limit Check]
+    R4[Fallback Logic]
+    R1 --> R2 --> R3 --> R4
+  end
+
+  subgraph VIDEO["🎥 Video Adapters"]
+    V1[Kling 2.6]
+    V2[Runway Gen-4]
+    V3[Veo 3.1]
+    V4[Minimax]
+    V5[Pika 2.5]
+  end
+
+  subgraph IMAGE["🖼️ Image Adapters"]
+    I1[Flux 1.1 Pro]
+    I2[DALL-E 3]
+    I3[SD 3.5]
+  end
+
+  subgraph LLM["🧠 LLM via LiteLLM"]
+    L1[Claude]
+    L2[GPT-4o]
+    L3[Gemini]
+  end
+
+  subgraph SYNC["👄 Lipsync"]
+    S1[MuseTalk]
+    S2[Sync.so]
+  end
+
+  ROUTER --> VIDEO
+  ROUTER --> IMAGE
+  ROUTER --> LLM
+  ROUTER --> SYNC
+    </pre>
+  </div>
+
+  <p class="pcat">Video Generation</p>
+  <div class="provs"><span class="prov">Kling 2.6 — audio-visual sync</span><span class="prov">Runway Gen-4 — character consistency</span><span class="prov">Veo 3.1 — physics fidelity</span><span class="prov">Minimax — motion quality</span><span class="prov">Pika 2.5 — stylized</span><span class="prov">Luma Ray 3 — fast iteration</span></div>
+  <p class="pcat">Image Generation</p>
+  <div class="provs"><span class="prov">Flux 1.1 Pro (fal.ai)</span><span class="prov">DALL-E 3</span><span class="prov">Stable Diffusion 3.5</span><span class="prov">Ideogram 2.0</span></div>
+  <p class="pcat">LLM Intelligence</p>
+  <div class="provs"><span class="prov">Claude — creative, quality assessment</span><span class="prov">GPT-4o — prompt optimization, vision</span><span class="prov">Gemini 2.0 — multimodal audio</span></div>
+  <p class="pcat">Lipsync / Music</p>
+  <div class="provs"><span class="prov">MuseTalk v1.5</span><span class="prov">Sync.so</span><span class="prov">librosa</span><span class="prov">essentia</span></div>
+</div>
+
+<!-- ====== STACK ====== -->
+<div id="stack" class="sec">
+  <h2 class="sh">Tech Stack</h2>
+
+  <table class="tbl">
+    <thead><tr><th>Layer</th><th>Technology</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td>Orchestration</td><td>Node.js / TypeScript</td><td>Custom cyclic state machine + BullMQ</td></tr>
+      <tr><td>MCP Transport</td><td>Streamable HTTP</td><td>Production; stdio for local dev</td></tr>
+      <tr><td>ML Services</td><td>Python microservices</td><td>librosa, essentia, MuseTalk</td></tr>
+      <tr><td>LLM Gateway</td><td>LiteLLM proxy</td><td>Claude / GPT-4o / Gemini routing</td></tr>
+      <tr><td>Media APIs</td><td>Custom adapter layer</td><td>MediaGenerationProvider interface</td></tr>
+      <tr><td>Job Queue</td><td>BullMQ + Redis</td><td>FlowProducer DAG + revision re-queue</td></tr>
+      <tr><td>Database</td><td>PostgreSQL</td><td>Versioned stage outputs, project state</td></tr>
+      <tr><td>Object Storage</td><td>S3 / Cloudflare R2</td><td>All media, version-organized</td></tr>
+      <tr><td>Real-time</td><td>SSE</td><td>Progress, quality events, revisions</td></tr>
+      <tr><td>Video Processing</td><td>FFmpeg + editly</td><td>Assembly, transitions, color grading</td></tr>
+      <tr><td>Frontend</td><td>React / Next.js</td><td>Pipeline dashboard + revision UI</td></tr>
+      <tr><td>Containers</td><td>Docker</td><td>Each MCP server isolated</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+
+<div class="footer">
+  Music Video Agent — System Architecture v3 — Brainstorm Report 2026-02-25
+</div>
+
+<script>
+// Store original mermaid sources before rendering
+const mermaidSources = new Map();
+document.querySelectorAll('pre.mermaid').forEach((el, i) => {
+  el.setAttribute('data-mermaid-id', 'mm-' + i);
+  mermaidSources.set('mm-' + i, el.textContent.trim());
+});
+
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'dark',
+  securityLevel: 'loose',
+  flowchart: { htmlLabels: true, curve: 'basis', padding: 12 },
+  themeVariables: {
+    primaryColor: '#7c3aed', primaryTextColor: '#f1f5f9', primaryBorderColor: '#3a3a6a',
+    lineColor: '#64748b', secondaryColor: '#111120', tertiaryColor: '#16162a',
+    background: '#111120', mainBkg: '#111120', nodeBorder: '#3a3a6a',
+    clusterBkg: '#0c0c18', clusterBorder: '#2c2c52', titleColor: '#f1f5f9',
+    edgeLabelBackground: '#111120', nodeTextColor: '#f1f5f9',
+    fontFamily: 'Space Grotesk, sans-serif'
+  }
+});
+
+// Track which sections have been rendered
+const rendered = new Set();
+
+function renderMermaidIn(sectionId) {
+  if (rendered.has(sectionId)) return;
+  const sec = document.getElementById(sectionId);
+  if (!sec) return;
+  const els = sec.querySelectorAll('pre.mermaid');
+  if (els.length === 0) { rendered.add(sectionId); return; }
+
+  // Restore original source for unrendered elements
+  els.forEach(el => {
+    const mid = el.getAttribute('data-mermaid-id');
+    if (mid && mermaidSources.has(mid) && el.querySelector('svg')) {
+      // Already has SVG from a previous attempt — skip
+    } else if (mid && mermaidSources.has(mid)) {
+      el.textContent = mermaidSources.get(mid);
+    }
+  });
+
+  mermaid.run({ nodes: els }).then(() => {
+    rendered.add(sectionId);
+  }).catch(() => {
+    // Retry once after a short delay
+    setTimeout(() => mermaid.run({ nodes: els }).then(() => rendered.add(sectionId)), 200);
+  });
+}
+
+// Render the initially visible section
+renderMermaidIn('big');
+
+function go(id, btn) {
+  document.querySelectorAll('.sec').forEach(s => s.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  btn.classList.add('on');
+  // Render mermaid diagrams in this section if not yet done
+  setTimeout(() => renderMermaidIn(id), 30);
+}
+</script>
+</body>
+</html>
