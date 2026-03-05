@@ -24,7 +24,7 @@ const statusBadge: Record<ProjectStatus, { label: string; color: string }> = {
 
 export default function StudioPage() {
   return (
-    <div className="min-h-screen flex flex-col p-6" style={{ background: '#0D0D0D' }}>
+    <div className="min-h-screen flex flex-col p-6 bg-background">
       {/* Header */}
       <div className="mb-8 flex items-baseline gap-4">
         <h1
@@ -52,11 +52,7 @@ export default function StudioPage() {
               className="group block"
             >
               <div
-                className="rounded border transition-all duration-150 overflow-hidden hover:border-violet-600"
-                style={{
-                  background: '#1E1E2E',
-                  borderColor: 'rgba(255,255,255,0.1)',
-                }}
+                className="rounded border transition-all duration-150 overflow-hidden hover:border-violet-600 bg-card border-border"
               >
                 {/* Thumbnail */}
                 <div

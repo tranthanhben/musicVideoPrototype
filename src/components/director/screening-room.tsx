@@ -86,14 +86,14 @@ export function ScreeningRoom({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex flex-col bg-black"
+        className="fixed inset-0 z-50 flex flex-col bg-background"
         style={{ fontFamily: 'var(--font-source-sans-3, sans-serif)' }}
       >
         {/* Top letterbox bar */}
-        <div className="h-[10vh] bg-black flex items-center justify-between px-6 shrink-0">
+        <div className="h-[10vh] bg-background flex items-center justify-between px-6 shrink-0">
           <button
             onClick={onClose}
-            className="flex items-center gap-2 text-stone-400 hover:text-white transition-colors text-sm"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
           >
             <X className="w-4 h-4" />
             Exit Screening
@@ -110,7 +110,7 @@ export function ScreeningRoom({
           </div>
 
           <span
-            className="text-stone-300 text-sm tabular-nums"
+            className="text-foreground/70 text-sm tabular-nums"
             style={{ fontFamily: 'var(--font-jetbrains-mono, monospace)' }}
           >
             {formatTimecode(elapsed)}
@@ -121,16 +121,16 @@ export function ScreeningRoom({
         <div className="flex-1 flex min-h-0">
           {/* Collapsible sidebar */}
           <div
-            className="bg-stone-950 border-r border-stone-800 flex flex-col shrink-0 transition-all duration-300 overflow-hidden"
+            className="bg-card border-r border-border flex flex-col shrink-0 transition-all duration-300 overflow-hidden"
             style={{ width: sidebarOpen ? 240 : 0 }}
           >
-            <div className="p-3 border-b border-stone-800 flex items-center justify-between">
-              <span className="text-xs text-stone-400 uppercase tracking-wider font-semibold">
+            <div className="p-3 border-b border-border flex items-center justify-between">
+              <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
                 Scenes
               </span>
               <button
                 onClick={() => setSidebarOpen(false)}
-                className="text-stone-500 hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -144,8 +144,8 @@ export function ScreeningRoom({
                   <button
                     key={s.id}
                     onClick={() => onSceneChange(i)}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors border-b border-stone-800/50 ${
-                      isActive ? 'bg-stone-800' : 'hover:bg-stone-900'
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors border-b border-border/50 ${
+                      isActive ? 'bg-muted' : 'hover:bg-muted/50'
                     }`}
                   >
                     <div className="relative shrink-0 w-14 h-9 rounded overflow-hidden">
@@ -162,10 +162,10 @@ export function ScreeningRoom({
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className={`text-xs font-semibold truncate ${isActive ? 'text-amber-400' : 'text-stone-300'}`}>
+                      <p className={`text-xs font-semibold truncate ${isActive ? 'text-amber-400' : 'text-foreground/70'}`}>
                         Scene {i + 1}
                       </p>
-                      <p className="text-xs text-stone-500 truncate">{s.cameraAngle}</p>
+                      <p className="text-xs text-muted-foreground truncate">{s.cameraAngle}</p>
                     </div>
                   </button>
                 )
@@ -174,11 +174,11 @@ export function ScreeningRoom({
           </div>
 
           {/* Video area */}
-          <div className="flex-1 flex flex-col items-center justify-center bg-black relative">
+          <div className="flex-1 flex flex-col items-center justify-center bg-background relative">
             {!sidebarOpen && (
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-white bg-stone-900/80 rounded p-1"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground bg-card/80 rounded p-1"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -198,12 +198,12 @@ export function ScreeningRoom({
               <button
                 onClick={() => onSceneChange(Math.max(0, activeSceneIndex - 1))}
                 disabled={activeSceneIndex === 0}
-                className="p-2 rounded-full bg-stone-800 hover:bg-stone-700 disabled:opacity-30 text-white transition-colors"
+                className="p-2 rounded-full bg-muted hover:bg-secondary disabled:opacity-30 text-foreground transition-colors"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
 
-              <span className="text-stone-400 text-sm">
+              <span className="text-muted-foreground text-sm">
                 Scene {activeSceneIndex + 1} / {project.scenes.length}
               </span>
 
@@ -212,7 +212,7 @@ export function ScreeningRoom({
                   onSceneChange(Math.min(project.scenes.length - 1, activeSceneIndex + 1))
                 }
                 disabled={activeSceneIndex === project.scenes.length - 1}
-                className="p-2 rounded-full bg-stone-800 hover:bg-stone-700 disabled:opacity-30 text-white transition-colors"
+                className="p-2 rounded-full bg-muted hover:bg-secondary disabled:opacity-30 text-foreground transition-colors"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
@@ -221,13 +221,13 @@ export function ScreeningRoom({
         </div>
 
         {/* Bottom letterbox bar */}
-        <div className="h-[10vh] bg-black flex items-center justify-center gap-6 shrink-0 border-t border-stone-900">
+        <div className="h-[10vh] bg-background flex items-center justify-center gap-6 shrink-0 border-t border-border">
           <button
             onClick={handleApprove}
             className={`flex items-center gap-2 px-5 py-2 rounded-lg font-semibold text-sm transition-colors ${
               approvedScenes.has(activeSceneIndex)
                 ? 'bg-emerald-600 text-white'
-                : 'bg-stone-800 hover:bg-emerald-700 text-stone-200'
+                : 'bg-muted hover:bg-emerald-700 text-foreground/80'
             }`}
           >
             <Check className="w-4 h-4" />
@@ -239,14 +239,14 @@ export function ScreeningRoom({
             className={`flex items-center gap-2 px-5 py-2 rounded-lg font-semibold text-sm transition-colors ${
               reshootScenes.has(activeSceneIndex)
                 ? 'bg-red-600 text-white'
-                : 'bg-stone-800 hover:bg-red-700 text-stone-200'
+                : 'bg-muted hover:bg-red-700 text-foreground/80'
             }`}
           >
             <RotateCcw className="w-4 h-4" />
             Reshoot
           </button>
 
-          <div className="flex items-center gap-2 text-xs text-stone-500">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span className="text-emerald-500">{approvedScenes.size} approved</span>
             <span>·</span>
             <span className="text-red-500">{reshootScenes.size} reshoot</span>

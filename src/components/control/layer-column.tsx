@@ -69,16 +69,16 @@ export function LayerColumn({ layerId, layer }: Props) {
     })
   }
 
-  const borderColor = isComplete ? '#10B981' : isActive ? colors.border : 'rgba(255,255,255,0.08)'
+  const borderColor = isComplete ? '#10B981' : isActive ? colors.border : 'var(--border)'
   const glowStyle = isActive ? { boxShadow: `0 0 20px ${colors.glow}` } : {}
 
   return (
     <div
-      className="flex flex-col border-r border-white/5 last:border-r-0 min-h-0"
+      className="flex flex-col border-r border-border/30 last:border-r-0 min-h-0"
       style={{ borderTopWidth: 2, borderTopStyle: 'solid', borderTopColor: borderColor, ...glowStyle, transition: 'border-color 0.4s, box-shadow 0.4s' }}
     >
       {/* Header */}
-      <div className="px-3 pt-3 pb-2 border-b border-white/5">
+      <div className="px-3 pt-3 pb-2 border-b border-border/30">
         <div className="flex items-center gap-1.5 mb-1.5">
           <span className={`text-[10px] px-1.5 py-0.5 rounded border font-mono font-bold ${colors.badge}`}>
             {shortName}
@@ -93,18 +93,18 @@ export function LayerColumn({ layerId, layer }: Props) {
             />
           )}
           <span
-            className={`text-[10px] font-medium ml-auto ${isComplete ? 'text-emerald-400' : isActive ? 'text-white/70' : 'text-white/30'}`}
+            className={`text-[10px] font-medium ml-auto ${isComplete ? 'text-emerald-400' : isActive ? 'text-foreground/70' : 'text-foreground/30'}`}
           >
             {layer.status}
           </span>
         </div>
 
-        <p className="text-[11px] text-white/60 leading-snug truncate" title={def.name}>
+        <p className="text-[11px] text-foreground/60 leading-snug truncate" title={def.name}>
           {def.name}
         </p>
 
         {/* Progress bar */}
-        <div className="mt-2 h-1 rounded-full bg-white/5 overflow-hidden">
+        <div className="mt-2 h-1 rounded-full bg-muted overflow-hidden">
           <motion.div
             className="h-full rounded-full"
             style={{ backgroundColor: isComplete ? '#10B981' : colors.border }}
@@ -112,11 +112,11 @@ export function LayerColumn({ layerId, layer }: Props) {
             transition={{ duration: 0.3 }}
           />
         </div>
-        <span className="text-[9px] text-white/30 font-mono mt-0.5 block">{layer.progress}%</span>
+        <span className="text-[9px] text-foreground/30 font-mono mt-0.5 block">{layer.progress}%</span>
       </div>
 
       {/* Components list */}
-      <div className="px-3 py-2 border-b border-white/5 space-y-1">
+      <div className="px-3 py-2 border-b border-border/30 space-y-1">
         {allComponents.map((comp) => {
           const isComponentActive = activeAgentNames.has(comp.name)
           return (
@@ -127,7 +127,7 @@ export function LayerColumn({ layerId, layer }: Props) {
               <span className={`text-[8px] px-1 py-0.5 rounded border uppercase tracking-wide ${TYPE_BADGE[comp.type] ?? ''}`}>
                 {comp.type}
               </span>
-              <span className="text-[10px] text-white/70 truncate">{comp.name}</span>
+              <span className="text-[10px] text-foreground/70 truncate">{comp.name}</span>
             </div>
           )
         })}
@@ -148,34 +148,34 @@ export function LayerColumn({ layerId, layer }: Props) {
           ))}
         </AnimatePresence>
         {layer.activities.length === 0 && (
-          <p className="text-[10px] text-white/20 font-mono mt-2">Waiting...</p>
+          <p className="text-[10px] text-foreground/20 font-mono mt-2">Waiting...</p>
         )}
       </div>
 
       {/* Artifacts thumbnails */}
       {layer.artifacts.length > 0 && (
-        <div className="px-3 py-2 border-t border-white/5 flex gap-1.5 overflow-x-auto">
+        <div className="px-3 py-2 border-t border-border/30 flex gap-1.5 overflow-x-auto">
           {layer.artifacts.slice(0, 4).map((art) => (
             <div
               key={art.id}
-              className="shrink-0 w-10 h-10 rounded overflow-hidden border border-white/10"
+              className="shrink-0 w-10 h-10 rounded overflow-hidden border border-border"
               title={art.name}
             >
               <img src={art.thumbnailUrl} alt={art.name} className="w-full h-full object-cover" />
             </div>
           ))}
           {layer.artifacts.length > 4 && (
-            <div className="shrink-0 w-10 h-10 rounded border border-white/10 flex items-center justify-center bg-white/5">
-              <span className="text-[9px] text-white/40">+{layer.artifacts.length - 4}</span>
+            <div className="shrink-0 w-10 h-10 rounded border border-border flex items-center justify-center bg-muted/40">
+              <span className="text-[9px] text-foreground/40">+{layer.artifacts.length - 4}</span>
             </div>
           )}
         </div>
       )}
 
       {/* Mini chat input */}
-      <div className="px-2 py-2 border-t border-white/5 flex gap-1.5">
+      <div className="px-2 py-2 border-t border-border/30 flex gap-1.5">
         <input
-          className="flex-1 bg-white/5 rounded text-[10px] px-2 py-1.5 text-white/70 placeholder-white/20 border border-white/10 focus:outline-none focus:border-white/20 min-w-0"
+          className="flex-1 bg-muted/40 rounded text-[10px] px-2 py-1.5 text-foreground/70 placeholder:text-foreground/20 border border-border focus:outline-none focus:border-border/60 min-w-0"
           placeholder={`Message ${shortName}...`}
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -184,7 +184,7 @@ export function LayerColumn({ layerId, layer }: Props) {
         <button
           onClick={handleSend}
           disabled={!input.trim()}
-          className="shrink-0 w-7 h-7 flex items-center justify-center rounded text-white/30 hover:text-white/70 disabled:opacity-30 transition-colors"
+          className="shrink-0 w-7 h-7 flex items-center justify-center rounded text-foreground/30 hover:text-foreground/70 disabled:opacity-30 transition-colors"
         >
           <Send className="w-3 h-3" />
         </button>

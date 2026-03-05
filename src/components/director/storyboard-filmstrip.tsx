@@ -21,7 +21,7 @@ function Perforation() {
       {Array.from({ length: 8 }).map((_, i) => (
         <div
           key={i}
-          className="rounded-sm bg-stone-700"
+          className="rounded-sm bg-border"
           style={{ width: 12, height: 22 }}
         />
       ))}
@@ -58,7 +58,7 @@ export function StoryboardFilmstrip({
           <div key={s.id} className="shrink-0" style={{ width: 280 }}>
             <div className="flex justify-around">
               {Array.from({ length: 7 }).map((_, i) => (
-                <div key={i} className="rounded-sm bg-stone-700" style={{ width: 22, height: 12 }} />
+                <div key={i} className="rounded-sm bg-border" style={{ width: 22, height: 12 }} />
               ))}
             </div>
           </div>
@@ -103,7 +103,7 @@ export function StoryboardFilmstrip({
           <div key={s.id} className="shrink-0" style={{ width: 280 }}>
             <div className="flex justify-around">
               {Array.from({ length: 7 }).map((_, i) => (
-                <div key={i} className="rounded-sm bg-stone-700" style={{ width: 22, height: 12 }} />
+                <div key={i} className="rounded-sm bg-border" style={{ width: 22, height: 12 }} />
               ))}
             </div>
           </div>

@@ -26,19 +26,19 @@ function ProjectClapperCard({ project, onClick }: { project: MockProject; onClic
   return (
     <button
       onClick={onClick}
-      className="group text-left w-full rounded-lg overflow-hidden border border-stone-700 hover:border-amber-600/60 bg-stone-800 transition-all duration-300 hover:shadow-[0_0_24px_rgba(217,119,6,0.15)]"
+      className="group text-left w-full rounded-lg overflow-hidden border border-border hover:border-amber-600/60 bg-card transition-all duration-300 hover:shadow-[0_0_24px_rgba(217,119,6,0.15)]"
     >
       {/* Clapperboard stripe */}
       <div
         className="h-6 w-full"
         style={{
           background:
-            'repeating-linear-gradient(135deg, #000 0px, #000 10px, #292524 10px, #292524 20px)',
+            'repeating-linear-gradient(135deg, #000 0px, #000 10px, hsl(var(--card)) 10px, hsl(var(--card)) 20px)',
         }}
       />
 
       {/* 2x2 thumbnail grid */}
-      <div className="grid grid-cols-2 grid-rows-2 h-40 border-b border-stone-700">
+      <div className="grid grid-cols-2 grid-rows-2 h-40 border-b border-border">
         {firstFour.map((scene, i) => (
           <div key={scene.id} className="relative overflow-hidden">
             <img
@@ -51,8 +51,8 @@ function ProjectClapperCard({ project, onClick }: { project: MockProject; onClic
         ))}
         {firstFour.length < 4 &&
           Array.from({ length: 4 - firstFour.length }).map((_, i) => (
-            <div key={`empty-${i}`} className="bg-stone-700 flex items-center justify-center">
-              <Film className="w-6 h-6 text-stone-500" />
+            <div key={`empty-${i}`} className="bg-muted flex items-center justify-center">
+              <Film className="w-6 h-6 text-muted-foreground" />
             </div>
           ))}
       </div>
@@ -61,7 +61,7 @@ function ProjectClapperCard({ project, onClick }: { project: MockProject; onClic
       <div className="p-4">
         <div className="flex items-start justify-between gap-2 mb-2">
           <h3
-            className="text-lg font-bold text-stone-50 leading-tight"
+            className="text-lg font-bold text-foreground leading-tight"
             style={{ fontFamily: 'var(--font-playfair-display, serif)' }}
           >
             {project.title}
@@ -71,9 +71,9 @@ function ProjectClapperCard({ project, onClick }: { project: MockProject; onClic
           </span>
         </div>
 
-        <p className="text-sm text-stone-400 line-clamp-2 mb-3">{project.description}</p>
+        <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{project.description}</p>
 
-        <div className="flex items-center gap-4 text-xs text-stone-500">
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             <Layers className="w-3 h-3" />
             {project.scenes.length} scenes
@@ -111,12 +111,12 @@ export default function DirectorProductionsPage() {
             </span>
           </div>
           <h1
-            className="text-5xl font-bold text-stone-50"
+            className="text-5xl font-bold text-foreground"
             style={{ fontFamily: 'var(--font-playfair-display, serif)' }}
           >
             Productions
           </h1>
-          <p className="mt-2 text-stone-400 text-lg">
+          <p className="mt-2 text-muted-foreground text-lg">
             Select a production to open the storyboard canvas.
           </p>
         </div>
@@ -132,18 +132,18 @@ export default function DirectorProductionsPage() {
           ))}
 
           {/* New Production card */}
-          <button className="group text-left w-full rounded-lg overflow-hidden border-2 border-dashed border-stone-600 hover:border-amber-500 bg-stone-800/50 hover:bg-stone-800 transition-all duration-300 min-h-[280px] flex flex-col items-center justify-center gap-4 p-8">
-            <div className="w-14 h-14 rounded-full border-2 border-dashed border-stone-500 group-hover:border-amber-500 flex items-center justify-center transition-colors">
-              <Plus className="w-6 h-6 text-stone-400 group-hover:text-amber-400 transition-colors" />
+          <button className="group text-left w-full rounded-lg overflow-hidden border-2 border-dashed border-border hover:border-amber-500 bg-card/50 hover:bg-card transition-all duration-300 min-h-[280px] flex flex-col items-center justify-center gap-4 p-8">
+            <div className="w-14 h-14 rounded-full border-2 border-dashed border-border group-hover:border-amber-500 flex items-center justify-center transition-colors">
+              <Plus className="w-6 h-6 text-muted-foreground group-hover:text-amber-400 transition-colors" />
             </div>
             <div className="text-center">
               <p
-                className="text-lg font-bold text-stone-300 group-hover:text-stone-100 transition-colors"
+                className="text-lg font-bold text-foreground/70 group-hover:text-foreground transition-colors"
                 style={{ fontFamily: 'var(--font-playfair-display, serif)' }}
               >
                 New Production
               </p>
-              <p className="text-sm text-stone-500 mt-1">Start a new music video project</p>
+              <p className="text-sm text-muted-foreground mt-1">Start a new music video project</p>
             </div>
           </button>
         </div>

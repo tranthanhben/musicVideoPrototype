@@ -2,31 +2,36 @@
 
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Command, Search, RefreshCw, Camera, Palette, Plus, Download, Cpu } from 'lucide-react'
+import { Command, Search, RefreshCw, Camera, Palette, Plus, Download, Cpu, CheckCircle, Edit3, FolderPlus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-interface Command {
+interface CommandItem {
   id: string
   icon: React.ReactNode
   name: string
   description: string
+  action: string
 }
 
-const COMMANDS: Command[] = [
-  { id: 'regenerate', icon: <RefreshCw className="h-4 w-4" />, name: 'Regenerate scene', description: 'Re-run generation for selected scene' },
-  { id: 'camera', icon: <Camera className="h-4 w-4" />, name: 'Change camera angle', description: 'Update camera for selected scene' },
-  { id: 'palette', icon: <Palette className="h-4 w-4" />, name: 'Adjust color palette', description: 'Modify the creative direction colors' },
-  { id: 'add-scene', icon: <Plus className="h-4 w-4" />, name: 'Add scene', description: 'Insert a new scene after current' },
-  { id: 'export', icon: <Download className="h-4 w-4" />, name: 'Export video', description: 'Export the final assembled video' },
-  { id: 'model', icon: <Cpu className="h-4 w-4" />, name: 'Switch model', description: 'Change the AI generation model' },
+const COMMANDS: CommandItem[] = [
+  { id: 'approve', icon: <CheckCircle className="h-4 w-4" />, name: 'Approve stage', description: 'Approve current quality gate and advance', action: 'approve' },
+  { id: 'revise', icon: <Edit3 className="h-4 w-4" />, name: 'Request revision', description: 'Send current stage back for revision', action: 'revise' },
+  { id: 'regenerate', icon: <RefreshCw className="h-4 w-4" />, name: 'Regenerate scene', description: 'Re-run generation for selected scene', action: 'show_regen_options' },
+  { id: 'export', icon: <Download className="h-4 w-4" />, name: 'Export video', description: 'Export the final assembled video', action: 'download' },
+  { id: 'new-project', icon: <FolderPlus className="h-4 w-4" />, name: 'New project', description: 'Start a new video project', action: 'new_project' },
+  { id: 'camera', icon: <Camera className="h-4 w-4" />, name: 'Change camera angle', description: 'Update camera for selected scene', action: '' },
+  { id: 'palette', icon: <Palette className="h-4 w-4" />, name: 'Adjust color palette', description: 'Modify the creative direction colors', action: '' },
+  { id: 'add-scene', icon: <Plus className="h-4 w-4" />, name: 'Add scene', description: 'Insert a new scene after current', action: '' },
+  { id: 'model', icon: <Cpu className="h-4 w-4" />, name: 'Switch model', description: 'Change the AI generation model', action: '' },
 ]
 
 interface ReelCommandPaletteProps {
   open: boolean
   onClose: () => void
+  onAction?: (action: string) => void
 }
 
-export function ReelCommandPalette({ open, onClose }: ReelCommandPaletteProps) {
+export function ReelCommandPalette({ open, onClose, onAction }: ReelCommandPaletteProps) {
   const [query, setQuery] = useState('')
   const [feedback, setFeedback] = useState<string | null>(null)
 
@@ -37,8 +42,11 @@ export function ReelCommandPalette({ open, onClose }: ReelCommandPaletteProps) {
       c.description.toLowerCase().includes(query.toLowerCase())
   )
 
-  function handleSelect(cmd: Command) {
+  function handleSelect(cmd: CommandItem) {
     setFeedback(cmd.name)
+    if (cmd.action && onAction) {
+      onAction(cmd.action)
+    }
     setTimeout(() => {
       setFeedback(null)
       setQuery('')

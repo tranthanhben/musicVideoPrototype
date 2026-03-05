@@ -7,39 +7,40 @@ import { ChatInput } from '@/components/chat/chat-input'
 import { useChatStore } from '@/lib/chat/store'
 import { addUserMessage } from '@/lib/chat/simulator'
 import type { ChatSuggestion } from '@/lib/chat/types'
+import { matchIntent } from '@/lib/journey/bay-interactions'
+import type { JourneyStateId } from '@/lib/journey/orchestrator'
 
 interface BayChatPanelProps {
   open: boolean
   onClose: () => void
   onAction: (action: string) => void
   suggestions?: ChatSuggestion[]
+  journeyState: JourneyStateId
 }
 
-export function BayChatPanel({ open, onClose, onAction, suggestions }: BayChatPanelProps) {
+export function BayChatPanel({ open, onClose, onAction, suggestions, journeyState }: BayChatPanelProps) {
   const messages = useChatStore((s) => s.messages)
   const isStreaming = useChatStore((s) => s.isStreaming)
 
   function handleSend(text: string) {
     addUserMessage(text)
-    // Check if text matches a regeneration pattern
-    const regenMatch = text.match(/regenerate\s+scene\s+(\d+)/i)
-    if (regenMatch) {
-      const sceneIdx = parseInt(regenMatch[1]) - 1
-      onAction(`regenerate_scene_${sceneIdx}`)
-    } else {
-      onAction(`user_message:${text}`)
-    }
-  }
 
-  function handleSuggestionSend(text: string) {
-    addUserMessage(text)
+    // Try intent matching first
+    const matched = matchIntent(text, journeyState)
+    if (matched) {
+      onAction(matched)
+      return
+    }
+
+    // Legacy regeneration pattern (fallback for states not in PATTERNS)
     const regenMatch = text.match(/regenerate\s+scene\s+(\d+)/i)
     if (regenMatch) {
       const sceneIdx = parseInt(regenMatch[1]) - 1
       onAction(`regenerate_scene_${sceneIdx}`)
-    } else {
-      onAction(`user_message:${text}`)
+      return
     }
+
+    onAction(`user_message:${text}`)
   }
 
   return (
@@ -75,7 +76,7 @@ export function BayChatPanel({ open, onClose, onAction, suggestions }: BayChatPa
 
           {/* Input */}
           <ChatInput
-            onSend={handleSuggestionSend}
+            onSend={handleSend}
             disabled={isStreaming}
             placeholder="Ask the AI producer..."
             suggestions={suggestions}

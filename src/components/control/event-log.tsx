@@ -64,15 +64,15 @@ export function EventLog({ events }: Props) {
 
   return (
     <div
-      className="border-t border-white/10 bg-zinc-950/80 backdrop-blur-sm flex flex-col"
+      className="border-t border-border bg-card/80 backdrop-blur-sm flex flex-col"
       style={{ height: collapsed ? 40 : 200 }}
     >
       {/* Toolbar */}
-      <div className="flex items-center gap-2 px-3 h-10 shrink-0 border-b border-white/5">
-        <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mr-1">
+      <div className="flex items-center gap-2 px-3 h-10 shrink-0 border-b border-border/30">
+        <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-widest mr-1">
           Event Log
         </span>
-        <span className="text-[10px] text-zinc-600 font-mono">{events.length}</span>
+        <span className="text-[10px] text-muted-foreground/60 font-mono">{events.length}</span>
         <div className="flex items-center gap-1 ml-2">
           {FILTERS.map((f) => (
             <button
@@ -80,8 +80,8 @@ export function EventLog({ events }: Props) {
               onClick={() => setFilter(f.key)}
               className={`text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wide font-medium transition-colors ${
                 filter === f.key
-                  ? 'bg-white/10 text-white'
-                  : 'text-zinc-600 hover:text-zinc-400'
+                  ? 'bg-foreground/10 text-foreground'
+                  : 'text-muted-foreground/60 hover:text-muted-foreground'
               }`}
             >
               {f.label}
@@ -90,7 +90,7 @@ export function EventLog({ events }: Props) {
         </div>
         <button
           onClick={() => setCollapsed((c) => !c)}
-          className="ml-auto text-zinc-500 hover:text-zinc-300 transition-colors"
+          className="ml-auto text-muted-foreground hover:text-foreground transition-colors"
         >
           {collapsed ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
         </button>
@@ -104,7 +104,7 @@ export function EventLog({ events }: Props) {
           style={{ scrollbarWidth: 'thin' }}
         >
           {filtered.length === 0 ? (
-            <p className="text-[10px] text-zinc-600 font-mono self-center">No events yet...</p>
+            <p className="text-[10px] text-muted-foreground/60 font-mono self-center">No events yet...</p>
           ) : (
             filtered.map((event, i) => {
               const journey = isJourneyEvent(event)
@@ -135,15 +135,14 @@ export function EventLog({ events }: Props) {
               return (
                 <div
                   key={i}
-                  className="shrink-0 flex flex-col gap-0.5 rounded border px-2 py-1.5 max-w-[200px]"
-                  style={{ background: 'rgba(255,255,255,0.02)' }}
+                  className="shrink-0 flex flex-col gap-0.5 rounded border border-border/30 px-2 py-1.5 max-w-[200px] bg-muted/20"
                 >
                   <div className="flex items-center gap-1">
                     <span className={`text-[8px] px-1 py-0.5 rounded border font-mono uppercase tracking-wide ${colorCls}`}>
                       {event.type.replace('_', ' ')}
                     </span>
                     {event.layerId && (
-                      <span className="text-[8px] text-zinc-600 font-mono">
+                      <span className="text-[8px] text-muted-foreground/60 font-mono">
                         {event.layerId.split('_')[0]}
                       </span>
                     )}
@@ -152,7 +151,7 @@ export function EventLog({ events }: Props) {
                     )}
                   </div>
                   {event.message && (
-                    <p className="text-[9px] text-zinc-400 leading-tight line-clamp-2">
+                    <p className="text-[9px] text-muted-foreground leading-tight line-clamp-2">
                       {event.message}
                     </p>
                   )}

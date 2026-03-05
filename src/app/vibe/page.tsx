@@ -10,20 +10,20 @@ import { useState } from 'react'
 import type { ProjectStatus } from '@/lib/mock/types'
 
 const statusBadge: Record<ProjectStatus, { label: string; className: string }> = {
-  draft: { label: 'Draft', className: 'bg-slate-100 text-slate-600' },
-  rendering: { label: 'Rendering', className: 'bg-violet-100 text-violet-600' },
-  complete: { label: 'Complete', className: 'bg-green-100 text-green-600' },
+  draft: { label: 'Draft', className: 'bg-muted text-muted-foreground' },
+  rendering: { label: 'Rendering', className: 'bg-violet-500/20 text-violet-500' },
+  complete: { label: 'Complete', className: 'bg-green-500/20 text-green-500' },
 }
 
 export default function VibePage() {
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
 
   return (
-    <div className="flex min-h-screen flex-col bg-white pb-24">
+    <div className="flex min-h-screen flex-col bg-background pb-24">
       {/* Header */}
       <div className="px-4 pb-2 pt-10">
         <h1
-          className="text-3xl font-extrabold text-slate-900"
+          className="text-3xl font-extrabold text-foreground"
           style={{ fontFamily: 'var(--font-plus-jakarta-sans, sans-serif)' }}
         >
           Create Something
@@ -35,7 +35,7 @@ export default function VibePage() {
             Amazing
           </span>
         </h1>
-        <p className="mt-1 text-sm text-slate-500">Choose a vibe to get started</p>
+        <p className="mt-1 text-sm text-muted-foreground">Choose a vibe to get started</p>
       </div>
 
       {/* Preset grid */}
@@ -60,7 +60,7 @@ export default function VibePage() {
 
       {/* Recent Projects */}
       <div className="mt-4 px-4">
-        <h2 className="mb-3 text-base font-bold text-slate-900">Recent Projects</h2>
+        <h2 className="mb-3 text-base font-bold text-foreground">Recent Projects</h2>
         <div className="flex gap-3 overflow-x-auto pb-2">
           {mockProjects.map((project) => {
             const badge = statusBadge[project.status]
@@ -77,11 +77,11 @@ export default function VibePage() {
                   />
                 </div>
                 <div className="p-3">
-                  <p className="line-clamp-1 text-xs font-semibold text-slate-900">
+                  <p className="line-clamp-1 text-xs font-semibold text-foreground">
                     {project.title}
                   </p>
                   <div className="mt-1.5 flex items-center justify-between">
-                    <span className="text-[10px] text-slate-400">
+                    <span className="text-[10px] text-muted-foreground">
                       {project.scenes.length} scenes
                     </span>
                     <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${badge.className}`}>

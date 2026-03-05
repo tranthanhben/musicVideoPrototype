@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useCallback, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { usePipelineStore } from '@/lib/pipeline/store'
 import { useChatStore } from '@/lib/chat/store'
 import { PipelineSimulator } from '@/lib/pipeline/simulator'
@@ -231,29 +232,46 @@ export default function ScreeningPage() {
   }, [startPipeline])
 
   const showWelcome = messages.length === 0
+  const projectName = mockProjects[0].title
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      <ScreeningHeader />
+      <ScreeningHeader projectName={projectName} />
 
-      {showWelcome ? (
-        <ScreeningWelcome onSuggestion={handleSend} />
-      ) : (
-        <ChatContainer
-          messages={messages}
-          onAction={handleAction}
-          className="flex-1"
-        />
-      )}
-
-      {!showWelcome && (
-        <ChatInput
-          onSend={handleSend}
-          disabled={isStreaming}
-          placeholder="Ask anything about your video..."
-          suggestions={suggestions}
-        />
-      )}
+      <AnimatePresence mode="wait">
+        {showWelcome ? (
+          <motion.div
+            key="welcome"
+            className="flex-1 overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ScreeningWelcome onSuggestion={handleSend} />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="chat"
+            className="flex-1 overflow-hidden flex flex-col"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ChatContainer
+              messages={messages}
+              onAction={handleAction}
+              className="flex-1"
+            />
+            <ChatInput
+              onSend={handleSend}
+              disabled={isStreaming}
+              placeholder="Ask anything about your video..."
+              suggestions={suggestions}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

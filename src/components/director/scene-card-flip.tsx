@@ -72,11 +72,10 @@ export function SceneCardFlip({ scene, isFlipped, onFlip, onUpdate }: SceneCardF
         {/* FRONT */}
         <div
           onClick={onFlip}
-          className="absolute inset-0 rounded-lg overflow-hidden border border-stone-700 cursor-pointer group"
+          className="absolute inset-0 rounded-lg overflow-hidden border border-border cursor-pointer group bg-card"
           style={{
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
-            background: '#292524',
           }}
         >
           {/* Thumbnail */}
@@ -107,35 +106,34 @@ export function SceneCardFlip({ scene, isFlipped, onFlip, onUpdate }: SceneCardF
             <p className="text-xs text-amber-500 uppercase tracking-wide font-semibold">
               Scene {scene.index + 1}
             </p>
-            <p className="text-sm text-stone-100 leading-snug line-clamp-2">
+            <p className="text-sm text-foreground leading-snug line-clamp-2">
               {scene.prompt}
             </p>
-            <p className="text-xs text-stone-500 mt-1 flex items-center gap-1">
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
               <span>{scene.cameraAngle}</span>
               <span>·</span>
               <span>{scene.cameraMovement}</span>
             </p>
             <div className="mt-2 flex items-center gap-1.5">
-              <div className="h-1 flex-1 rounded-full bg-stone-700">
+              <div className="h-1 flex-1 rounded-full bg-muted">
                 <div
                   className="h-full rounded-full bg-amber-600"
                   style={{ width: `${Math.min(100, scene.takes.length * 33)}%` }}
                 />
               </div>
-              <span className="text-xs text-stone-400">{scene.takes.length} takes</span>
+              <span className="text-xs text-muted-foreground">{scene.takes.length} takes</span>
             </div>
-            <p className="text-xs text-stone-500 mt-auto text-center">Click to edit</p>
+            <p className="text-xs text-muted-foreground mt-auto text-center">Click to edit</p>
           </div>
         </div>
 
         {/* BACK */}
         <div
-          className="absolute inset-0 rounded-lg overflow-hidden border border-amber-600/50"
+          className="absolute inset-0 rounded-lg overflow-hidden border border-amber-600/50 bg-card"
           style={{
             backfaceVisibility: 'hidden',
             WebkitBackfaceVisibility: 'hidden',
             transform: 'rotateY(180deg)',
-            background: '#1C1917',
           }}
         >
           <div className="h-full flex flex-col p-4 gap-2 overflow-y-auto">
@@ -147,50 +145,50 @@ export function SceneCardFlip({ scene, isFlipped, onFlip, onUpdate }: SceneCardF
             </p>
 
             <label className="flex flex-col gap-1">
-              <span className="text-xs text-stone-400 uppercase tracking-wide">Subject</span>
+              <span className="text-xs text-muted-foreground uppercase tracking-wide">Subject</span>
               <textarea
                 rows={2}
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className="w-full rounded bg-stone-800 border border-stone-600 text-stone-100 text-xs px-2 py-1.5 resize-none focus:outline-none focus:border-amber-500"
+                className="w-full rounded bg-muted border border-border text-foreground text-xs px-2 py-1.5 resize-none focus:outline-none focus:border-amber-500"
               />
             </label>
 
             <label className="flex flex-col gap-1">
-              <span className="text-xs text-stone-400 uppercase tracking-wide">Action</span>
+              <span className="text-xs text-muted-foreground uppercase tracking-wide">Action</span>
               <textarea
                 rows={2}
                 value={action}
                 onChange={(e) => setAction(e.target.value)}
-                className="w-full rounded bg-stone-800 border border-stone-600 text-stone-100 text-xs px-2 py-1.5 resize-none focus:outline-none focus:border-amber-500"
+                className="w-full rounded bg-muted border border-border text-foreground text-xs px-2 py-1.5 resize-none focus:outline-none focus:border-amber-500"
               />
             </label>
 
             <label className="flex flex-col gap-1">
-              <span className="text-xs text-stone-400 uppercase tracking-wide">Environment</span>
+              <span className="text-xs text-muted-foreground uppercase tracking-wide">Environment</span>
               <textarea
                 rows={2}
                 value={environment}
                 onChange={(e) => setEnvironment(e.target.value)}
-                className="w-full rounded bg-stone-800 border border-stone-600 text-stone-100 text-xs px-2 py-1.5 resize-none focus:outline-none focus:border-amber-500"
+                className="w-full rounded bg-muted border border-border text-foreground text-xs px-2 py-1.5 resize-none focus:outline-none focus:border-amber-500"
               />
             </label>
 
             <div className="flex gap-2">
               <label className="flex flex-col gap-1 flex-1">
-                <span className="text-xs text-stone-400 uppercase tracking-wide">Angle</span>
+                <span className="text-xs text-muted-foreground uppercase tracking-wide">Angle</span>
                 <input
                   value={cameraAngle}
                   onChange={(e) => setCameraAngle(e.target.value)}
-                  className="w-full rounded bg-stone-800 border border-stone-600 text-stone-100 text-xs px-2 py-1.5 focus:outline-none focus:border-amber-500"
+                  className="w-full rounded bg-muted border border-border text-foreground text-xs px-2 py-1.5 focus:outline-none focus:border-amber-500"
                 />
               </label>
               <label className="flex flex-col gap-1 flex-1">
-                <span className="text-xs text-stone-400 uppercase tracking-wide">Movement</span>
+                <span className="text-xs text-muted-foreground uppercase tracking-wide">Movement</span>
                 <input
                   value={cameraMovement}
                   onChange={(e) => setCameraMovement(e.target.value)}
-                  className="w-full rounded bg-stone-800 border border-stone-600 text-stone-100 text-xs px-2 py-1.5 focus:outline-none focus:border-amber-500"
+                  className="w-full rounded bg-muted border border-border text-foreground text-xs px-2 py-1.5 focus:outline-none focus:border-amber-500"
                 />
               </label>
             </div>
@@ -206,7 +204,7 @@ export function SceneCardFlip({ scene, isFlipped, onFlip, onUpdate }: SceneCardF
 
             <button
               onClick={handleFlipBack}
-              className="text-xs text-stone-500 hover:text-stone-300 transition-colors text-center mt-0.5"
+              className="text-xs text-muted-foreground hover:text-foreground/80 transition-colors text-center mt-0.5"
             >
               ← Flip Back
             </button>

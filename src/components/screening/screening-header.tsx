@@ -15,7 +15,11 @@ const STATE_LABELS: Record<string, string> = {
   complete: 'Production complete',
 }
 
-export function ScreeningHeader() {
+interface ScreeningHeaderProps {
+  projectName?: string
+}
+
+export function ScreeningHeader({ projectName }: ScreeningHeaderProps) {
   const currentState = usePipelineStore((s) => s.currentState)
   const statusLabel = STATE_LABELS[currentState] ?? 'Ready'
 
@@ -32,6 +36,9 @@ export function ScreeningHeader() {
         <div className="flex items-center gap-2">
           <Clapperboard className="h-4 w-4 text-primary" />
           <span className="text-sm font-semibold">Screening Room</span>
+          {projectName && (
+            <span className="text-sm text-muted-foreground">— {projectName}</span>
+          )}
         </div>
       </div>
 

@@ -8,6 +8,7 @@ import { BayProperties } from './bay-properties'
 import { BayTimeline } from './bay-timeline'
 import { BayChatPanel } from './bay-chat-panel'
 import type { ChatSuggestion } from '@/lib/chat/types'
+import type { JourneyStateId } from '@/lib/journey/orchestrator'
 
 interface BayLayoutProps {
   activeTab: BayTab
@@ -19,6 +20,8 @@ interface BayLayoutProps {
   onSceneSelect: (id: string) => void
   onAction: (action: string) => void
   suggestions?: ChatSuggestion[]
+  selectedStoryline: number | null
+  journeyState: JourneyStateId
 }
 
 export function BayLayout({
@@ -31,6 +34,8 @@ export function BayLayout({
   onSceneSelect,
   onAction,
   suggestions,
+  selectedStoryline,
+  journeyState,
 }: BayLayoutProps) {
   return (
     <div className="flex flex-col h-full">
@@ -49,6 +54,7 @@ export function BayLayout({
         <AssetBrowser
           selectedSceneId={selectedSceneId}
           onSceneSelect={onSceneSelect}
+          onAction={onAction}
         />
 
         {/* Preview monitor */}
@@ -56,6 +62,8 @@ export function BayLayout({
           activeTab={activeTab}
           selectedSceneId={selectedSceneId}
           onAiAssist={onChatToggle}
+          onAction={onAction}
+          selectedStoryline={selectedStoryline}
         />
 
         {/* Properties panel — hidden when chat open */}
@@ -63,6 +71,7 @@ export function BayLayout({
           activeTab={activeTab}
           selectedSceneId={selectedSceneId}
           className={cn(chatOpen && 'invisible pointer-events-none')}
+          onAction={onAction}
         />
 
         {/* Chat panel — overlays properties */}
@@ -71,6 +80,7 @@ export function BayLayout({
           onClose={onChatToggle}
           onAction={onAction}
           suggestions={suggestions}
+          journeyState={journeyState}
         />
       </div>
 

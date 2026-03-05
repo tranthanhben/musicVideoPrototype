@@ -6,6 +6,8 @@ import { StoryboardCard } from './storyboard-card'
 import { VideoPreviewCard } from './video-preview-card'
 import { QualityGateCard } from './quality-gate-card'
 import { ProgressCard } from './progress-card'
+import { AudioAnalysisCard } from './audio-analysis-card'
+import { ImageGalleryCard } from './image-gallery-card'
 
 interface ArtifactCardRendererProps {
   artifact: ChatArtifact
@@ -25,9 +27,9 @@ export function ArtifactCardRenderer({ artifact, onAction }: ArtifactCardRendere
     case 'progress_update':
       return <ProgressCard artifact={artifact} />
     case 'audio_analysis':
-      return <MoodBoardCard artifact={artifact} />
+      return <AudioAnalysisCard artifact={artifact} />
     case 'image_gallery':
-      return <MoodBoardCard artifact={artifact} />
+      return <ImageGalleryCard artifact={artifact} />
     default:
       return null
   }

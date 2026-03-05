@@ -22,8 +22,8 @@ export function EditorTopBar({ project, totalDuration }: EditorTopBarProps) {
       className="flex items-center gap-3 px-3 border-b flex-shrink-0"
       style={{
         height: 48,
-        borderColor: 'rgba(255,255,255,0.08)',
-        background: '#1A1A2E',
+        borderColor: 'hsl(var(--border))',
+        background: 'hsl(var(--card))',
         fontFamily: MONO,
       }}
     >
@@ -33,8 +33,8 @@ export function EditorTopBar({ project, totalDuration }: EditorTopBarProps) {
       >
         ← STUDIO
       </Link>
-      <div className="w-px h-4 bg-white/10" />
-      <span className="text-[12px] text-[#E5E7EB]">{project.title}</span>
+      <div className="w-px h-4 bg-border" />
+      <span className="text-[12px] text-foreground">{project.title}</span>
       <span
         className="text-[10px] px-1.5 py-0.5 rounded"
         style={{ background: 'rgba(124,58,237,0.2)', color: '#7C3AED' }}

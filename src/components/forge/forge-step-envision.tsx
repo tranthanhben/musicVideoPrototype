@@ -62,7 +62,7 @@ export function ForgeStepEnvision() {
               initial={{ opacity: 0, scale: 0 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.25, delay: 0.65 + idx * 0.05 }}
-              className="h-7 w-7 rounded-full border-2 border-white/20 shadow-md"
+              className="h-7 w-7 rounded-full border-2 border-foreground/20 shadow-md"
               style={{ backgroundColor: color }}
               title={color}
             />

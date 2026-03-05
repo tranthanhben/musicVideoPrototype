@@ -80,9 +80,9 @@ export function SceneCarousel({ scenes, activeIndex, onIndexChange }: SceneCarou
             </button>
 
             {/* Scene info */}
-            <div className="bg-white px-4 py-2">
-              <p className="text-sm font-medium text-slate-900">{scene.subject}</p>
-              <p className="text-xs text-slate-500">{scene.action}</p>
+            <div className="bg-background px-4 py-2">
+              <p className="text-sm font-medium text-foreground">{scene.subject}</p>
+              <p className="text-xs text-muted-foreground">{scene.action}</p>
             </div>
           </div>
         ))}

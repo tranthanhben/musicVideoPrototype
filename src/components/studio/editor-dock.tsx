@@ -42,8 +42,8 @@ export function EditorDock({
       className="flex-shrink-0 border-t flex flex-col"
       style={{
         height: 140,
-        borderColor: 'rgba(255,255,255,0.08)',
-        background: '#1A1A2E',
+        borderColor: 'hsl(var(--border))',
+        background: 'hsl(var(--card))',
       }}
     >
       {/* Waveform */}
@@ -59,7 +59,7 @@ export function EditorDock({
       {/* Transport */}
       <div
         className="flex items-center gap-3 px-3 border-y flex-shrink-0"
-        style={{ height: 32, borderColor: 'rgba(255,255,255,0.06)', fontFamily: MONO }}
+        style={{ height: 32, borderColor: 'hsl(var(--border))', fontFamily: MONO }}
       >
         <button
           onClick={onTogglePlay}

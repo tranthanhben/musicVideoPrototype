@@ -73,7 +73,7 @@ function WorkspaceInner() {
       <div className="flex items-center justify-between">
         <button
           onClick={() => router.push('/neon')}
-          className="text-[#888899] text-sm hover:text-[#FF006E] transition-colors"
+          className="text-muted-foreground text-sm hover:text-[#FF006E] transition-colors"
         >
           ← Launchpad
         </button>
@@ -138,7 +138,7 @@ function WorkspaceInner() {
             <div className="p-4 space-y-5">
               {/* Color grading */}
               <div>
-                <p className="text-[10px] uppercase tracking-widest text-[#888899] mb-2">Color Grading</p>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Color Grading</p>
                 <div className="grid grid-cols-3 gap-1.5">
                   {COLOR_PRESETS.map((preset) => (
                     <button
@@ -159,7 +159,7 @@ function WorkspaceInner() {
 
               {/* Motion intensity */}
               <div>
-                <p className="text-[10px] uppercase tracking-widest text-[#888899] mb-2">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
                   Motion Intensity: {motionIntensity}%
                 </p>
                 <div className="relative h-2 rounded-full bg-[rgba(255,255,255,0.08)]">
@@ -184,7 +184,7 @@ function WorkspaceInner() {
 
               {/* Transition */}
               <div>
-                <p className="text-[10px] uppercase tracking-widest text-[#888899] mb-2">Transition</p>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">Transition</p>
                 <div className="flex gap-1.5">
                   {TRANSITIONS.map((t) => (
                     <button
@@ -210,13 +210,13 @@ function WorkspaceInner() {
             <div className="p-4 space-y-3">
               {(['subject', 'action', 'environment', 'cameraAngle'] as const).map((field) => (
                 <div key={field}>
-                  <label className="block text-[10px] uppercase tracking-widest text-[#888899] mb-1">
+                  <label className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-1">
                     {field === 'cameraAngle' ? 'Camera Angle' : field}
                   </label>
                   <input
                     value={editFields[field]}
                     onChange={(e) => setEditFields((prev) => ({ ...prev, [field]: e.target.value }))}
-                    className="w-full bg-[rgba(255,255,255,0.04)] rounded px-3 py-2 text-sm text-[#EEEEF0] outline-none transition-all"
+                    className="w-full bg-[rgba(255,255,255,0.04)] rounded px-3 py-2 text-sm text-foreground outline-none transition-all"
                     style={{
                       border: '1px solid rgba(254,228,64,0.15)',
                     }}
@@ -269,8 +269,8 @@ function SceneThumb({ scene, selected, onClick }: { scene: MockScene; selected: 
     >
       <img src={scene.thumbnailUrl} alt={`Scene ${scene.index + 1}`} className="w-full aspect-video object-cover" />
       <div className="absolute bottom-0 left-0 right-0 px-1.5 py-1 bg-gradient-to-t from-black/80 to-transparent text-left">
-        <span className="text-[9px] text-[#888899] block">Scene {scene.index + 1}</span>
-        <span className="text-[9px] text-[#EEEEF0] line-clamp-1">{scene.subject}</span>
+        <span className="text-[9px] text-muted-foreground block">Scene {scene.index + 1}</span>
+        <span className="text-[9px] text-foreground line-clamp-1">{scene.subject}</span>
       </div>
     </button>
   )
@@ -278,7 +278,7 @@ function SceneThumb({ scene, selected, onClick }: { scene: MockScene; selected: 
 
 export default function WorkspacePage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-[#888899]">Loading...</div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-muted-foreground">Loading...</div>}>
       <WorkspaceInner />
     </Suspense>
   )

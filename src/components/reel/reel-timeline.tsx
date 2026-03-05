@@ -16,7 +16,7 @@ export function ReelTimeline({ scenes, selectedSceneId, onSceneSelect }: ReelTim
   return (
     <div className="flex flex-col shrink-0 border-b border-border bg-background" style={{ height: '50vh' }}>
       {/* Audio waveform bar */}
-      <div className="h-8 mx-3 mt-2 rounded-md overflow-hidden shrink-0">
+      <div className="h-8 mx-3 mt-2 rounded-md overflow-hidden shrink-0 bg-muted">
         <svg viewBox="0 0 800 32" className="w-full h-full" preserveAspectRatio="none">
           <defs>
             <linearGradient id="reelAudioGrad" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -26,7 +26,6 @@ export function ReelTimeline({ scenes, selectedSceneId, onSceneSelect }: ReelTim
               <stop offset="100%" stopColor="#7C3AED" stopOpacity="0.5" />
             </linearGradient>
           </defs>
-          <rect width="800" height="32" fill="#18181b" />
           {Array.from({ length: 160 }).map((_, i) => {
             const h = 4 + Math.abs(Math.sin(i * 0.35) * 10 + Math.sin(i * 0.8) * 6)
             return (

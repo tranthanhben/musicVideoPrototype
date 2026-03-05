@@ -18,22 +18,27 @@ const APPROVE_ACTIONS: ChatActionButton[] = [
 
 export const PIPELINE_RESPONSES: Record<PipelineState, PipelineResponse> = {
   idle: {
-    text: "Welcome! I'm your AI music video producer. Upload a song or describe your vision, and I'll bring it to life. What are we creating today?",
+    text: "Welcome to Cremi — your AI music video director. Upload a track and I'll orchestrate the entire production pipeline: music analysis → concept → storyboard → video generation → final edit.",
   },
   uploaded: {
-    text: "Got it! Let me start analyzing your music track. I'll break down the BPM, key, sections, and energy curve to understand the perfect visual rhythm...",
+    text: "MCP Music Analysis agent activated. Extracting BPM, musical key, waveform, segment boundaries, and mapping the emotion curve…",
+    artifacts: [{
+      id: 'art-audio-analysis-upload', type: 'audio_analysis', title: 'Audio Analysis — BPM, Key & Emotion Curve',
+      description: 'Extracting waveform data, segment boundaries, and emotion curve…',
+      thumbnails: [svgThumb('%233B82F6', '%2360A5FA')],
+    }],
   },
   analyzing: {
-    text: "I've finished analyzing your track! Here's what I found: 128 BPM in A minor, with 4 distinct sections and 16 beat markers. The energy builds gradually with a peak at the chorus. I've also identified the emotional arc — starts intimate, builds to euphoric, then resolves peacefully.",
+    text: "Analysis complete. Detected **3 emotional peaks**, mapped **7 segments** (Intro → Verse → Chorus → Bridge → Outro), and built a shared music context for all downstream agents.\n\nReady to generate creative concepts aligned to the music's structure.",
     artifacts: [{
-      id: 'art-audio-analysis', type: 'audio_analysis', title: 'Audio Analysis Complete',
-      description: 'BPM: 128 | Key: Am | Duration: 3:12 | 16 beat markers | 4 sections detected',
+      id: 'art-audio-analysis', type: 'audio_analysis', title: 'Segment Map & Energy Curve',
+      description: 'BPM detected | Key mapped | 7 segments | 3 emotional peaks | Emotion curve complete',
       thumbnails: [svgThumb('%233B82F6', '%2360A5FA')],
     }],
     actions: APPROVE_ACTIONS,
   },
   vision_ready: {
-    text: "Here's the creative direction I'm proposing for your video. I've crafted a cosmic love story that matches the emotional arc of your music — intimate moments in deep space, building to a euphoric supernova climax, then resolving with a tender reunion at the edge of the universe.",
+    text: "Concept Agent has generated **3 storyline options**, each mapped to the song's timestamp structure:\n\n1. **Celestial Journey** — Ethereal space voyage synced to verse/chorus arcs\n2. **Neon Metropolis** — Cyberpunk city narrative with energy-driven cuts\n3. **Abstract Emotion** — Pure visual poetry following the emotion curve\n\nStyle seed `CREMI-7C3A-COSMIC` applied for character and color consistency.",
     artifacts: [{
       id: 'art-mood-board', type: 'mood_board', title: 'Creative Vision & Mood Board',
       description: 'Cinematic space opera | Deep violet + cyan palette | Slow, ethereal pacing',
@@ -45,10 +50,10 @@ export const PIPELINE_RESPONSES: Record<PipelineState, PipelineResponse> = {
     actions: APPROVE_ACTIONS,
   },
   plan_ready: {
-    text: "I've designed the complete storyboard — 8 scenes synchronized to your music's beat structure. Each scene has a specific camera angle, movement, and subject that follows the narrative arc. The transitions are timed to hit on the beat markers.",
+    text: "Storyboard locked. Beat-synced scene mapping complete:\n\n- Scene 4 at Chorus (1:00) — supernova climax at energy peak\n- Scene 7 at Bridge (2:44) — reflective slowdown matching gentle energy\n- All transitions aligned to beat markers for musical sync.",
     artifacts: [{
-      id: 'art-storyboard', type: 'storyboard', title: 'Storyboard — 8 Scenes',
-      description: '3:12 total | Beat-synced transitions | Cinematic camera work',
+      id: 'art-storyboard', type: 'storyboard', title: 'Beat-Synced Storyboard',
+      description: 'Beat-synced transitions | Cinematic camera work | Scene-to-segment mapping complete',
       thumbnails: [
         svgThumb('%237C3AED', '%2322D3EE'), svgThumb('%23A855F7', '%23F59E0B'),
         svgThumb('%2306B6D4', '%237C3AED'), svgThumb('%23EC4899', '%237C3AED'),
@@ -59,10 +64,10 @@ export const PIPELINE_RESPONSES: Record<PipelineState, PipelineResponse> = {
     actions: APPROVE_ACTIONS,
   },
   assets_ready: {
-    text: "All 8 scenes have been generated! I used Kling 2.6 for 5 scenes (best for motion quality) and Runway Gen-4 for 3 scenes (best for character consistency). The consistency checker scored an average of 91% across all scenes. One scene needed lipsync processing, which is now complete.",
+    text: "Video Agent dispatching **parallel render jobs** — music-aware motion strategy per segment:\n\n- **Kling 2.6** for dynamic scenes (chorus, bridge) — high-energy motion\n- **Runway Gen-4** for gentle scenes (verse, intro) — smooth, cinematic flow\n\nStyle seed maintained across all renders for consistency.",
     artifacts: [{
-      id: 'art-gallery', type: 'image_gallery', title: 'Generated Assets — 8 Scenes',
-      description: 'Avg consistency: 91% | Models: Kling 2.6, Runway Gen-4 | Lipsync: complete',
+      id: 'art-gallery', type: 'image_gallery', title: 'Parallel Render Progress',
+      description: 'Parallel render jobs dispatched | Models: Kling 2.6, Runway Gen-4 | Style seed active',
       thumbnails: [
         svgThumb('%237C3AED', '%2322D3EE'), svgThumb('%23A855F7', '%23F59E0B'),
         svgThumb('%2306B6D4', '%237C3AED'), svgThumb('%23EC4899', '%237C3AED'),
@@ -71,21 +76,25 @@ export const PIPELINE_RESPONSES: Record<PipelineState, PipelineResponse> = {
     actions: APPROVE_ACTIONS,
   },
   assembled: {
-    text: "Your music video is assembled! I've added beat-synced transitions, color grading to match the cosmic theme, and a subtle film grain effect. The final cut is 3:12 and ready for your review.",
+    text: "Auto-assembled timeline with **beat-synced transitions**. Applied **\"Cosmic Cinema\"** preset:\n\n- Film grain overlay + lens flare at energy peaks\n- Color grading: deep blues → warm golds following emotion curve\n- All cuts land on beat markers for rhythmic sync.",
     artifacts: [{
-      id: 'art-video-preview', type: 'video_preview', title: 'Final Video Preview',
-      description: '3:12 | 1920x1080 | Color graded | Beat-synced transitions',
+      id: 'art-video-preview', type: 'video_preview', title: 'Final Assembly — Cosmic Cinema',
+      description: 'Beat-synced transitions | Film grain + lens flare | Color graded: blues → golds',
       thumbnails: [svgThumb('%237C3AED', '%2322D3EE')],
     }],
-    actions: [
-      { label: 'Approve & Export', action: 'approve', variant: 'primary' },
-      { label: 'Request Changes', action: 'revise', variant: 'secondary' },
-    ],
+    actions: APPROVE_ACTIONS,
   },
   complete: {
-    text: "Your video is ready! I've prepared exports for YouTube (16:9), TikTok (9:16), and Instagram (1:1). You can download all formats or share directly.",
+    text: "Production complete! Your music video is ready in **3 export formats**:\n\n- **YouTube** — 16:9, full length\n- **TikTok** — 9:16 vertical, 60s highlight\n- **Instagram Reels** — 9:16, 30s teaser\n\nAll formats maintain the Cosmic Cinema color grade and beat-sync.",
+    artifacts: [{
+      id: 'art-final-video',
+      type: 'video_preview',
+      title: 'Multi-Platform Export',
+      description: 'YouTube 16:9 | TikTok 9:16 60s | Instagram Reels 9:16 30s | Cosmic Cinema grade',
+      thumbnails: [svgThumb('%23667EEA', '%23764BA2')],
+    }],
     actions: [
-      { label: 'Download All', action: 'download', variant: 'primary' },
+      { label: 'Download All Formats', action: 'download', variant: 'primary' },
       { label: 'Start New Project', action: 'new_project', variant: 'secondary' },
     ],
   },

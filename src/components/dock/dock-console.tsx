@@ -13,9 +13,10 @@ interface DockConsoleProps {
   onGateResolve: (gateId: QualityGateId, result: 'pass' | 'revise') => void
   collapsed: boolean
   onToggleCollapse: () => void
+  onClear?: () => void
 }
 
-export function DockConsole({ entries, onGateResolve, collapsed, onToggleCollapse }: DockConsoleProps) {
+export function DockConsole({ entries, onGateResolve, collapsed, onToggleCollapse, onClear }: DockConsoleProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Auto-scroll to bottom on new entries
@@ -27,7 +28,7 @@ export function DockConsole({ entries, onGateResolve, collapsed, onToggleCollaps
 
   return (
     <div className={cn(
-      'shrink-0 border-t border-border bg-[#0d0d0f] flex flex-col transition-all duration-200',
+      'shrink-0 border-t border-border bg-background flex flex-col transition-all duration-200',
       collapsed ? 'h-8' : 'h-48'
     )}>
       {/* Header */}
@@ -39,8 +40,8 @@ export function DockConsole({ entries, onGateResolve, collapsed, onToggleCollaps
         <div className="flex items-center gap-1">
           {!collapsed && (
             <button
-              onClick={() => {/* clear handled in page */}}
-              className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
+              onClick={onClear}
+              className="flex h-5 w-5 items-center justify-center rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
               title="Clear console"
             >
               <X className="h-3 w-3" />
@@ -48,7 +49,7 @@ export function DockConsole({ entries, onGateResolve, collapsed, onToggleCollaps
           )}
           <button
             onClick={onToggleCollapse}
-            className="flex h-5 w-5 items-center justify-center rounded hover:bg-white/10 text-muted-foreground hover:text-foreground transition-colors"
+            className="flex h-5 w-5 items-center justify-center rounded hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
             title={collapsed ? 'Expand console' : 'Collapse console'}
           >
             {collapsed ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}

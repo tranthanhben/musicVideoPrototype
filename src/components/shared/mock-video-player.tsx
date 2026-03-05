@@ -63,7 +63,7 @@ export function MockVideoPlayer({
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-xl bg-black group',
+        'relative overflow-hidden rounded-xl bg-card group',
         aspectMap[aspectRatio],
         className
       )}
@@ -81,7 +81,7 @@ export function MockVideoPlayer({
         onClick={() => setIsPlaying((p) => !p)}
         className="absolute inset-0 flex items-center justify-center transition-opacity"
       >
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm border border-white/20 transition-transform group-hover:scale-110">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm border border-border transition-transform group-hover:scale-110">
           {isPlaying ? (
             <Pause className="h-6 w-6 text-white" />
           ) : (

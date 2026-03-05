@@ -169,8 +169,8 @@ export function ReelDetailPanel({
                 <div className="rounded-lg border border-border overflow-hidden aspect-video bg-muted flex items-center justify-center">
                   <img src={scene.thumbnailUrl} alt="camera preview" className="w-full h-full object-cover opacity-60" />
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="border-2 border-white/40 rounded w-24 h-16 flex items-center justify-center">
-                      <Camera className="h-5 w-5 text-white/60" />
+                    <div className="border-2 border-foreground/40 rounded w-24 h-16 flex items-center justify-center">
+                      <Camera className="h-5 w-5 text-foreground/60" />
                     </div>
                   </div>
                 </div>

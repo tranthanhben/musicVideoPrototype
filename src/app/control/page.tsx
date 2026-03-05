@@ -34,20 +34,18 @@ export default function ControlPage() {
 
   const simulatorRef = useRef<PipelineSimulator | null>(null)
   const journeyStateRef = useRef<JourneyStateId>('welcome')
-  const store = usePipelineStore
 
   function setJourneyStateSync(stateId: JourneyStateId) {
     journeyStateRef.current = stateId
     setJourneyState(stateId)
   }
 
-  // Wire up store actions
-  const {
-    resetPipeline, startPipeline, setCurrentLayer,
-    setLayerStatus, setLayerProgress, addArtifact, addActivity, resolveGate: storeResolveGate,
-  } = store.getState()
-
   useEffect(() => {
+    const {
+      resetPipeline, startPipeline, setCurrentLayer,
+      setLayerStatus, setLayerProgress, addArtifact, addActivity, resolveGate: storeResolveGate,
+    } = usePipelineStore.getState()
+
     resetPipeline()
     const sim = new PipelineSimulator()
     simulatorRef.current = sim
@@ -113,7 +111,7 @@ export default function ControlPage() {
     sim.emitter.on('pipeline_complete', () => {
       // Mark last layer complete
       setLayerStatus('L5_POSTPRODUCTION', 'complete')
-      store.setState({ currentState: 'complete', isRunning: false })
+      usePipelineStore.setState({ currentState: 'complete', isRunning: false })
       setJourneyStateSync('complete')
       const response = getJourneyResponse('complete')
       setEvents((prev) => [...prev, createJourneyEvent(response.text)])
@@ -133,7 +131,7 @@ export default function ControlPage() {
 
   function handleStop() {
     simulatorRef.current?.stop()
-    resetPipeline()
+    usePipelineStore.getState().resetPipeline()
     setEvents([])
     setStartedAt(null)
     setPendingGate(null)
@@ -141,7 +139,7 @@ export default function ControlPage() {
   }
 
   function handleGateResolve(gateId: QualityGateId, result: 'pass' | 'revise') {
-    storeResolveGate(gateId, result)
+    usePipelineStore.getState().resolveGate(gateId, result)
     simulatorRef.current?.resolveGate(gateId, result)
     setPendingGate(null)
     if (result === 'pass') {
@@ -155,7 +153,7 @@ export default function ControlPage() {
   void journeyState
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-zinc-950 text-white">
+    <div className="h-screen flex flex-col overflow-hidden bg-background text-foreground">
       <ControlHeader onStop={handleStop} startedAt={startedAt} />
       <div className="flex-1 min-h-0">
         <ControlDashboard />

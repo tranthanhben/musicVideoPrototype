@@ -20,7 +20,7 @@ export function SpotlightTooltip({ text, visible, onDismiss }: SpotlightTooltipP
       const timer = setTimeout(() => {
         setShow(false)
         onDismiss()
-      }, 3000)
+      }, 8000)
       return () => clearTimeout(timer)
     } else {
       setShow(false)

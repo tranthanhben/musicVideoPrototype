@@ -93,7 +93,7 @@ function L2Content() {
         {['#7C3AED', '#22D3EE', '#EC4899', '#F59E0B', '#10B981'].map((color) => (
           <div
             key={color}
-            className="h-8 w-8 rounded-full border-2 border-white/10 cursor-pointer hover:scale-110 transition-transform"
+            className="h-8 w-8 rounded-full border-2 border-foreground/10 cursor-pointer hover:scale-110 transition-transform"
             style={{ backgroundColor: color }}
             title={color}
           />

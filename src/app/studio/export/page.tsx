@@ -32,7 +32,7 @@ function ExportContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col p-6" style={{ background: '#0D0D0D', fontFamily: MONO }}>
+    <div className="min-h-screen flex flex-col p-6 bg-background" style={{ fontFamily: MONO }}>
       {/* Header */}
       <div className="mb-8 flex items-center gap-4">
         <Link
@@ -49,8 +49,7 @@ function ExportContent() {
 
       {/* Export options */}
       <div
-        className="max-w-md rounded border p-5"
-        style={{ background: '#1E1E2E', borderColor: 'rgba(255,255,255,0.1)' }}
+        className="max-w-md rounded border p-5 bg-card border-border"
       >
         {/* Quality */}
         <div className="mb-5">
@@ -168,7 +167,7 @@ function ExportContent() {
 export default function ExportPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#0D0D0D' }}>
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <span className="text-[11px] opacity-30" style={{ fontFamily: MONO }}>Loading...</span>
       </div>
     }>

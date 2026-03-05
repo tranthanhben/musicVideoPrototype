@@ -13,7 +13,7 @@ interface TakeStripProps {
 export function TakeStrip({ takes, selectedId, onSelect, onAddTake }: TakeStripProps) {
   return (
     <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-stone-600">
-      <span className="text-xs text-stone-500 uppercase tracking-wide shrink-0 mr-1">Takes</span>
+      <span className="text-xs text-muted-foreground uppercase tracking-wide shrink-0 mr-1">Takes</span>
 
       {takes.map((take, i) => {
         const isSelected = take.id === selectedId
@@ -25,7 +25,7 @@ export function TakeStrip({ takes, selectedId, onSelect, onAddTake }: TakeStripP
             style={{
               width: 56,
               height: 56,
-              border: isSelected ? '2px solid #D97706' : '2px solid #44403C',
+              border: isSelected ? '2px solid #D97706' : '2px solid hsl(var(--border))',
             }}
             title={`Take ${i + 1}`}
           >
@@ -52,11 +52,11 @@ export function TakeStrip({ takes, selectedId, onSelect, onAddTake }: TakeStripP
       {/* Add take button */}
       <button
         onClick={onAddTake}
-        className="shrink-0 rounded flex items-center justify-center bg-stone-700 hover:bg-stone-600 border-2 border-dashed border-stone-500 hover:border-amber-500 transition-colors"
+        className="shrink-0 rounded flex items-center justify-center bg-muted hover:bg-secondary border-2 border-dashed border-border hover:border-amber-500 transition-colors"
         style={{ width: 56, height: 56 }}
         title="Generate new take"
       >
-        <Plus className="w-4 h-4 text-stone-400" />
+        <Plus className="w-4 h-4 text-muted-foreground" />
       </button>
     </div>
   )

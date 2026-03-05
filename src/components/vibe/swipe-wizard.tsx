@@ -45,18 +45,18 @@ export function SwipeWizard({ steps, currentStep, onStepChange }: SwipeWizardPro
               'h-2 rounded-full transition-all duration-300',
               i <= currentStep
                 ? 'w-6 bg-pink-500'
-                : 'w-2 bg-slate-200'
+                : 'w-2 bg-muted'
             )}
           />
         ))}
       </div>
 
       {/* Step title */}
-      <p className="mt-3 text-center text-xs font-medium uppercase tracking-widest text-slate-400">
+      <p className="mt-3 text-center text-xs font-medium uppercase tracking-widest text-muted-foreground">
         Step {currentStep + 1} of {steps.length}
       </p>
       <h2
-        className="mt-1 text-center text-xl font-bold text-slate-900"
+        className="mt-1 text-center text-xl font-bold text-foreground"
         style={{ fontFamily: 'var(--font-plus-jakarta-sans, sans-serif)' }}
       >
         {steps[currentStep].title}
@@ -82,11 +82,11 @@ export function SwipeWizard({ steps, currentStep, onStepChange }: SwipeWizardPro
 
       {/* Navigation */}
       {!isLast && (
-        <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3">
+        <div className="flex items-center justify-between border-t border-border px-4 py-3">
           <button
             onClick={handleBack}
             className={cn(
-              'flex items-center gap-1 text-sm font-medium text-slate-500 transition-opacity',
+              'flex items-center gap-1 text-sm font-medium text-muted-foreground transition-opacity',
               currentStep === 0 ? 'pointer-events-none opacity-0' : ''
             )}
           >

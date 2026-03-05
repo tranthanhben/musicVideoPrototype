@@ -4,11 +4,12 @@ import { useState } from 'react'
 import { ChevronDown, ChevronRight, Music2, ImageIcon, Sparkles, Layers } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { mockProjects } from '@/lib/mock/projects'
-import type { MockScene } from '@/lib/mock/types'
+import type { MockScene, MockTake } from '@/lib/mock/types'
 
 interface AssetBrowserProps {
   selectedSceneId: string | null
   onSceneSelect: (id: string) => void
+  onAction?: (action: string) => void
 }
 
 function Section({
@@ -34,7 +35,7 @@ function Section({
 
 const project = mockProjects[0]
 
-export function AssetBrowser({ selectedSceneId, onSceneSelect }: AssetBrowserProps) {
+export function AssetBrowser({ selectedSceneId, onSceneSelect, onAction }: AssetBrowserProps) {
   function formatDuration(s: number) {
     return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`
   }
@@ -62,24 +63,43 @@ export function AssetBrowser({ selectedSceneId, onSceneSelect }: AssetBrowserPro
       <Section label="Scenes" icon={<ImageIcon className="h-3 w-3" />}>
         <div className="space-y-0.5 px-2">
           {project.scenes.map((scene: MockScene) => (
-            <button
-              key={scene.id}
-              onClick={() => onSceneSelect(scene.id)}
-              className={cn(
-                'flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-left transition-colors',
-                selectedSceneId === scene.id
-                  ? 'bg-primary/15 text-foreground'
-                  : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+            <div key={scene.id}>
+              <button
+                onClick={() => onSceneSelect(scene.id)}
+                className={cn(
+                  'flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-left transition-colors',
+                  selectedSceneId === scene.id
+                    ? 'bg-primary/15 text-foreground'
+                    : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+                )}
+              >
+                <div className="h-7 w-10 shrink-0 rounded overflow-hidden">
+                  <img src={scene.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-medium leading-none">Scene {scene.index + 1}</p>
+                  <p className="text-[10px] text-muted-foreground truncate mt-0.5">{scene.subject}</p>
+                </div>
+              </button>
+              {selectedSceneId === scene.id && scene.takes.length > 1 && (
+                <div className="flex gap-1 px-2 py-1 ml-12">
+                  {scene.takes.map((take: MockTake, ti: number) => (
+                    <button
+                      key={take.id}
+                      onClick={() => onAction?.(`compare_takes_${scene.index}`)}
+                      className={cn(
+                        'h-6 w-8 rounded overflow-hidden border transition-opacity',
+                        take.selected
+                          ? 'border-primary'
+                          : 'border-border/50 opacity-60 hover:opacity-100'
+                      )}
+                    >
+                      <img src={take.thumbnailUrl} alt={`Take ${ti + 1}`} className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
               )}
-            >
-              <div className="h-7 w-10 shrink-0 rounded overflow-hidden">
-                <img src={scene.thumbnailUrl} alt="" className="w-full h-full object-cover" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-xs font-medium leading-none">Scene {scene.index + 1}</p>
-                <p className="text-[10px] text-muted-foreground truncate mt-0.5">{scene.subject}</p>
-              </div>
-            </button>
+            </div>
           ))}
         </div>
       </Section>

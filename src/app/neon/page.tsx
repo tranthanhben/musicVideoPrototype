@@ -57,7 +57,7 @@ export default function NeonLaunchpad() {
         <ChromeText as="h1" className="text-8xl md:text-9xl tracking-tight mb-3">
           NEON
         </ChromeText>
-        <p className="text-[#888899] text-lg tracking-widest uppercase">
+        <p className="text-muted-foreground text-lg tracking-widest uppercase">
           Creative Playground
         </p>
       </motion.div>
@@ -108,13 +108,13 @@ export default function NeonLaunchpad() {
 
       {/* Command palette hint */}
       <motion.p
-        className="text-[#888899] text-xs tracking-widest"
+        className="text-muted-foreground text-xs tracking-widest"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.7 }}
       >
         Press{' '}
-        <kbd className="mx-1 px-1.5 py-0.5 rounded text-[10px] bg-[rgba(255,255,255,0.08)] border border-[rgba(255,0,110,0.2)] text-[#FF006E]">
+        <kbd className="mx-1 px-1.5 py-0.5 rounded text-[10px] bg-muted border border-[rgba(255,0,110,0.2)] text-[#FF006E]">
           ⌘K
         </kbd>{' '}
         to search
@@ -166,10 +166,8 @@ function NeonPanelCard({
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           <div className="absolute bottom-3 left-3">
             <span
-              className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full"
+              className="text-[10px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-muted/50 text-muted-foreground"
               style={{
-                background: 'rgba(255,255,255,0.1)',
-                color: '#888899',
                 backdropFilter: 'blur(8px)',
               }}
             >
@@ -181,15 +179,15 @@ function NeonPanelCard({
         {/* Info */}
         <div className="p-4">
           <h3
-            className="font-semibold text-[#EEEEF0] mb-1"
+            className="font-semibold text-foreground mb-1"
             style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
           >
             {project.title}
           </h3>
-          <p className="text-[#888899] text-xs mb-3 line-clamp-2">{project.description}</p>
-          <div className="flex items-center gap-3 text-[10px] text-[#888899]">
+          <p className="text-muted-foreground text-xs mb-3 line-clamp-2">{project.description}</p>
+          <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
             <span>{project.scenes.length} scenes</span>
-            <span className="w-px h-3 bg-[rgba(255,255,255,0.1)]" />
+            <span className="w-px h-3 bg-border" />
             <span>{project.audio.bpm} BPM</span>
           </div>
         </div>

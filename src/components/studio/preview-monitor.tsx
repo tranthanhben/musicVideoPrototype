@@ -11,8 +11,8 @@ interface PreviewMonitorProps {
 export function PreviewMonitor({ scene, isPlaying, onTogglePlay }: PreviewMonitorProps) {
   return (
     <div
-      className="relative w-full h-full rounded-sm overflow-hidden border border-white/10 flex items-center justify-center"
-      style={{ background: '#111122', aspectRatio: '16/9' }}
+      className="relative w-full h-full rounded-sm overflow-hidden border border-white/10 flex items-center justify-center bg-card"
+      style={{ aspectRatio: '16/9' }}
     >
       {/* Thumbnail background */}
       {scene?.thumbnailUrl && (

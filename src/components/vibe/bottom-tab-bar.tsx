@@ -9,14 +9,14 @@ export function BottomTabBar() {
   const pathname = usePathname()
 
   return (
-    <div className="fixed bottom-0 left-1/2 w-full max-w-md -translate-x-1/2 border-t border-[var(--border)] bg-white">
+    <div className="fixed bottom-0 left-1/2 w-full max-w-md -translate-x-1/2 border-t border-border bg-background">
       <div className="flex items-end justify-around px-4 py-2">
         {/* Home tab */}
         <Link
           href="/vibe"
           className={cn(
             'flex flex-col items-center gap-1 pb-1 pt-2 min-w-[44px]',
-            pathname === '/vibe' ? 'text-pink-500' : 'text-slate-400'
+            pathname === '/vibe' ? 'text-pink-500' : 'text-muted-foreground'
           )}
         >
           <Grid className="h-5 w-5" />
@@ -35,7 +35,7 @@ export function BottomTabBar() {
           </div>
           <span className={cn(
             'text-[10px] font-medium mt-1',
-            pathname === '/vibe/create' ? 'text-pink-500' : 'text-slate-400'
+            pathname === '/vibe/create' ? 'text-pink-500' : 'text-muted-foreground'
           )}>
             Create
           </span>
@@ -44,7 +44,7 @@ export function BottomTabBar() {
         {/* Profile tab */}
         <Link
           href="/vibe"
-          className="flex flex-col items-center gap-1 pb-1 pt-2 text-slate-400 min-w-[44px]"
+          className="flex flex-col items-center gap-1 pb-1 pt-2 text-muted-foreground min-w-[44px]"
         >
           <User className="h-5 w-5" />
           <span className="text-[10px] font-medium">Profile</span>

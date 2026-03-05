@@ -50,19 +50,19 @@ export default function StoryboardPage({ searchParams }: PageProps) {
       <FilmGrainOverlay />
 
       {/* Top nav */}
-      <div className="flex items-center gap-4 px-6 py-4 border-b border-stone-800">
+      <div className="flex items-center gap-4 px-6 py-4 border-b border-border">
         <button
           onClick={() => router.push('/director')}
-          className="flex items-center gap-2 text-stone-400 hover:text-stone-100 transition-colors text-sm"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors text-sm"
         >
           <ChevronLeft className="w-4 h-4" />
           Productions
         </button>
-        <div className="h-4 w-px bg-stone-700" />
+        <div className="h-4 w-px bg-border" />
         <div className="flex items-center gap-2">
           <Film className="w-4 h-4 text-amber-500" />
           <span
-            className="text-stone-300 font-semibold"
+            className="text-foreground/70 font-semibold"
             style={{ fontFamily: 'var(--font-playfair-display, serif)' }}
           >
             Storyboard
@@ -91,15 +91,15 @@ export default function StoryboardPage({ searchParams }: PageProps) {
       </div>
 
       {/* Fixed bottom bar */}
-      <div className="sticky bottom-0 bg-stone-900/95 backdrop-blur border-t border-stone-800 px-6 py-4 flex items-center justify-between z-10">
-        <div className="flex items-center gap-6 text-sm text-stone-400">
+      <div className="sticky bottom-0 bg-background/95 backdrop-blur border-t border-border px-6 py-4 flex items-center justify-between z-10">
+        <div className="flex items-center gap-6 text-sm text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <Layers className="w-4 h-4" />
-            <span className="text-stone-200 font-semibold">{scenes.length}</span> scenes
+            <span className="text-foreground/80 font-semibold">{scenes.length}</span> scenes
           </span>
           <span className="flex items-center gap-1.5">
             <Clock className="w-4 h-4" />
-            <span className="text-stone-200 font-semibold">{totalDuration}</span> total
+            <span className="text-foreground/80 font-semibold">{totalDuration}</span> total
           </span>
         </div>
 

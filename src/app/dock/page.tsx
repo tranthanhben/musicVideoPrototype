@@ -37,7 +37,7 @@ const scenes = mockProjects[0].scenes
 
 export default function DockPage() {
   const [entries, setEntries] = useState<ConsoleEntryType[]>([])
-  const [chatOpen, setChatOpen] = useState(false)
+  const [chatOpen, setChatOpen] = useState(true)
   const [consoleCollapsed, setConsoleCollapsed] = useState(false)
   const [journeyState, setJourneyState] = useState<JourneyStateId>('welcome')
   const [suggestions, setSuggestions] = useState<ChatSuggestion[]>([])
@@ -272,6 +272,7 @@ export default function DockPage() {
       onGateResolve={handleGateResolve}
       consoleCollapsed={consoleCollapsed}
       onConsoleToggle={() => setConsoleCollapsed((c) => !c)}
+      onConsoleClear={() => setEntries([])}
       chatOpen={chatOpen}
       onChatToggle={() => setChatOpen((o) => !o)}
       onAction={handleAction}

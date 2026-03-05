@@ -86,9 +86,8 @@ export function CommandPalette({ isOpen, onClose, onAction }: CommandPaletteProp
 
           {/* Panel */}
           <motion.div
-            className="relative w-full max-w-lg overflow-hidden rounded-xl"
+            className="relative w-full max-w-lg overflow-hidden rounded-xl bg-card/95"
             style={{
-              background: 'rgba(10,10,15,0.95)',
               backdropFilter: 'blur(40px)',
               border: '1px solid rgba(255,0,110,0.4)',
               boxShadow: '0 0 40px rgba(255,0,110,0.2), 0 0 80px rgba(0,245,212,0.1)',
@@ -106,24 +105,24 @@ export function CommandPalette({ isOpen, onClose, onAction }: CommandPaletteProp
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search actions..."
-                className="flex-1 bg-transparent text-[#EEEEF0] placeholder-[#888899] text-sm outline-none"
+                className="flex-1 bg-transparent text-foreground placeholder-muted-foreground text-sm outline-none"
                 style={{ fontFamily: 'var(--font-space-grotesk, sans-serif)' }}
               />
-              <kbd className="text-[10px] text-[#888899] bg-[rgba(255,255,255,0.05)] rounded px-1.5 py-0.5">ESC</kbd>
+              <kbd className="text-[10px] text-muted-foreground bg-[rgba(255,255,255,0.05)] rounded px-1.5 py-0.5">ESC</kbd>
             </div>
 
             {/* Actions list */}
             <div className="py-2 max-h-72 overflow-y-auto">
               {filtered.length === 0 && (
-                <p className="text-center text-[#888899] text-sm py-6">No results</p>
+                <p className="text-center text-muted-foreground text-sm py-6">No results</p>
               )}
               {filtered.map((item, idx) => (
                 <button
                   key={item.id}
-                  className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors"
+                  className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${idx !== activeIndex ? 'text-foreground' : ''}`}
                   style={{
                     background: idx === activeIndex ? 'rgba(255,0,110,0.1)' : 'transparent',
-                    color: idx === activeIndex ? '#FF006E' : '#EEEEF0',
+                    color: idx === activeIndex ? '#FF006E' : undefined,
                   }}
                   onMouseEnter={() => setActiveIndex(idx)}
                   onClick={() => handleSelect(item)}
@@ -131,7 +130,7 @@ export function CommandPalette({ isOpen, onClose, onAction }: CommandPaletteProp
                   <span className="shrink-0 opacity-70">{item.icon}</span>
                   <span className="flex-1 text-sm">{item.label}</span>
                   {item.shortcut && (
-                    <kbd className="text-[10px] text-[#888899] bg-[rgba(255,255,255,0.05)] rounded px-1.5 py-0.5">
+                    <kbd className="text-[10px] text-muted-foreground bg-[rgba(255,255,255,0.05)] rounded px-1.5 py-0.5">
                       {item.shortcut}
                     </kbd>
                   )}
@@ -140,7 +139,7 @@ export function CommandPalette({ isOpen, onClose, onAction }: CommandPaletteProp
             </div>
 
             {/* Footer hint */}
-            <div className="flex items-center gap-4 px-4 py-2 border-t border-[rgba(255,0,110,0.1)] text-[10px] text-[#888899]">
+            <div className="flex items-center gap-4 px-4 py-2 border-t border-[rgba(255,0,110,0.1)] text-[10px] text-muted-foreground">
               <span>↑↓ navigate</span>
               <span>↵ select</span>
               <span>ESC close</span>

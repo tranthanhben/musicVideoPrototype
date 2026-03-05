@@ -73,13 +73,13 @@ export default function ShowcasePage() {
       <div className="flex items-center justify-between mb-10">
         <button
           onClick={() => router.push('/neon/workspace?id=project-neon')}
-          className="text-[#888899] text-sm hover:text-[#00F5D4] transition-colors"
+          className="text-muted-foreground text-sm hover:text-[#00F5D4] transition-colors"
         >
           ← Back to Workspace
         </button>
         <button
           onClick={() => router.push('/neon')}
-          className="text-[#888899] text-sm hover:text-[#FF006E] transition-colors"
+          className="text-muted-foreground text-sm hover:text-[#FF006E] transition-colors"
         >
           Launchpad
         </button>
@@ -93,7 +93,7 @@ export default function ShowcasePage() {
         transition={{ duration: 0.5 }}
       >
         <ChromeText as="h1" className="text-5xl mb-2">Ready to Share</ChromeText>
-        <p className="text-[#888899] text-sm">{project.title} · {project.scenes.length} scenes</p>
+        <p className="text-muted-foreground text-sm">{project.title} · {project.scenes.length} scenes</p>
       </motion.div>
 
       {/* Main preview */}
@@ -131,7 +131,7 @@ export default function ShowcasePage() {
                   duration={project.scenes[idx % project.scenes.length].duration}
                   aspectRatio={platform.ratio}
                 />
-                <p className="mt-2 text-center text-[10px] text-[#888899] uppercase tracking-widest">
+                <p className="mt-2 text-center text-[10px] text-muted-foreground uppercase tracking-widest">
                   {platform.desc}
                 </p>
               </div>
@@ -165,12 +165,12 @@ export default function ShowcasePage() {
             >
               Published!
             </p>
-            <p className="text-[#888899] text-sm">Your video is now live across all platforms.</p>
+            <p className="text-muted-foreground text-sm">Your video is now live across all platforms.</p>
           </motion.div>
         ) : (
           <motion.button
             onClick={handlePublish}
-            className="px-12 py-4 rounded-full text-lg font-bold text-white"
+            className="px-12 py-4 rounded-full text-lg font-bold text-foreground"
             style={{
               background: 'linear-gradient(135deg, #FF006E, #00F5D4)',
               boxShadow: '0 0 30px rgba(255,0,110,0.4), 0 0 60px rgba(0,245,212,0.2)',

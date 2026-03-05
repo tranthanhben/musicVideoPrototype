@@ -11,7 +11,7 @@ interface PropertyInspectorProps {
 const MONO = 'JetBrains Mono, monospace'
 
 const statusColors: Record<string, string> = {
-  init: 'bg-gray-600 text-gray-200',
+  init: 'bg-muted text-muted-foreground',
   generating: 'bg-amber-500/20 text-amber-400',
   completed: 'bg-emerald-500/20 text-emerald-400',
   failed: 'bg-red-500/20 text-red-400',
@@ -50,9 +50,9 @@ function Field({
           className="w-full resize-none rounded px-2 py-1 text-[11px] outline-none focus:ring-1 focus:ring-violet-500"
           style={{
             fontFamily: MONO,
-            background: '#2A2A3A',
-            color: '#E5E7EB',
-            border: '1px solid rgba(255,255,255,0.1)',
+            background: 'hsl(var(--muted))',
+            color: 'hsl(var(--foreground))',
+            border: '1px solid hsl(var(--border))',
           }}
         />
       </div>
@@ -68,9 +68,9 @@ function Field({
         className="w-full rounded px-2 py-1 text-[11px] outline-none focus:ring-1 focus:ring-violet-500"
         style={{
           fontFamily: MONO,
-          background: '#2A2A3A',
-          color: '#E5E7EB',
-          border: '1px solid rgba(255,255,255,0.1)',
+          background: 'hsl(var(--muted))',
+          color: 'hsl(var(--foreground))',
+          border: '1px solid hsl(var(--border))',
         }}
       />
     </div>
@@ -86,12 +86,12 @@ export function PropertyInspector({ scene, onUpdate, onGenerate }: PropertyInspe
     )
   }
 
-  const statusClass = statusColors[scene.status] ?? 'bg-gray-600 text-gray-200'
+  const statusClass = statusColors[scene.status] ?? 'bg-muted text-muted-foreground'
 
   return (
     <div className="h-full overflow-y-auto px-3 py-3" style={{ fontFamily: MONO }}>
       {/* Scene Info */}
-      <div className="mb-3 pb-2 border-b border-white/10">
+      <div className="mb-3 pb-2 border-b border-border">
         <div className="flex items-center justify-between mb-1">
           <span className="text-[11px] uppercase tracking-wider opacity-70">
             Scene {scene.index + 1}

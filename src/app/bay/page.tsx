@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { usePipelineStore } from '@/lib/pipeline/store'
 import { useChatStore } from '@/lib/chat/store'
 import { PipelineSimulator } from '@/lib/pipeline/simulator'
-import { streamResponse, addUserMessage } from '@/lib/chat/simulator'
+import { streamResponse } from '@/lib/chat/simulator'
 import { mockProjects } from '@/lib/mock/projects'
 import { BayLayout } from '@/components/bay/bay-layout'
 import type { BayTab } from '@/components/bay/bay-top-bar'
@@ -16,6 +16,7 @@ import {
   buildSceneRegenResponse, buildSceneRegenCompleteResponse,
   type JourneyStateId,
 } from '@/lib/journey/orchestrator'
+import { matchIntent, buildBayResponse } from '@/lib/journey/bay-interactions'
 
 const VIEW_HINT_TO_TAB: Record<string, BayTab> = {
   input: 'input', creative: 'creative', storyboard: 'storyboard',
@@ -30,6 +31,7 @@ export default function BayPage() {
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(project.scenes[0]?.id ?? null)
   const [journeyState, setJourneyState] = useState<JourneyStateId>('welcome')
   const [suggestions, setSuggestions] = useState<ChatSuggestion[]>([])
+  const [selectedStoryline, setSelectedStoryline] = useState<number | null>(null)
 
   const simulatorRef = useRef<PipelineSimulator | null>(null)
   const cancelStreamRef = useRef<(() => void) | null>(null)
@@ -68,8 +70,8 @@ export default function BayPage() {
 
     if (action === 'approve' && state.gateToResolve && state.nextStateOnApprove) {
       simulatorRef.current?.resolveGate(state.gateToResolve, 'pass')
-      // Next state will be triggered by layer_start or gate_resolved events
-      // But for progress states we advance immediately since the pipeline continues
+      const stageName = state.nextStateOnApprove.replace(/_/g, ' ').replace(/^l\d+\s*/, '')
+      streamChat({ text: `Approved! Moving on to ${stageName}...` })
       return
     }
 
@@ -112,12 +114,35 @@ export default function BayPage() {
       setJourneyState('welcome')
       setActiveTab('input')
       setSuggestions([])
+      setSelectedStoryline(null)
       setTimeout(() => advanceToState('welcome'), 500)
+      return
+    }
+
+    // Storyline selection
+    if (action.startsWith('select_storyline_')) {
+      const idx = parseInt(action.replace('select_storyline_', ''))
+      setSelectedStoryline(idx)
+      const response = buildBayResponse(action, journeyState, project)
+      if (response) streamChat(response)
+      return
+    }
+
+    // Bay-specific actions (analysis, creative, storyboard, generation, editing intents)
+    const bayResponse = buildBayResponse(action, journeyState, project)
+    if (bayResponse) {
+      streamChat(bayResponse)
       return
     }
 
     // Free-form user message
     if (action.startsWith('user_message:')) {
+      const userText = action.slice('user_message:'.length)
+      const matched = matchIntent(userText, journeyState)
+      if (matched) {
+        handleAction(matched) // recursive — safe because matched won't start with 'user_message:'
+        return
+      }
       const response = buildFreeformResponse(journeyState)
       setTimeout(() => streamChat(response), 300)
       return
@@ -194,6 +219,8 @@ export default function BayPage() {
       onSceneSelect={setSelectedSceneId}
       onAction={handleAction}
       suggestions={suggestions}
+      selectedStoryline={selectedStoryline}
+      journeyState={journeyState}
     />
   )
 }

@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Check, X, Shield } from 'lucide-react'
 import type { QualityGateId } from '@/lib/pipeline/types'
@@ -10,8 +11,14 @@ interface CanvasGateCardProps {
   onResolve: (result: 'pass' | 'revise') => void
 }
 
+// Deterministic score per gate ID — stable across re-renders, no Math.random()
+function getGateScore(gateId: string): number {
+  const seed = gateId.charCodeAt(gateId.length - 1)
+  return 85 + (seed % 15)
+}
+
 export function CanvasGateCard({ gate, journeyText, onResolve }: CanvasGateCardProps) {
-  const score = 85 + Math.floor(Math.random() * 15)
+  const score = useMemo(() => (gate ? getGateScore(gate.gateId) : 90), [gate])
 
   return (
     <AnimatePresence>

@@ -76,7 +76,7 @@ export function ZoneConnector({ fromX, fromY, toX, toY, active, label }: ZoneCon
           x={-10} y={-10} width={20} height={20}
           rx={2}
           transform="rotate(45)"
-          fill={active ? '#1F1535' : '#111827'}
+          fill={active ? 'var(--card)' : 'var(--secondary)'}
           stroke={active ? '#7C3AED' : '#374151'}
           strokeWidth={1.5}
         />

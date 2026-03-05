@@ -15,6 +15,7 @@ interface DockLayoutProps {
   onGateResolve: (gateId: QualityGateId, result: 'pass' | 'revise') => void
   consoleCollapsed: boolean
   onConsoleToggle: () => void
+  onConsoleClear: () => void
   chatOpen: boolean
   onChatToggle: () => void
   onAction?: (action: string) => void
@@ -28,6 +29,7 @@ export function DockLayout({
   onGateResolve,
   consoleCollapsed,
   onConsoleToggle,
+  onConsoleClear,
   chatOpen,
   onChatToggle,
   onAction,
@@ -67,6 +69,7 @@ export function DockLayout({
         onGateResolve={onGateResolve}
         collapsed={consoleCollapsed}
         onToggleCollapse={onConsoleToggle}
+        onClear={onConsoleClear}
       />
     </div>
   )

@@ -129,7 +129,7 @@ export function WaveformRuler({
             key={t}
             x={x + 2}
             y={height - 2}
-            fill="#9CA3AF"
+            fill="hsl(var(--muted-foreground))"
             fontSize="9"
             fontFamily="JetBrains Mono, monospace"
           >

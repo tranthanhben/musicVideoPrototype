@@ -17,7 +17,7 @@ export default function VibePreviewPage() {
   const totalDuration = scenes.reduce((acc, s) => acc + s.duration, 0)
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-950">
+    <div className="flex min-h-screen flex-col bg-background">
       {/* Back button */}
       <button
         onClick={() => router.back()}
@@ -28,7 +28,7 @@ export default function VibePreviewPage() {
       </button>
 
       {/* Video player - 9:16 full width */}
-      <div className="flex flex-1 items-center justify-center bg-slate-950 pt-14">
+      <div className="flex flex-1 items-center justify-center bg-background pt-14">
         <div className="w-full">
           <MockVideoPlayer
             thumbnailUrl={scene.thumbnailUrl}

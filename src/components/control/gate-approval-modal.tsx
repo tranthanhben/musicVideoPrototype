@@ -32,7 +32,7 @@ export function GateApprovalModal({ open, gateId, onResolve, onClose }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-md bg-zinc-900 border-zinc-700 text-white">
+      <DialogContent className="max-w-md bg-card border-border text-card-foreground">
         <DialogHeader>
           <div className="flex items-center gap-2 mb-1">
             <Shield className="w-4 h-4 text-amber-400" />
@@ -40,8 +40,8 @@ export function GateApprovalModal({ open, gateId, onResolve, onClose }: Props) {
               Quality Gate {gateId}
             </span>
           </div>
-          <DialogTitle className="text-white text-lg">Review Required</DialogTitle>
-          <DialogDescription className="text-zinc-400 text-sm">
+          <DialogTitle className="text-foreground text-lg">Review Required</DialogTitle>
+          <DialogDescription className="text-muted-foreground text-sm">
             {fromLayer?.name} output is ready for review before advancing to{' '}
             {toLayer?.name ?? 'completion'}.
           </DialogDescription>
@@ -50,11 +50,11 @@ export function GateApprovalModal({ open, gateId, onResolve, onClose }: Props) {
         <div className="space-y-3 py-1">
           {/* Flow indicator */}
           <div className="flex items-center gap-2 text-xs">
-            <span className="px-2 py-1 rounded bg-zinc-800 text-zinc-300 font-mono">
+            <span className="px-2 py-1 rounded bg-muted text-muted-foreground font-mono">
               {fromLayer?.name ?? gateDef?.before}
             </span>
-            <span className="text-zinc-600">→</span>
-            <span className="px-2 py-1 rounded bg-zinc-800 text-zinc-300 font-mono">
+            <span className="text-muted-foreground/40">→</span>
+            <span className="px-2 py-1 rounded bg-muted text-muted-foreground font-mono">
               {toLayer?.name ?? gateDef?.after}
             </span>
           </div>
@@ -62,8 +62,8 @@ export function GateApprovalModal({ open, gateId, onResolve, onClose }: Props) {
           {/* Score */}
           {gateState?.score > 0 && (
             <div className="flex items-center gap-2">
-              <span className="text-xs text-zinc-500">Quality Score</span>
-              <div className="flex-1 h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+              <span className="text-xs text-muted-foreground">Quality Score</span>
+              <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
                 <div
                   className="h-full rounded-full bg-emerald-500 transition-all"
                   style={{ width: `${gateState.score}%` }}
@@ -74,8 +74,8 @@ export function GateApprovalModal({ open, gateId, onResolve, onClose }: Props) {
           )}
 
           {/* Summary */}
-          <div className="rounded bg-zinc-800/60 border border-zinc-700 p-3">
-            <p className="text-xs text-zinc-400 leading-relaxed">
+          <div className="rounded bg-muted/60 border border-border p-3">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               {fromLayer?.description ?? 'Layer output ready for quality review.'}
             </p>
           </div>

@@ -41,14 +41,14 @@ export function TimelineTrack({
               key={scene.id}
               onClick={() => onSceneClick(scene.id)}
               className={cn(
-                'relative h-full flex-shrink-0 border-r border-white/10 flex items-center justify-center',
+                'relative h-full flex-shrink-0 border-r border-border flex items-center justify-center',
                 'transition-colors duration-150 cursor-pointer hover:bg-violet-500/30',
                 'text-[11px] font-mono overflow-hidden'
               )}
               style={{
                 width: `${widthPct}%`,
                 background: isActive ? `${colorBase}0.6)` : `${colorBase}0.25)`,
-                borderLeft: isActive ? '2px solid #7C3AED' : '1px solid rgba(255,255,255,0.1)',
+                borderLeft: isActive ? '2px solid #7C3AED' : '1px solid hsl(var(--border))',
                 boxShadow: isActive ? 'inset 0 0 0 1px rgba(124,58,237,0.6)' : 'none',
               }}
             >

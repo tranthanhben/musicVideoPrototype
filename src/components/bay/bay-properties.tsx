@@ -8,9 +8,13 @@ interface BayPropertiesProps {
   activeTab: BayTab
   selectedSceneId: string | null
   className?: string
+  onAction?: (action: string) => void
 }
 
 const project = mockProjects[0]
+
+const EFFECT_PRESETS = ['Cosmic Cinema', 'Film Noir', 'Warm Vintage', 'Clean Pop'] as const
+const EXPORT_FORMATS = ['YouTube 16:9', 'TikTok 9:16', 'Instagram Reels'] as const
 
 function PropRow({ label, value }: { label: string; value: string }) {
   return (
@@ -38,8 +42,10 @@ function SliderRow({ label, value }: { label: string; value: number }) {
   )
 }
 
-export function BayProperties({ activeTab, selectedSceneId, className }: BayPropertiesProps) {
+export function BayProperties({ activeTab, selectedSceneId, className, onAction }: BayPropertiesProps) {
   const scene = project.scenes.find((s) => s.id === selectedSceneId) ?? project.scenes[0]
+
+  const peakCount = project.audio.energyCurve.filter((p) => p.isPeak).length
 
   return (
     <div className={cn('w-72 shrink-0 flex flex-col border-l border-border bg-background overflow-y-auto', className)}>
@@ -54,8 +60,9 @@ export function BayProperties({ activeTab, selectedSceneId, className }: BayProp
             <PropRow label="Artist" value={project.audio.artist} />
             <PropRow label="BPM" value={String(project.audio.bpm)} />
             <PropRow label="Duration" value={`${Math.floor(project.audio.duration / 60)}:${String(project.audio.duration % 60).padStart(2, '0')}`} />
-            <PropRow label="Key" value="A minor" />
-            <PropRow label="Sections" value="Intro · Verse · Chorus · Bridge · Outro" />
+            <PropRow label="Key" value={project.audio.key} />
+            <PropRow label="Segments" value={`${project.audio.segments.length} Segments`} />
+            <PropRow label="Energy Peaks" value={`${peakCount} peaks detected`} />
             <PropRow label="Beat Markers" value={`${project.audio.beatMarkers.length} detected`} />
           </>
         )}
@@ -74,6 +81,11 @@ export function BayProperties({ activeTab, selectedSceneId, className }: BayProp
                 ))}
               </div>
             </div>
+            <div className="space-y-0.5">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Style Seed</p>
+              <p className="text-xs font-mono text-purple-400 bg-muted/60 rounded-md px-2.5 py-1.5">CREMI-7C3A-COSMIC</p>
+            </div>
+            <PropRow label="Storyline Options" value="3 concepts generated" />
           </>
         )}
 
@@ -107,6 +119,14 @@ export function BayProperties({ activeTab, selectedSceneId, className }: BayProp
             <PropRow label="Resolution" value="1920 × 1080" />
             <PropRow label="Frame Rate" value="24 fps" />
             <PropRow label="Duration" value={`${scene.duration}s`} />
+            <div className="space-y-0.5">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Motion Strategy</p>
+              <div className="bg-muted/60 rounded-md px-2.5 py-1.5">
+                <p className="text-xs text-foreground">Music-Aware</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5">Dynamic for chorus, gentle for verse</p>
+              </div>
+            </div>
+            <PropRow label="Render Mode" value="Parallel (3 jobs)" />
           </>
         )}
 
@@ -122,6 +142,28 @@ export function BayProperties({ activeTab, selectedSceneId, className }: BayProp
               </select>
             </div>
             <div className="space-y-1">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Effect Preset</p>
+              <div className="grid grid-cols-2 gap-1">
+                {EFFECT_PRESETS.map((preset, i) => {
+                  const actionName = `apply_effect_${preset.toLowerCase().replace(/\s+/g, '_')}`
+                  return (
+                    <button
+                      key={preset}
+                      onClick={() => onAction?.(actionName)}
+                      className={cn(
+                        'text-[10px] px-2 py-1.5 rounded-md text-center transition-colors',
+                        i === 0
+                          ? 'bg-primary/30 text-primary border border-primary/40'
+                          : 'bg-muted/60 text-muted-foreground border border-transparent hover:border-border'
+                      )}
+                    >
+                      {preset}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+            <div className="space-y-1">
               <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Color Grading</p>
               <div className="space-y-2">
                 <SliderRow label="Exposure" value={50} />
@@ -133,9 +175,24 @@ export function BayProperties({ activeTab, selectedSceneId, className }: BayProp
             <div className="space-y-1">
               <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Effects</p>
               {['Film Grain', 'Lens Flare', 'Vignette'].map((e) => (
-                <div key={e} className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/60">
+                <button
+                  key={e}
+                  onClick={() => onAction?.(`toggle_${e.toLowerCase().replace(/\s+/g, '_')}`)}
+                  className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/60 w-full text-left hover:bg-muted transition-colors"
+                >
                   <div className="h-3 w-3 rounded-sm bg-primary/60" />
                   <span className="text-xs text-foreground">{e}</span>
+                </button>
+              ))}
+            </div>
+            <div className="space-y-1">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Export Formats</p>
+              {EXPORT_FORMATS.map((fmt) => (
+                <div key={fmt} className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-muted/60">
+                  <div className="h-3.5 w-3.5 rounded-sm bg-primary/70 flex items-center justify-center shrink-0">
+                    <div className="h-1.5 w-1.5 rounded-sm bg-primary-foreground" />
+                  </div>
+                  <span className="text-xs text-foreground">{fmt}</span>
                 </div>
               ))}
             </div>

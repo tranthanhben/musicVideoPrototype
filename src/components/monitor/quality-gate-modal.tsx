@@ -60,7 +60,7 @@ export function QualityGateModal({ open, gateId, onResolve, onClose }: QualityGa
   const score = gate?.score ?? 0
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+    <Dialog open={open} onOpenChange={() => { /* prevent accidental close via overlay — must use Approve or Request Revision */ }}>
       <DialogContent showCloseButton={false} className="max-w-md">
         <DialogHeader>
           <div className="flex items-start justify-between">
@@ -102,12 +102,6 @@ export function QualityGateModal({ open, gateId, onResolve, onClose }: QualityGa
         </div>
 
         <DialogFooter>
-          <button
-            onClick={onClose}
-            className="flex-1 rounded-lg border border-border px-4 py-2 text-sm text-muted-foreground hover:bg-muted transition-colors"
-          >
-            Dismiss
-          </button>
           <button
             onClick={() => onResolve('revise')}
             className="flex-1 flex items-center justify-center gap-2 rounded-lg border border-border px-4 py-2 text-sm text-foreground hover:bg-muted transition-colors"

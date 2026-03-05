@@ -202,9 +202,6 @@ export default function ReelPage() {
   }
 
   function handleSceneSelect(sceneId: string) {
-    if (sceneId !== selectedSceneId) {
-      clearMessages()
-    }
     setSelectedSceneId(sceneId)
   }
 

@@ -8,6 +8,7 @@ import {
   Playfair_Display,
   Source_Sans_3,
 } from 'next/font/google'
+import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
 
 const inter = Inter({
@@ -67,8 +68,12 @@ export default function RootLayout({
   ].join(' ')
 
   return (
-    <html lang="en">
-      <body className={`${fontVars} antialiased`}>{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${fontVars} antialiased`}>
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          {children}
+        </ThemeProvider>
+      </body>
     </html>
   )
 }

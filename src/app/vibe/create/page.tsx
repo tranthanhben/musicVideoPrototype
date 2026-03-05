@@ -57,15 +57,15 @@ export default function VibCreatePage() {
               className={cn(
                 'flex items-center justify-between rounded-2xl border p-4 text-left transition-all',
                 selectedAudio === audio.id
-                  ? 'border-pink-500 bg-pink-50 ring-1 ring-pink-400'
-                  : 'border-slate-100 bg-white hover:border-pink-200'
+                  ? 'border-pink-500 bg-pink-500/10 ring-1 ring-pink-400'
+                  : 'border-border bg-card hover:border-pink-200'
               )}
             >
               <div>
-                <p className="text-sm font-semibold text-slate-900">{audio.title}</p>
-                <p className="text-xs text-slate-500">{audio.artist}</p>
+                <p className="text-sm font-semibold text-foreground">{audio.title}</p>
+                <p className="text-xs text-muted-foreground">{audio.artist}</p>
               </div>
-              <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600">
+              <span className="rounded-full bg-muted px-2 py-1 text-xs font-medium text-muted-foreground">
                 {audio.bpm} BPM
               </span>
             </button>
@@ -81,10 +81,10 @@ export default function VibCreatePage() {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder="Describe the visual story you want to tell..."
-            className="min-h-[140px] w-full resize-none rounded-2xl border border-slate-200 p-4 text-sm text-slate-900 placeholder-slate-400 transition-all focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200"
+            className="min-h-[140px] w-full resize-none rounded-2xl border border-border p-4 text-sm text-foreground placeholder-muted-foreground bg-card transition-all focus:border-pink-400 focus:outline-none focus:ring-2 focus:ring-pink-200"
           />
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Suggestions
             </p>
             <div className="flex flex-wrap gap-2">
@@ -92,7 +92,7 @@ export default function VibCreatePage() {
                 <button
                   key={chip}
                   onClick={() => setPrompt(chip)}
-                  className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 transition-all hover:border-pink-300 hover:bg-pink-50 hover:text-pink-600 active:scale-95"
+                  className="rounded-full border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground/80 transition-all hover:border-pink-300 hover:bg-pink-500/10 hover:text-pink-500 active:scale-95"
                 >
                   {chip}
                 </button>
@@ -121,12 +121,12 @@ export default function VibCreatePage() {
               <div className="text-6xl">🎬</div>
               <div>
                 <h3
-                  className="text-2xl font-extrabold text-slate-900"
+                  className="text-2xl font-extrabold text-foreground"
                   style={{ fontFamily: 'var(--font-plus-jakarta-sans, sans-serif)' }}
                 >
                   Ready to Create!
                 </h3>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-muted-foreground">
                   Your AI music video is about to come to life
                 </p>
               </div>
@@ -147,7 +147,7 @@ export default function VibCreatePage() {
                 message="Crafting your scenes..."
                 variant="minimal"
               />
-              <p className="text-xs text-slate-400">This usually takes a few seconds</p>
+              <p className="text-xs text-muted-foreground">This usually takes a few seconds</p>
             </div>
           )}
 
@@ -175,7 +175,7 @@ export default function VibCreatePage() {
   ]
 
   return (
-    <div className="flex h-screen flex-col bg-white">
+    <div className="flex h-screen flex-col bg-background">
       <SwipeWizard
         steps={steps}
         currentStep={currentStep}

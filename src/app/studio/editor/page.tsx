@@ -97,7 +97,7 @@ function EditorContent() {
   }, [activeSceneId])
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden" style={{ background: '#0D0D0D' }}>
+    <div className="h-screen flex flex-col overflow-hidden bg-background">
       <EditorTopBar project={project} totalDuration={duration} />
 
       {/* Main area */}
@@ -107,8 +107,8 @@ function EditorContent() {
           <div className="w-full max-w-3xl">
             {isGenerating ? (
               <div
-                className="relative rounded border border-white/10 flex items-center justify-center"
-                style={{ aspectRatio: '16/9', background: '#111122' }}
+                className="relative rounded border border-white/10 flex items-center justify-center bg-card"
+                style={{ aspectRatio: '16/9' }}
               >
                 <GenerationLoading progress={genProgress} message="Generating scene..." />
               </div>
@@ -124,11 +124,9 @@ function EditorContent() {
 
         {/* Property Inspector */}
         <div
-          className="flex-shrink-0 border-l overflow-hidden flex flex-col"
+          className="flex-shrink-0 border-l border-border overflow-hidden flex flex-col bg-secondary"
           style={{
             width: 280,
-            borderColor: 'rgba(255,255,255,0.08)',
-            background: '#1A1A2E',
           }}
         >
           <div
@@ -167,7 +165,7 @@ export default function EditorPage() {
   return (
     <Suspense
       fallback={
-        <div className="h-screen flex items-center justify-center" style={{ background: '#0D0D0D' }}>
+        <div className="h-screen flex items-center justify-center bg-background">
           <span className="text-[11px] opacity-30" style={{ fontFamily: MONO }}>
             Loading...
           </span>

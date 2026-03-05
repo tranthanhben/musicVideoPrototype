@@ -5,13 +5,13 @@ import { PIPELINE_LAYERS } from '@/lib/pipeline/constants'
 import { PipelineZone } from './pipeline-zone'
 import { ZoneConnector } from './zone-connector'
 
-// Zone positions — staggered layout
+// Zone positions — zigzag layout for clear left-to-right sequential flow
 const ZONE_POSITIONS: Record<string, { x: number; y: number }> = {
-  L1_INPUT:         { x: 0,   y: 0   },
-  L2_CREATIVE:      { x: 450, y: 0   },
-  L3_PREPRODUCTION: { x: 900, y: 0   },
-  L4_PRODUCTION:    { x: 450, y: 400 },
-  L5_POSTPRODUCTION:{ x: 900, y: 400 },
+  L1_INPUT:          { x: 0,    y: 100 },
+  L2_CREATIVE:       { x: 420,  y: 0   },
+  L3_PREPRODUCTION:  { x: 840,  y: 100 },
+  L4_PRODUCTION:     { x: 1260, y: 0   },
+  L5_POSTPRODUCTION: { x: 1680, y: 100 },
 }
 
 const ZONE_COLORS: Record<string, string> = {
@@ -22,13 +22,12 @@ const ZONE_COLORS: Record<string, string> = {
   L5_POSTPRODUCTION: 'border-l-pink-500',
 }
 
-// Connections: [fromLayerId, toLayerId, gateLabel]
+// Connections: [fromLayerId, toLayerId, gateLabel] — linear sequential flow
 const CONNECTIONS: [string, string, string][] = [
   ['L1_INPUT', 'L2_CREATIVE', 'QG1'],
   ['L2_CREATIVE', 'L3_PREPRODUCTION', 'QG2'],
-  ['L2_CREATIVE', 'L4_PRODUCTION', 'QG3'],
-  ['L3_PREPRODUCTION', 'L5_POSTPRODUCTION', 'QG4'],
-  ['L4_PRODUCTION', 'L5_POSTPRODUCTION', 'QG5'],
+  ['L3_PREPRODUCTION', 'L4_PRODUCTION', 'QG3'],
+  ['L4_PRODUCTION', 'L5_POSTPRODUCTION', 'QG4'],
 ]
 
 const ZONE_WIDTH = 380
@@ -51,11 +50,11 @@ export function CanvasLayout() {
     return { fromX, fromY, toX, toY }
   }
 
-  const svgWidth = 1400
-  const svgHeight = 700
+  const svgWidth = 2200
+  const svgHeight = 500
 
   return (
-    <div style={{ width: svgWidth, height: svgHeight, position: 'relative' }}>
+    <div style={{ width: 2200, height: 500, position: 'relative' }}>
       {/* SVG for connectors — rendered behind zones */}
       <svg
         width={svgWidth}

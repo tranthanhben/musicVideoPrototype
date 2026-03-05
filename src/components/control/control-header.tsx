@@ -45,31 +45,31 @@ export function ControlHeader({ onStop, startedAt }: Props) {
     ? 'text-emerald-400'
     : isRunning
     ? 'text-amber-400'
-    : 'text-zinc-500'
+    : 'text-muted-foreground'
 
   return (
     <div
-      className="flex items-center gap-4 px-4 border-b border-white/10 shrink-0"
-      style={{ height: 48, background: 'rgba(9,9,11,0.95)' }}
+      className="flex items-center gap-4 px-4 border-b border-border shrink-0 bg-background/95"
+      style={{ height: 48 }}
     >
       {/* Back */}
       <Link
         href="/"
-        className="flex items-center gap-1 text-zinc-500 hover:text-zinc-300 transition-colors"
+        className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
       >
         <ArrowLeft className="w-3.5 h-3.5" />
         <span className="text-xs">Back</span>
       </Link>
 
-      <div className="w-px h-4 bg-white/10" />
+      <div className="w-px h-4 bg-border" />
 
       {/* Title */}
       <div className="flex items-center gap-2">
         <Radio className="w-3.5 h-3.5 text-amber-400" />
-        <span className="text-sm font-semibold text-white font-mono tracking-wide">
+        <span className="text-sm font-semibold text-foreground font-mono tracking-wide">
           Mission Control
         </span>
-        <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-zinc-400 font-mono">
+        <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted border border-border text-muted-foreground font-mono">
           Cosmic Love Story
         </span>
       </div>
@@ -85,14 +85,14 @@ export function ControlHeader({ onStop, startedAt }: Props) {
           ) : isRunning ? (
             <div className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
           ) : (
-            <div className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
+            <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/40" />
           )}
           <span className={`text-xs font-medium ${statusColor}`}>{globalStatus}</span>
         </div>
 
         {/* Elapsed */}
         {startedAt && (
-          <div className="flex items-center gap-1 text-zinc-500">
+          <div className="flex items-center gap-1 text-muted-foreground">
             <Clock className="w-3 h-3" />
             <span className="text-xs font-mono">{elapsed}</span>
           </div>
@@ -100,13 +100,13 @@ export function ControlHeader({ onStop, startedAt }: Props) {
 
         {/* Progress */}
         <div className="flex items-center gap-1.5">
-          <div className="w-24 h-1.5 rounded-full bg-white/5 overflow-hidden">
+          <div className="w-24 h-1.5 rounded-full bg-muted overflow-hidden">
             <div
               className="h-full rounded-full bg-gradient-to-r from-blue-500 to-pink-500 transition-all duration-500"
               style={{ width: `${avgProgress}%` }}
             />
           </div>
-          <span className="text-[10px] font-mono text-zinc-500">{avgProgress}%</span>
+          <span className="text-[10px] font-mono text-muted-foreground">{avgProgress}%</span>
         </div>
 
         {/* Emergency stop */}

@@ -63,7 +63,7 @@ export function RetroGrid() {
         <div
           className="absolute inset-x-0 top-0 h-1/3"
           style={{
-            background: 'linear-gradient(to bottom, #0A0A0F 0%, transparent 100%)',
+            background: 'linear-gradient(to bottom, var(--background) 0%, transparent 100%)',
           }}
         />
 
@@ -71,13 +71,13 @@ export function RetroGrid() {
         <div
           className="absolute inset-y-0 left-0 w-1/4"
           style={{
-            background: 'linear-gradient(to right, #0A0A0F 0%, transparent 100%)',
+            background: 'linear-gradient(to right, var(--background) 0%, transparent 100%)',
           }}
         />
         <div
           className="absolute inset-y-0 right-0 w-1/4"
           style={{
-            background: 'linear-gradient(to left, #0A0A0F 0%, transparent 100%)',
+            background: 'linear-gradient(to left, var(--background) 0%, transparent 100%)',
           }}
         />
       </div>

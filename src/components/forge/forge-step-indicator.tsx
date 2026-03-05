@@ -8,7 +8,7 @@ interface ForgeStepIndicatorProps {
   completedSteps: boolean[]
 }
 
-const STEP_LABELS = ['Understand', 'Envision', 'Plan', 'Create', 'Polish']
+const STEP_LABELS = ['Analyze', 'Envision', 'Plan', 'Create', 'Polish']
 
 export function ForgeStepIndicator({ currentStep, completedSteps }: ForgeStepIndicatorProps) {
   return (

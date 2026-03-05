@@ -2,47 +2,109 @@
 
 import { cn } from '@/lib/utils'
 
-interface StyleCard {
-  label: string
-  from: string
-  to: string
-  direction: string
+interface StorylineOption {
+  title: string
+  tone: string
+  description: string
+  sceneCallout: string
+  matchPct: number
+  gradientFrom: string
+  gradientTo: string
+  selected?: boolean
 }
 
-const STYLE_CARDS: StyleCard[] = [
-  { label: 'Cinematic', from: '#7C3AED', to: '#22D3EE', direction: '135deg' },
-  { label: 'Ethereal', from: '#A855F7', to: '#EC4899', direction: '135deg' },
-  { label: 'Noir', from: '#1E293B', to: '#475569', direction: '135deg' },
-  { label: 'Cosmic', from: '#06B6D4', to: '#7C3AED', direction: '45deg' },
-  { label: 'Warm Glow', from: '#F59E0B', to: '#EF4444', direction: '135deg' },
-  { label: 'Dream Pop', from: '#EC4899', to: '#8B5CF6', direction: '45deg' },
+const STORYLINES: StorylineOption[] = [
+  {
+    title: 'Celestial Journey',
+    tone: 'Ethereal',
+    description: 'Sweeping cosmic vistas punctuated by intimate moments of connection — dreamlike transitions follow the energy peaks of the track.',
+    sceneCallout: 'Scene 4 at Chorus 1:00 — supernova climax',
+    matchPct: 92,
+    gradientFrom: '#7C3AED',
+    gradientTo: '#22D3EE',
+    selected: true,
+  },
+  {
+    title: 'Neon Metropolis',
+    tone: 'Cinematic',
+    description: 'High-contrast urban landscapes with editorial-style cuts — every beat triggers a new environment, building to an electric finale.',
+    sceneCallout: 'Scene 4 at Chorus 1:00 — supernova climax',
+    matchPct: 87,
+    gradientFrom: '#EC4899',
+    gradientTo: '#F59E0B',
+  },
+  {
+    title: 'Abstract Emotion',
+    tone: 'Experimental',
+    description: 'Non-linear visual poem where color fields and motion blur translate emotional arcs directly — no narrative, pure sensation.',
+    sceneCallout: 'Scene 4 at Chorus 1:00 — supernova climax',
+    matchPct: 78,
+    gradientFrom: '#22D3EE',
+    gradientTo: '#10B981',
+  },
 ]
 
-function GradientThumb({ from, to, direction, label }: StyleCard) {
+function StorylineCard({ storyline }: { storyline: StorylineOption }) {
+  const { title, tone, description, sceneCallout, matchPct, gradientFrom, gradientTo, selected } = storyline
+
   return (
-    <div className="group relative overflow-hidden rounded-xl aspect-[4/3] cursor-pointer">
-      <svg
-        className="absolute inset-0 w-full h-full"
-        xmlns="http://www.w3.org/2000/svg"
-        preserveAspectRatio="xMidYMid slice"
-      >
-        <defs>
-          <linearGradient
-            id={`grad-${label}`}
-            x1="0%"
-            y1="0%"
-            x2={direction === '135deg' ? '100%' : '0%'}
-            y2="100%"
+    <div
+      className={cn(
+        'relative rounded-xl border bg-card p-4 transition-all',
+        selected
+          ? 'border-primary/60 bg-primary/5 shadow-md'
+          : 'border-border hover:border-border/80',
+      )}
+    >
+      {/* Gradient left border */}
+      <div
+        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+        style={{
+          background: `linear-gradient(to bottom, ${gradientFrom}, ${gradientTo})`,
+        }}
+      />
+
+      <div className="pl-2">
+        {/* Title row */}
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+          <span
+            className={cn(
+              'text-[10px] font-bold tabular-nums px-1.5 py-0.5 rounded-full',
+              matchPct >= 90
+                ? 'bg-green-500/20 text-green-400'
+                : matchPct >= 85
+                  ? 'bg-yellow-500/20 text-yellow-400'
+                  : 'bg-muted text-muted-foreground',
+            )}
           >
-            <stop offset="0%" stopColor={from} />
-            <stop offset="100%" stopColor={to} />
-          </linearGradient>
-        </defs>
-        <rect width="100%" height="100%" fill={`url(#grad-${label})`} />
-      </svg>
-      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors" />
-      <div className="absolute inset-0 flex items-end p-3">
-        <span className="text-xs font-semibold text-white drop-shadow">{label}</span>
+            {matchPct}% match
+          </span>
+        </div>
+
+        {/* Tone tag */}
+        <span
+          className="inline-block mb-2 text-[10px] font-medium px-2 py-0.5 rounded-full border"
+          style={{
+            borderColor: gradientFrom + '80',
+            color: gradientFrom,
+            backgroundColor: gradientFrom + '18',
+          }}
+        >
+          {tone}
+        </span>
+
+        {/* Description */}
+        <p className="text-xs text-muted-foreground leading-relaxed mb-3">{description}</p>
+
+        {/* Key scene callout */}
+        <div className="flex items-center gap-1.5 rounded-lg bg-muted/50 px-2.5 py-1.5">
+          <div
+            className="h-1.5 w-1.5 rounded-full flex-shrink-0"
+            style={{ backgroundColor: gradientTo }}
+          />
+          <p className="text-[10px] font-medium text-muted-foreground font-mono">{sceneCallout}</p>
+        </div>
       </div>
     </div>
   )
@@ -51,14 +113,23 @@ function GradientThumb({ from, to, direction, label }: StyleCard) {
 export function CreativeView() {
   return (
     <div className="flex h-full flex-col p-6 gap-4">
+      {/* Header */}
       <div>
-        <h2 className="text-sm font-semibold text-foreground">Mood Board</h2>
-        <p className="text-xs text-muted-foreground mt-0.5">Creative direction styles being explored</p>
+        <h2 className="text-sm font-semibold text-foreground">Storyline Options</h2>
+        <p className="text-xs text-muted-foreground mt-0.5">AI-generated creative directions matched to your track</p>
       </div>
 
-      <div className={cn('grid grid-cols-3 gap-3 flex-1 content-start')}>
-        {STYLE_CARDS.map((card) => (
-          <GradientThumb key={card.label} {...card} />
+      {/* Style seed badge */}
+      <div className="flex items-center">
+        <span className="inline-flex items-center rounded-full border border-purple-500/40 bg-purple-500/10 px-3 py-1 text-[10px] font-mono font-medium text-purple-400 tracking-wide">
+          Shared Style Seed: CREMI-7C3A-COSMIC
+        </span>
+      </div>
+
+      {/* Storyline cards */}
+      <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
+        {STORYLINES.map((s) => (
+          <StorylineCard key={s.title} storyline={s} />
         ))}
       </div>
     </div>

@@ -33,8 +33,7 @@ export function GenerationLoading({
       ? '#18181b'
       : 'var(--primary, #7C3AED)'
 
-  const textColor =
-    variant === 'minimal' ? 'text-foreground' : 'text-white'
+  const textColor = 'text-foreground'
 
   const wrapperClass = cn(
     'flex flex-col items-center gap-4',

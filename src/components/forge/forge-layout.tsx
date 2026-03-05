@@ -12,7 +12,7 @@ import { ForgeStepPlan } from './forge-step-plan'
 import { ForgeStepCreate } from './forge-step-create'
 import { ForgeStepPolish } from './forge-step-polish'
 
-const STEP_NAMES = ['Envision', 'Plan', 'Create', 'Polish', 'Done']
+const STEP_NAMES = ['Analyze', 'Envision', 'Plan', 'Create', 'Polish']
 
 interface ForgeLayoutProps {
   currentStep: number

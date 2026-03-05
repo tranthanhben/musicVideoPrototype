@@ -76,7 +76,7 @@ export function ReelLayout({
         />
       )}
 
-      <ReelCommandPalette open={commandPaletteOpen} onClose={onCommandPaletteClose} />
+      <ReelCommandPalette open={commandPaletteOpen} onClose={onCommandPaletteClose} onAction={onAction} />
     </div>
   )
 }

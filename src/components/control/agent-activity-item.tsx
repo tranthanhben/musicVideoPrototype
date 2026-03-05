@@ -30,9 +30,9 @@ export function AgentActivityItem({ activity }: Props) {
   const bgCls = TYPE_BG[activity.agentType]
 
   return (
-    <div className="flex flex-col gap-0.5 py-1.5 border-b border-white/5 last:border-0">
+    <div className="flex flex-col gap-0.5 py-1.5 border-b border-border/30 last:border-0">
       <div className="flex items-center gap-1.5">
-        <span className="text-[9px] text-white/30 font-mono shrink-0">
+        <span className="text-[9px] text-foreground/30 font-mono shrink-0">
           {formatTime(activity.timestamp)}
         </span>
         <span
@@ -40,11 +40,11 @@ export function AgentActivityItem({ activity }: Props) {
         >
           {activity.agentType}
         </span>
-        <span className="text-[10px] font-medium text-white/80 truncate">
+        <span className="text-[10px] font-medium text-foreground/80 truncate">
           {activity.agentName}
         </span>
       </div>
-      <p className="text-[10px] text-white/40 leading-snug pl-0.5">
+      <p className="text-[10px] text-foreground/40 leading-snug pl-0.5">
         {activity.action || activity.message}
       </p>
     </div>
