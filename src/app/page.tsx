@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { MessageSquare, SplitSquareVertical, Film, LayoutDashboard, Maximize2, Hammer, Terminal, Clapperboard, FlaskConical } from 'lucide-react'
+import { MessageSquare, SplitSquareVertical, Film, LayoutDashboard, Maximize2, Hammer, Terminal, Clapperboard, FlaskConical, Workflow } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
 
 const concepts = [
@@ -115,7 +115,7 @@ export default function HomePage() {
       <motion.div className="mb-14 text-center" initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <h1 className="text-6xl font-bold tracking-tight text-foreground mb-3">Cremi</h1>
         <p className="text-lg text-muted-foreground mb-1">Agentic Chat + Video Editor Prototypes</p>
-        <p className="text-sm text-muted-foreground/60">8 interaction patterns for AI music video production</p>
+        <p className="text-sm text-muted-foreground/60">9 interaction patterns for AI music video production</p>
       </motion.div>
 
       <motion.div className="grid w-full max-w-6xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4" variants={containerVariants} initial="hidden" animate="visible">
@@ -149,6 +149,25 @@ export default function HomePage() {
             </motion.div>
           )
         })}
+      </motion.div>
+
+      {/* Flow prototype link */}
+      <motion.div className="mt-6 w-full max-w-6xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.85 }}>
+        <Link href="/flow" className="group block">
+          <div className="relative overflow-hidden rounded-2xl border p-5 transition-all duration-300 hover:-translate-y-0.5" style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.08), rgba(34,211,238,0.06))', borderColor: 'rgba(16,185,129,0.2)' }}>
+            <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ boxShadow: 'inset 0 0 40px rgba(16,185,129,0.15)' }} />
+            <div className="relative flex items-center gap-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl shrink-0" style={{ background: 'rgba(16,185,129,0.2)' }}>
+                <Workflow className="h-5 w-5 text-emerald-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-sm font-bold text-emerald-400 tracking-wide">STEP-BY-STEP FLOW</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">8-step wizard: MV type, setup, analysis, storyline, mood board, storyboard, generation, VFX & export</p>
+              </div>
+              <span className="text-xs font-medium text-emerald-400 shrink-0 transition-transform duration-200 group-hover:translate-x-1">Explore →</span>
+            </div>
+          </div>
+        </Link>
       </motion.div>
 
       {/* Scenario Research link */}
