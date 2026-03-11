@@ -170,6 +170,25 @@ export default function HomePage() {
         </Link>
       </motion.div>
 
+      {/* Flow V2 prototype link */}
+      <motion.div className="mt-3 w-full max-w-6xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.88 }}>
+        <Link href="/flow-v2" className="group block">
+          <div className="relative overflow-hidden rounded-2xl border p-5 transition-all duration-300 hover:-translate-y-0.5" style={{ background: 'linear-gradient(135deg, rgba(34,211,238,0.08), rgba(124,58,237,0.06))', borderColor: 'rgba(34,211,238,0.2)' }}>
+            <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ boxShadow: 'inset 0 0 40px rgba(34,211,238,0.15)' }} />
+            <div className="relative flex items-center gap-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl shrink-0" style={{ background: 'rgba(34,211,238,0.2)' }}>
+                <Workflow className="h-5 w-5 text-cyan-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-sm font-bold text-cyan-400 tracking-wide">STEP-BY-STEP FLOW V2</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">Bản chỉnh sửa — 8-step wizard: MV type, setup, analysis, storyline, mood board, storyboard, generation, VFX & export</p>
+              </div>
+              <span className="text-xs font-medium text-cyan-400 shrink-0 transition-transform duration-200 group-hover:translate-x-1">Explore →</span>
+            </div>
+          </div>
+        </Link>
+      </motion.div>
+
       {/* Scenario Research link */}
       <motion.div className="mt-10 w-full max-w-6xl" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9 }}>
         <Link href="/scenarios" className="group block">
