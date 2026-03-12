@@ -25,7 +25,6 @@ export function CharacterSetupView({ onConfirm }: CharacterSetupViewProps) {
 
   return (
     <div className="flex h-full flex-col p-5 gap-3">
-      {/* Header */}
       <div className="flex items-center justify-between shrink-0">
         <div>
           <h2 className="text-sm font-bold text-foreground">Character Setup</h2>
@@ -46,7 +45,7 @@ export function CharacterSetupView({ onConfirm }: CharacterSetupViewProps) {
         </AnimatePresence>
       </div>
 
-      {/* Selected strip */}
+      {/* Selected strip with real avatars */}
       <AnimatePresence>
         {selectedChars.length > 0 && (
           <motion.div
@@ -64,9 +63,11 @@ export function CharacterSetupView({ onConfirm }: CharacterSetupViewProps) {
                 exit={{ opacity: 0, scale: 0.8 }}
                 className="flex items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/5 px-2.5 py-1.5"
               >
-                <div
-                  className="h-6 w-6 rounded-md shrink-0"
-                  style={{ background: `linear-gradient(135deg, ${c.accentColor}, ${c.accentColor}66)` }}
+                <img
+                  src={c.avatarUrl}
+                  alt={c.name}
+                  className="h-8 w-8 rounded-full object-cover shrink-0 border-2"
+                  style={{ borderColor: c.accentColor }}
                 />
                 <span className="text-[11px] font-semibold text-foreground">{c.name}</span>
                 <button onClick={() => toggleCharacter(c.id)} className="text-muted-foreground hover:text-foreground cursor-pointer">
@@ -99,14 +100,12 @@ export function CharacterSetupView({ onConfirm }: CharacterSetupViewProps) {
         <Plus className="h-4 w-4 text-muted-foreground ml-auto" />
       </div>
 
-      {/* Divider */}
       <div className="flex items-center gap-3 shrink-0">
         <div className="flex-1 h-px bg-border" />
         <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">or choose archetypes</span>
         <div className="flex-1 h-px bg-border" />
       </div>
 
-      {/* Character grid */}
       <div className="flex-1 overflow-y-auto min-h-0">
         <div className="grid grid-cols-2 gap-2.5">
           {CHARACTER_ARCHETYPES.map((char, i) => (
@@ -149,33 +148,33 @@ function CharacterCard({ character, isSelected, isDisabled, order, onToggle }: {
       )}
       style={isSelected ? { boxShadow: `0 0 0 1px ${character.accentColor}40, 0 4px 20px ${character.accentColor}20` } : {}}
     >
-      {/* Gradient header */}
-      <div
-        className="h-16 w-full relative"
-        style={{ background: `linear-gradient(135deg, ${character.accentColor}30, ${character.accentColor}10)` }}
-      >
-        {/* Avatar placeholder centered */}
-        <div
-          className="absolute left-3 bottom-[-20px] h-10 w-10 rounded-xl border-2 border-background flex items-center justify-center text-lg shadow-md"
-          style={{ background: `linear-gradient(135deg, ${character.accentColor}, ${character.accentColor}80)` }}
+      {/* Real photo header */}
+      <div className="aspect-[3/2] w-full relative overflow-hidden group">
+        <img
+          src={character.avatarUrl}
+          alt={character.name}
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-black/0" />
+        {/* Role badge */}
+        <span
+          className="absolute top-2 left-2 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+          style={{ color: character.accentColor, backgroundColor: `${character.accentColor}30`, border: `1px solid ${character.accentColor}50` }}
         >
-          <span>{character.name.charAt(0)}</span>
-        </div>
+          {character.role}
+        </span>
         {isSelected && (
           <div className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary shadow-sm">
             <Check className="h-3 w-3 text-primary-foreground" />
           </div>
         )}
-        <span
-          className="absolute top-2 left-2 text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-          style={{ color: character.accentColor, backgroundColor: `${character.accentColor}20`, border: `1px solid ${character.accentColor}40` }}
-        >
-          {character.role}
-        </span>
+        {/* Name overlay at bottom of image */}
+        <div className="absolute bottom-2 left-3">
+          <p className="text-xs font-bold text-white leading-tight">{character.name}</p>
+        </div>
       </div>
 
-      <div className="pt-6 pb-3 px-3">
-        <p className="text-xs font-bold text-foreground mb-1">{character.name}</p>
+      <div className="p-3 pt-2">
         <p className="text-[10px] text-muted-foreground leading-relaxed mb-2">{character.description}</p>
         <div className="flex flex-wrap gap-1">
           {character.tags.slice(0, 3).map((tag) => (

@@ -16,6 +16,9 @@ const ALL_STATES: JourneyStateId[] = [
 ]
 
 const PATTERNS: IntentPattern[] = [
+  // Welcome / Track selection
+  { pattern: /analyze\s*(?:my\s*)?track|start\s*analysis|upload/i, action: 'start_analysis', states: ['welcome'] },
+  { pattern: /show\s*(?:me\s*)?(?:a\s*)?demo|demo\s*track|try\s*demo/i, action: 'start_demo', states: ['welcome'] },
   // Analysis
   { pattern: /emotion\s*peaks?|energy\s*peaks?|show\s*peaks/i, action: 'show_emotion_peaks', states: ['l1_review', 'analyzing'] },
   { pattern: /segment\s*detail|show\s*segments|all\s*segments/i, action: 'show_segments', states: ['l1_review', 'analyzing'] },

@@ -43,7 +43,6 @@ export default function BayPage() {
   const setCurrentLayer = usePipelineStore((s) => s.setCurrentLayer)
   const clearMessages = useChatStore((s) => s.clearMessages)
 
-  /** Stream a response into chat, cancelling any in-progress stream */
   const streamChat = useCallback((response: PipelineResponse) => {
     if (cancelStreamRef.current) cancelStreamRef.current()
     cancelStreamRef.current = streamResponse({
@@ -53,18 +52,15 @@ export default function BayPage() {
     })
   }, [])
 
-  /** Advance the journey to a new state */
   const advanceToState = useCallback((stateId: JourneyStateId) => {
     setJourneyState(stateId)
     const state = JOURNEY_STATES[stateId]
     if (state.viewHint) setActiveTab(VIEW_HINT_TO_TAB[state.viewHint] ?? 'input')
     setSuggestions(state.suggestions)
-
     const response = getJourneyResponse(stateId)
     streamChat(response)
   }, [streamChat])
 
-  /** Handle actions from chat (approve, revise, regenerate, etc.) */
   const handleAction = useCallback((action: string) => {
     const state = JOURNEY_STATES[journeyState]
 
@@ -85,11 +81,8 @@ export default function BayPage() {
       const sceneIdx = parseInt(action.replace('regenerate_scene_', ''))
       const scene = project.scenes[sceneIdx]
       if (!scene) return
-
       const regenResponse = buildSceneRegenResponse(sceneIdx, scene)
       streamChat(regenResponse)
-
-      // Simulate regeneration delay then show result
       setTimeout(() => {
         const completeResponse = buildSceneRegenCompleteResponse(sceneIdx)
         streamChat(completeResponse)
@@ -119,7 +112,17 @@ export default function BayPage() {
       return
     }
 
-    // Storyline selection
+    if (action === 'start_analysis' || action === 'start_demo') {
+      streamChat({
+        text: action === 'start_demo'
+          ? `Loading **"${project.audio.title}"** by ${project.audio.artist}... This cosmic love story follows Aria and Kael through a stellar separation. Let me analyze the track structure.`
+          : `Great! Analyzing your track — **"${project.audio.title}"** by ${project.audio.artist}. Extracting BPM, key, emotional peaks, and segment structure...`,
+      })
+      startPipeline()
+      simulatorRef.current?.start()
+      return
+    }
+
     if (action.startsWith('select_storyline_')) {
       const idx = parseInt(action.replace('select_storyline_', ''))
       setSelectedStoryline(idx)
@@ -128,19 +131,17 @@ export default function BayPage() {
       return
     }
 
-    // Bay-specific actions (analysis, creative, storyboard, generation, editing intents)
     const bayResponse = buildBayResponse(action, journeyState, project)
     if (bayResponse) {
       streamChat(bayResponse)
       return
     }
 
-    // Free-form user message
     if (action.startsWith('user_message:')) {
       const userText = action.slice('user_message:'.length)
       const matched = matchIntent(userText, journeyState)
       if (matched) {
-        handleAction(matched) // recursive — safe because matched won't start with 'user_message:'
+        handleAction(matched)
         return
       }
       const response = buildFreeformResponse(journeyState)
@@ -149,7 +150,6 @@ export default function BayPage() {
     }
   }, [journeyState, streamChat, clearMessages, resetPipeline, advanceToState])
 
-  // --- Pipeline simulator wiring ---
   useEffect(() => {
     resetPipeline()
     clearMessages()
@@ -174,7 +174,6 @@ export default function BayPage() {
       if (event.gateId) {
         const reviewState = GATE_TO_REVIEW_STATE[event.gateId]
         if (reviewState) {
-          // Mark current layer complete before showing review
           if (event.layerId) setLayerStatus(event.layerId, 'complete')
           advanceToState(reviewState)
         }
@@ -190,19 +189,10 @@ export default function BayPage() {
       advanceToState('complete')
     })
 
-    // Start: show welcome, then start pipeline
-    const welcomeTimer = setTimeout(() => {
-      advanceToState('welcome')
-    }, 500)
-
-    const pipelineTimer = setTimeout(() => {
-      startPipeline()
-      sim.start()
-    }, 2500)
+    const welcomeTimer = setTimeout(() => { advanceToState('welcome') }, 500)
 
     return () => {
       clearTimeout(welcomeTimer)
-      clearTimeout(pipelineTimer)
       sim.stop()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

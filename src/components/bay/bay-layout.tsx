@@ -6,7 +6,7 @@ import { AssetBrowser } from './asset-browser'
 import { BayPreview } from './bay-preview'
 import { BayProperties } from './bay-properties'
 import { BayTimeline } from './bay-timeline'
-import { BayChatPanel } from './bay-chat-panel'
+import { BayChatPanel } from '@/components/bay/bay-chat-panel'
 import type { ChatSuggestion } from '@/lib/chat/types'
 import type { JourneyStateId } from '@/lib/journey/orchestrator'
 
@@ -39,7 +39,6 @@ export function BayLayout({
 }: BayLayoutProps) {
   return (
     <div className="flex flex-col h-full">
-      {/* Top bar */}
       <BayTopBar
         activeTab={activeTab}
         onTabChange={onTabChange}
@@ -50,14 +49,13 @@ export function BayLayout({
 
       {/* Middle row */}
       <div className="flex flex-1 min-h-0 relative">
-        {/* Asset browser */}
         <AssetBrowser
+          activeTab={activeTab}
           selectedSceneId={selectedSceneId}
           onSceneSelect={onSceneSelect}
           onAction={onAction}
         />
 
-        {/* Preview monitor */}
         <BayPreview
           activeTab={activeTab}
           selectedSceneId={selectedSceneId}
@@ -84,7 +82,6 @@ export function BayLayout({
         />
       </div>
 
-      {/* Timeline */}
       <BayTimeline
         activeTab={activeTab}
         selectedSceneId={selectedSceneId}

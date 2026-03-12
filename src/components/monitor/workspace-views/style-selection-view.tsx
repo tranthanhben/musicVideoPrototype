@@ -20,11 +20,38 @@ export interface StyleSelections {
   palette: string | null
 }
 
+const STYLE_IMAGES: Record<string, string> = {
+  cinematic: '/assets/mood-board/mood-cinematic.jpg',
+  anime: '/assets/mood-board/scene-intimate-portrait.jpg',
+  abstract: '/assets/mood-board/color-cool-cosmic.jpg',
+  documentary: '/assets/mood-board/scene-vast-starfield.jpg',
+  performance: '/assets/mood-board/mood-euphoric.jpg',
+  surreal: '/assets/mood-board/scene-space-station.jpg',
+}
+
+const MOOD_IMAGES: Record<string, string> = {
+  dark: '/assets/mood-board/mood-melancholic.jpg',
+  ethereal: '/assets/mood-board/color-cool-cosmic.jpg',
+  energetic: '/assets/mood-board/mood-euphoric.jpg',
+  romantic: '/assets/mood-board/color-warm-golden.jpg',
+  nostalgic: '/assets/mood-board/color-warm-golden.jpg',
+  futuristic: '/assets/mood-board/color-cool-cosmic.jpg',
+}
+
+const GENRE_IMAGES: Record<string, string> = {
+  'pop-mv': '/assets/mood-board/mood-euphoric.jpg',
+  hiphop: '/assets/mood-board/scene-vast-starfield.jpg',
+  'indie-art': '/assets/mood-board/mood-melancholic.jpg',
+  edm: '/assets/mood-board/mood-cinematic.jpg',
+  lofi: '/assets/mood-board/color-warm-golden.jpg',
+  rock: '/assets/mood-board/scene-intimate-portrait.jpg',
+}
+
 type Step = 'style' | 'mood' | 'genre' | 'palette'
-const STEPS: { key: Step; label: string; options: StyleOption[] }[] = [
-  { key: 'style', label: 'Video Style', options: VIDEO_STYLES },
-  { key: 'mood', label: 'Mood & Tone', options: MOOD_OPTIONS },
-  { key: 'genre', label: 'Genre', options: GENRE_OPTIONS },
+const STEPS: { key: Step; label: string; options: StyleOption[]; images: Record<string, string> }[] = [
+  { key: 'style', label: 'Video Style', options: VIDEO_STYLES, images: STYLE_IMAGES },
+  { key: 'mood', label: 'Mood & Tone', options: MOOD_OPTIONS, images: MOOD_IMAGES },
+  { key: 'genre', label: 'Genre', options: GENRE_OPTIONS, images: GENRE_IMAGES },
 ]
 const TAB_LABELS = [...STEPS.map((s) => s.label), 'Palette']
 
@@ -42,7 +69,6 @@ export function StyleSelectionView({ onConfirm }: StyleSelectionViewProps) {
 
   return (
     <div className="flex h-full flex-col p-5 gap-3">
-      {/* Header */}
       <div className="flex items-center justify-between shrink-0">
         <div>
           <h2 className="text-sm font-bold text-foreground">Creative Direction</h2>
@@ -58,7 +84,6 @@ export function StyleSelectionView({ onConfirm }: StyleSelectionViewProps) {
         )}
       </div>
 
-      {/* Progress bar */}
       <div className="shrink-0">
         <div className="flex justify-between mb-1.5">
           <span className="text-[10px] text-muted-foreground">{completedSteps}/4 selections</span>
@@ -70,7 +95,6 @@ export function StyleSelectionView({ onConfirm }: StyleSelectionViewProps) {
         </div>
       </div>
 
-      {/* Step tabs */}
       <div className="flex gap-1.5 shrink-0">
         {TAB_LABELS.map((label, i) => {
           const key = i === 3 ? 'palette' : STEPS[i].key
@@ -92,12 +116,12 @@ export function StyleSelectionView({ onConfirm }: StyleSelectionViewProps) {
         })}
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto min-h-0">
         <motion.div key={currentStep} initial={{ opacity: 0, x: 14 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }}>
           {currentStep < 3 ? (
-            <OptionGrid
+            <ImageOptionGrid
               options={STEPS[currentStep].options}
+              images={STEPS[currentStep].images}
               selectedId={selections[STEPS[currentStep].key]}
               onSelect={(id) => selectOption(STEPS[currentStep].key, id)}
             />
@@ -111,30 +135,39 @@ export function StyleSelectionView({ onConfirm }: StyleSelectionViewProps) {
   )
 }
 
-function OptionGrid({ options, selectedId, onSelect }: {
-  options: StyleOption[]; selectedId: string | null; onSelect: (id: string) => void
+export function ImageOptionGrid({ options, images, selectedId, onSelect }: {
+  options: StyleOption[]
+  images: Record<string, string>
+  selectedId: string | null
+  onSelect: (id: string) => void
 }) {
   return (
     <div className="grid grid-cols-2 gap-2.5">
       {options.map((opt) => {
         const isSel = opt.id === selectedId
+        const imgSrc = images[opt.id]
         return (
           <button key={opt.id} onClick={() => onSelect(opt.id)}
             className={cn('relative rounded-xl border p-0 text-left transition-all cursor-pointer overflow-hidden group',
               isSel ? 'border-primary shadow-md' : 'border-border hover:border-primary/40')}
           >
-            <div className="h-14 w-full relative overflow-hidden"
-              style={{ background: `linear-gradient(135deg, ${opt.gradientFrom}, ${opt.gradientTo})` }}>
-              <div className="absolute inset-0 bg-black/10" />
-              <div className="absolute inset-0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+            <div className="h-16 w-full relative overflow-hidden">
+              {imgSrc ? (
+                <img src={imgSrc} alt={opt.label} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+              ) : (
+                <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${opt.gradientFrom}, ${opt.gradientTo})` }} />
+              )}
+              <div className="absolute inset-0 bg-black/30 group-hover:bg-black/20 transition-colors" />
+              <div className="absolute bottom-2 left-3 right-8">
+                <p className="text-[11px] font-bold text-white leading-tight">{opt.label}</p>
+              </div>
               {isSel && (
                 <div className="absolute top-2 right-2 flex h-5 w-5 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm border border-white/40">
                   <Check className="h-3 w-3 text-white" />
                 </div>
               )}
             </div>
-            <div className="p-2.5">
-              <p className="text-xs font-bold text-foreground mb-0.5">{opt.label}</p>
+            <div className="p-2 pb-2.5">
               <p className="text-[10px] text-muted-foreground leading-relaxed">{opt.description}</p>
             </div>
           </button>

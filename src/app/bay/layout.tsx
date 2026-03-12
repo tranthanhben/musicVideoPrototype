@@ -1,12 +1,7 @@
-import { ThemeToggle } from '@/components/theme-toggle'
+import type { Metadata } from 'next'
 
-export default function BayLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <div data-theme="cremi" className="relative h-screen overflow-hidden bg-background text-foreground font-[family-name:var(--font-inter)]">
-      <div className="absolute top-2 right-2 z-50">
-        <ThemeToggle />
-      </div>
-      {children}
-    </div>
-  )
+export const metadata: Metadata = { title: 'Editing Bay' }
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <>{children}</>
 }

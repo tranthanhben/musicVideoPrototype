@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Send } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ChatSuggestion } from '@/lib/chat/types'
@@ -17,6 +18,8 @@ export function ChatInput({
   onSend, placeholder = 'Type a message...', disabled, suggestions, className,
 }: ChatInputProps) {
   const [value, setValue] = useState('')
+  const [dismissing, setDismissing] = useState(false)
+  const [clickedIdx, setClickedIdx] = useState<number | null>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   function handleSend() {
@@ -25,6 +28,17 @@ export function ChatInput({
     onSend(trimmed)
     setValue('')
     inputRef.current?.focus()
+  }
+
+  function handleChipClick(text: string, idx: number) {
+    if (disabled || dismissing) return
+    setClickedIdx(idx)
+    setDismissing(true)
+    setTimeout(() => {
+      onSend(text)
+      setDismissing(false)
+      setClickedIdx(null)
+    }, 350)
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -37,21 +51,36 @@ export function ChatInput({
   return (
     <div className={cn('border-t border-border bg-background p-4', className)}>
       {/* Suggestion chips */}
-      {suggestions && suggestions.length > 0 && (
-        <div className="flex gap-2 mb-3 flex-wrap">
-          {suggestions.map((s) => (
-            <button
-              key={s.text}
-              onClick={() => onSend(s.text)}
-              disabled={disabled}
-              className="px-3 py-1.5 text-xs rounded-full border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50"
-            >
-              {s.icon && <span className="mr-1">{s.icon}</span>}
-              {s.text}
-            </button>
-          ))}
-        </div>
-      )}
+      <AnimatePresence mode="popLayout">
+        {suggestions && suggestions.length > 0 && !dismissing && (
+          <motion.div
+            className="flex gap-2 mb-3 flex-wrap"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -4, transition: { duration: 0.2 } }}
+          >
+            {suggestions.map((s, idx) => (
+              <motion.button
+                key={s.text}
+                onClick={() => handleChipClick(s.text, idx)}
+                disabled={disabled}
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{
+                  opacity: clickedIdx === idx ? 0.6 : 1,
+                  scale: clickedIdx === idx ? 0.92 : 1,
+                }}
+                whileHover={{ scale: 1.04, backgroundColor: 'rgba(255,255,255,0.06)' }}
+                whileTap={{ scale: 0.93 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                className="px-3 py-1.5 text-xs rounded-full border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50"
+              >
+                {s.icon && <span className="mr-1">{s.icon}</span>}
+                {s.text}
+              </motion.button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Input area */}
       <div className="flex items-end gap-2">

@@ -16,9 +16,9 @@ function makeTakes(sceneId: string, colors: [string, string][]): MockTake[] {
 // --- Project 1: Cosmic Love Story (8 scenes, complete, BPM 128) ---
 const cosmicScenes: MockScene[] = [
   {
-    id: 'cosmic-1', index: 0, subject: 'Couple', action: 'floating in zero gravity',
-    environment: 'deep space nebula', cameraAngle: 'wide shot', cameraMovement: 'slow dolly in',
-    prompt: 'Couple floating in zero gravity inside a glowing purple nebula, star dust swirling around them, cinematic lighting',
+    id: 'cosmic-1', index: 0, subject: 'Aria', action: 'floating alone in zero gravity, eyes closed',
+    environment: 'deep violet nebula, crystal debris from shattered ship', cameraAngle: 'ultra-wide anamorphic', cameraMovement: 'slow dolly in',
+    prompt: 'Woman with silver hair floating in zero gravity inside a violet nebula, eyes closed in fetal position. Crystal debris from a shattered ship catches starlight. A faint cyan pulse glows from her chest. Ultra-cinematic, anamorphic lens flare.',
     thumbnailUrl: '/assets/scenes/scene-01-the-void.jpg',
     duration: 24, status: 'completed',
     takes: [
@@ -28,9 +28,9 @@ const cosmicScenes: MockScene[] = [
     ],
   },
   {
-    id: 'cosmic-2', index: 1, subject: 'Woman', action: 'reaching toward a distant star',
-    environment: 'asteroid field', cameraAngle: 'low angle', cameraMovement: 'crane up',
-    prompt: 'Woman in flowing silver dress reaching toward a glowing star in an asteroid field, dramatic backlight, 4K',
+    id: 'cosmic-2', index: 1, subject: 'Aria', action: 'reaching toward a pulsing star through an asteroid field',
+    environment: 'dense asteroid field, impossible colors', cameraAngle: 'low angle', cameraMovement: 'crane up',
+    prompt: 'Woman in silver flowing dress unfurling in zero gravity, reaching toward a distant pulsing light through a dense asteroid field. Each asteroid reflects impossible colors. Backlit by the pulsing star, dramatic cinematic lighting.',
     thumbnailUrl: '/assets/scenes/scene-02-aria-reaching.jpg',
     duration: 20, status: 'completed',
     takes: [
@@ -39,9 +39,9 @@ const cosmicScenes: MockScene[] = [
     ],
   },
   {
-    id: 'cosmic-3', index: 2, subject: 'Man', action: 'piloting a crystal spaceship',
-    environment: 'wormhole entrance', cameraAngle: 'cockpit POV', cameraMovement: 'handheld shake',
-    prompt: 'Man at crystal spaceship controls as wormhole spirals open ahead, neon reflections on his face',
+    id: 'cosmic-3', index: 2, subject: 'Kael', action: 'piloting a crystal ship into a spiraling wormhole',
+    environment: 'crystal ship cockpit, wormhole entrance', cameraAngle: 'cockpit POV', cameraMovement: 'handheld close-up',
+    prompt: 'Man at controls of a translucent crystal ship, face lit by neon wormhole reflections and blue instrument glow. Wormhole spirals open ahead — a tunnel of distorted spacetime. Determination in his eyes. Cinematic, intense.',
     thumbnailUrl: '/assets/scenes/scene-03-crystal-ship.jpg',
     duration: 18, status: 'completed',
     takes: [
@@ -50,9 +50,9 @@ const cosmicScenes: MockScene[] = [
     ],
   },
   {
-    id: 'cosmic-4', index: 3, subject: 'Two lovers', action: 'dancing on a moonlit planet',
-    environment: 'alien moon surface', cameraAngle: 'aerial overhead', cameraMovement: 'slow orbit',
-    prompt: 'Two lovers dancing on silver moon surface, twin suns setting on horizon, slow orbital camera',
+    id: 'cosmic-4', index: 3, subject: 'Aria & Kael', action: 'dancing together on an alien moon surface in a shared dream',
+    environment: 'silver moon surface, twin suns setting in gold and magenta', cameraAngle: 'aerial overhead', cameraMovement: 'slow orbit',
+    prompt: 'Two figures dancing on a silver alien moon surface, twin suns setting on the horizon in gold and magenta. They exist as half-transparent holograms — a shared dream. Intimate yet cosmic, vast landscape dwarfing the dancers. Aerial orbit camera.',
     thumbnailUrl: '/assets/scenes/scene-04-moon-dance.jpg',
     duration: 26, status: 'completed',
     takes: [
@@ -62,9 +62,9 @@ const cosmicScenes: MockScene[] = [
     ],
   },
   {
-    id: 'cosmic-5', index: 4, subject: 'Woman', action: 'singing inside a supernova',
-    environment: 'exploding star', cameraAngle: 'extreme close-up', cameraMovement: 'push in',
-    prompt: 'Close up of woman singing as supernova explodes behind her, fire and light radiating outward, epic scale',
+    id: 'cosmic-5', index: 4, subject: 'Aria', action: 'singing before an exploding supernova, hair whipping in shockwaves',
+    environment: 'exploding star, fire and plasma eruption', cameraAngle: 'extreme close-up', cameraMovement: 'slow push in, then wide pullback',
+    prompt: 'Close-up of woman singing before an exploding supernova. Fire, plasma, and blinding light erupt behind her in slow motion. Silver hair whips in stellar shockwaves. Raw emotion — longing channeled through the performance. Epic scale reveal on pullback.',
     thumbnailUrl: '/assets/scenes/scene-05-supernova-voice.jpg',
     duration: 22, status: 'completed',
     takes: [
@@ -73,9 +73,9 @@ const cosmicScenes: MockScene[] = [
     ],
   },
   {
-    id: 'cosmic-6', index: 5, subject: 'Couple', action: 'embracing in free fall',
-    environment: 'Saturn ring plane', cameraAngle: 'medium shot', cameraMovement: 'slow rotation',
-    prompt: 'Couple embracing as they free fall through Saturn ring particles, golden dust streams around them',
+    id: 'cosmic-6', index: 5, subject: 'Aria & Kael', action: 'reuniting in freefall among Saturn ring particles',
+    environment: 'Saturn ring plane, golden ice and dust', cameraAngle: 'medium shot', cameraMovement: 'slow rotation tracking',
+    prompt: 'Two figures drifting toward each other in freefall through Saturn ring particles. Golden ice and dust streams in spiral patterns. The moment their hands touch, a shockwave of light ripples outward through the rings. Natural bokeh from light particles.',
     thumbnailUrl: '/assets/scenes/scene-06-saturn-embrace.jpg',
     duration: 20, status: 'completed',
     takes: [
@@ -84,9 +84,9 @@ const cosmicScenes: MockScene[] = [
     ],
   },
   {
-    id: 'cosmic-7', index: 6, subject: 'Man', action: 'playing electric guitar on a comet',
-    environment: 'comet tail', cameraAngle: 'tracking shot', cameraMovement: 'fast pan',
-    prompt: 'Man shredding electric guitar standing on a comet, tail of light trailing behind, motion blur stars',
+    id: 'cosmic-7', index: 6, subject: 'Kael', action: 'playing electric guitar on a comet surface, tail blazing',
+    environment: 'comet hurtling through space, brilliant tail', cameraAngle: 'dynamic tracking', cameraMovement: 'fast parallel pan',
+    prompt: 'Man standing on a comet surface playing electric guitar, comet tail blazing in brilliant blues and whites behind him. Stars streak past in motion-blur lines. Cosmic wind whips his jacket. Pure euphoria and energy. Victory lap.',
     thumbnailUrl: '/assets/scenes/scene-07-comet-guitar.jpg',
     duration: 16, status: 'completed',
     takes: [
@@ -95,9 +95,9 @@ const cosmicScenes: MockScene[] = [
     ],
   },
   {
-    id: 'cosmic-8', index: 7, subject: 'Couple', action: 'reuniting at the edge of the universe',
-    environment: 'cosmic horizon, void of space', cameraAngle: 'wide establishing', cameraMovement: 'pullback reveal',
-    prompt: 'Couple reuniting at edge of universe, infinite void behind them, warm glow emanating from embrace',
+    id: 'cosmic-8', index: 7, subject: 'Aria & Kael', action: 'embracing at the edge of the observable universe',
+    environment: 'cosmic horizon, billions of galaxies behind, void ahead', cameraAngle: 'wide establishing', cameraMovement: 'extremely slow pullback reveal',
+    prompt: 'Couple embracing at the literal edge of the observable universe. Behind them: billions of galaxies spiraling. A warm golden glow emanates from their embrace, slowly expanding — becoming a new star. Camera pulls infinitely back until they are a point of light in creation.',
     thumbnailUrl: '/assets/scenes/scene-08-edge-of-universe.jpg',
     duration: 26, status: 'completed',
     takes: [
@@ -248,7 +248,7 @@ export const mockProjects: MockProject[] = [
   {
     id: 'project-cosmic',
     title: 'Cosmic Love Story',
-    description: 'An epic space romance told through 8 breathtaking scenes across the universe',
+    description: 'Aria and Kael — separated by a wormhole collapse, guided by a mysterious signal, reunited at the edge of the universe. An epic space romance in 8 scenes.',
     status: 'complete',
     scenes: cosmicScenes,
     audio: cosmicLoveAudio,

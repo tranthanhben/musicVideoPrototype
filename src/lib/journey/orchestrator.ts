@@ -38,7 +38,8 @@ export interface JourneyState {
 
 const LEGACY_STATES: Record<string, JourneyState> = {
   welcome: {
-    id: 'welcome', viewHint: 'input', pipelineState: 'idle',
+    id: 'welcome', viewHint: 'input',
+    narration: "Welcome to the AI Music Video Studio! Upload your track or try a demo to begin. I'll analyze the audio, generate a screenplay, build a storyboard, and produce a full music video — all driven by AI.",
     suggestions: [{ text: 'Analyze my track', icon: '🎵' }, { text: 'Show me a demo', icon: '▶' }],
   },
   analyzing: {
@@ -161,7 +162,7 @@ export function buildSceneRegenCompleteResponse(sceneIndex: number): PipelineRes
 
 export function buildFreeformResponse(stateId: JourneyStateId): PipelineResponse {
   const ctx: Partial<Record<JourneyStateId, string>> = {
-    welcome: "Send a message to get started, or click 'Analyze my track'!",
+    welcome: "Upload a track or click 'Show me a demo' to see the full pipeline in action — from audio analysis to finished music video!",
     analyzing: "The analysis is still running — I'll share results shortly!",
     l1_review: "Review the analysis results. Approve to continue.",
     creative: "Working on creative direction — almost ready!",

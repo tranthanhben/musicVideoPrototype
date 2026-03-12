@@ -1,11 +1,12 @@
 'use client'
 
-import { Bot } from 'lucide-react'
+import { Bot, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { MockVideoPlayer } from '@/components/shared/mock-video-player'
 import { GenerationLoading } from '@/components/shared/generation-loading'
 import { usePipelineStore } from '@/lib/pipeline/store'
 import { mockProjects } from '@/lib/mock/projects'
+import { BayPreviewCreative } from './bay-preview-creative'
 import type { BayTab } from './bay-top-bar'
 
 interface BayPreviewProps {
@@ -18,43 +19,21 @@ interface BayPreviewProps {
 
 const project = mockProjects[0]
 
-const STORYLINES = [
-  {
-    title: 'Celestial Journey',
-    tone: 'Ethereal, intimate, soaring',
-    description: 'An epic space voyage synced to verse/chorus arcs. Soft nebula visuals for verses, supernova bursts for choruses.',
-    keyScene: 'Scene 4 at Chorus — dancing on a moonlit planet at energy peak',
-    matchPct: 94,
-    gradient: ['#7C3AED', '#22D3EE'],
-  },
-  {
-    title: 'Neon Metropolis',
-    tone: 'Cyberpunk, electric, driving',
-    description: 'High-energy city narrative with beat-driven cuts. Neon reflections and motion blur match the 128 BPM pulse.',
-    keyScene: 'Scene 5 at Chorus — supernova explosion at biggest energy peak',
-    matchPct: 87,
-    gradient: ['#EC4899', '#F59E0B'],
-  },
-  {
-    title: 'Abstract Emotion',
-    tone: 'Minimal, poetic, flowing',
-    description: 'Pure visual poetry following the emotion curve. Color and form shift with energy — no narrative, pure feeling.',
-    keyScene: 'Scene 8 at Outro — cosmic reunion during the emotional finale',
-    matchPct: 81,
-    gradient: ['#06B6D4', '#10B981'],
-  },
-]
-
-// Pre-compute waveform bar heights at module level to avoid re-render flicker
 const WAVEFORM_BARS = Array.from(
   { length: 80 },
   (_, i) => 8 + Math.sin(i * 0.4) * 12 + Math.sin(i * 0.9) * 10 + (((i * 7919) % 97) / 97) * 8
 )
 
-const SVG_WIDTH = 400
-const SVG_HEIGHT = 64
-const BAND_HEIGHT = 6
-const BAND_Y = SVG_HEIGHT - BAND_HEIGHT
+const SVG_W = 480
+const SVG_H = 80
+const BAND_H = 8
+
+const VFX_PRESETS = [
+  { name: 'Cosmic Cinema', colors: ['#7C3AED', '#22D3EE'] },
+  { name: 'Neon Pulse', colors: ['#EC4899', '#F59E0B'] },
+  { name: 'Ocean Drift', colors: ['#06B6D4', '#10B981'] },
+  { name: 'Warm Analog', colors: ['#F59E0B', '#EF4444'] },
+]
 
 export function BayPreview({ activeTab, selectedSceneId, onAiAssist, onAction, selectedStoryline }: BayPreviewProps) {
   const layers = usePipelineStore((s) => s.layers)
@@ -62,185 +41,88 @@ export function BayPreview({ activeTab, selectedSceneId, onAiAssist, onAction, s
   const generateLayer = layers['L4_PRODUCTION']
   const isGenerating = generateLayer?.status === 'active'
 
-  const { segments, energyCurve, duration, bpm, key } = project.audio
+  const { segments, energyCurve, duration, bpm, key, title, artist } = project.audio
 
-  // Build energy polyline points
   const energyPoints = energyCurve
     .map((p) => {
-      const x = (p.time / duration) * SVG_WIDTH
-      const y = SVG_HEIGHT - BAND_HEIGHT - 4 - p.energy * 50
+      const x = (p.time / duration) * SVG_W
+      const y = SVG_H - BAND_H - 6 - p.energy * 55
       return `${x.toFixed(1)},${y.toFixed(1)}`
     })
     .join(' ')
 
   return (
     <div className="flex-1 flex flex-col bg-background relative overflow-hidden">
-      {/* Preview area */}
-      <div className="flex-1 flex items-center justify-center p-6 min-h-0">
+      <div className="flex-1 flex items-center justify-center p-6 min-h-0 overflow-y-auto">
+
         {activeTab === 'input' && (
-          <div className="w-full max-w-lg space-y-4">
-            <div className="rounded-2xl border border-border/40 bg-zinc-900 p-6">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                  <span className="text-lg">🎵</span>
+          <div className="w-full max-w-xl space-y-4">
+            <div className="rounded-2xl border border-border/40 bg-zinc-900 p-6 shadow-xl">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="h-11 w-11 rounded-xl bg-primary/20 flex items-center justify-center">
+                  <span className="text-xl">🎵</span>
                 </div>
                 <div>
-                  <p className="font-semibold text-foreground">{project.audio.title}</p>
-                  <p className="text-sm text-muted-foreground">{project.audio.artist}</p>
+                  <p className="font-semibold text-foreground">{title}</p>
+                  <p className="text-sm text-muted-foreground">{artist}</p>
+                </div>
+                <div className="ml-auto text-right">
+                  <p className="text-xs font-mono text-primary">{bpm} BPM</p>
+                  <p className="text-xs text-muted-foreground">{key}</p>
                 </div>
               </div>
 
-              {/* Waveform with overlays */}
-              <div className="h-16 rounded-lg overflow-hidden">
-                <svg viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} className="w-full h-full" preserveAspectRatio="none">
+              {/* Waveform SVG */}
+              <div className="rounded-lg overflow-hidden" style={{ height: `${SVG_H}px` }}>
+                <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} className="w-full h-full" preserveAspectRatio="none">
                   <defs>
-                    <linearGradient id="waveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <linearGradient id="wg2" x1="0%" y1="0%" x2="100%" y2="0%">
                       <stop offset="0%" stopColor="#7C3AED" stopOpacity="0.7" />
-                      <stop offset="100%" stopColor="#22D3EE" stopOpacity="0.7" />
+                      <stop offset="50%" stopColor="#22D3EE" stopOpacity="0.8" />
+                      <stop offset="100%" stopColor="#EC4899" stopOpacity="0.7" />
                     </linearGradient>
                   </defs>
+                  <rect width={SVG_W} height={SVG_H} fill="#18181b" />
 
-                  {/* Background */}
-                  <rect width={SVG_WIDTH} height={SVG_HEIGHT} fill="#18181b" />
+                  {/* Segment bands at bottom */}
+                  {segments.map((seg) => {
+                    const x = (seg.startTime / duration) * SVG_W
+                    const w = ((seg.endTime - seg.startTime) / duration) * SVG_W
+                    return <rect key={seg.id} x={x} y={SVG_H - BAND_H} width={w} height={BAND_H} fill={seg.color} opacity="0.9" />
+                  })}
 
                   {/* Waveform bars */}
                   {WAVEFORM_BARS.map((h, i) => (
-                    <rect
-                      key={i}
-                      x={i * 5}
-                      y={(SVG_HEIGHT - BAND_HEIGHT - 4 - h) / 2}
-                      width="3"
-                      height={h}
-                      rx="1"
-                      fill="url(#waveGrad)"
-                    />
+                    <rect key={i} x={i * 6} y={(SVG_H - BAND_H - h) / 2} width="4" height={h} rx="1.5" fill="url(#wg2)" />
                   ))}
 
-                  {/* Energy curve overlay */}
+                  {/* Energy curve */}
                   {energyPoints && (
-                    <polyline
-                      points={energyPoints}
-                      fill="none"
-                      stroke="rgba(34, 211, 238, 0.55)"
-                      strokeWidth="1.5"
-                      strokeLinejoin="round"
-                    />
+                    <polyline points={energyPoints} fill="none" stroke="rgba(34,211,238,0.6)" strokeWidth="1.5" strokeLinejoin="round" />
                   )}
 
                   {/* Peak markers */}
-                  {energyCurve
-                    .filter((p) => p.isPeak)
-                    .map((p, i) => {
-                      const x = (p.time / duration) * SVG_WIDTH
-                      const y = SVG_HEIGHT - BAND_HEIGHT - 4 - p.energy * 50
-                      return (
-                        <circle
-                          key={i}
-                          cx={x.toFixed(1)}
-                          cy={y.toFixed(1)}
-                          r="3"
-                          fill="#F43F5E"
-                        />
-                      )
-                    })}
-
-                  {/* Segment color bands at bottom */}
-                  {segments.map((seg) => {
-                    const x = (seg.startTime / duration) * SVG_WIDTH
-                    const w = ((seg.endTime - seg.startTime) / duration) * SVG_WIDTH
-                    return (
-                      <rect
-                        key={seg.id}
-                        x={x.toFixed(1)}
-                        y={BAND_Y}
-                        width={w.toFixed(1)}
-                        height={BAND_HEIGHT}
-                        fill={seg.color}
-                        opacity="0.85"
-                      />
-                    )
+                  {energyCurve.filter((p) => p.isPeak).map((p, i) => {
+                    const cx = (p.time / duration) * SVG_W
+                    const cy = SVG_H - BAND_H - 6 - p.energy * 55
+                    return <circle key={i} cx={cx} cy={cy} r="3" fill="#F43F5E" />
                   })}
                 </svg>
               </div>
 
               <div className="flex justify-between mt-3 text-xs text-muted-foreground font-mono">
-                <span>{bpm} BPM · {key}</span>
-                <span>
-                  {String(Math.floor(duration / 60))}:{String(duration % 60).padStart(2, '0')}
-                </span>
+                <span>{segments.length} segments · {energyCurve.filter((p) => p.isPeak).length} peaks</span>
+                <span>{String(Math.floor(duration / 60))}:{String(duration % 60).padStart(2, '0')}</span>
               </div>
             </div>
           </div>
         )}
 
         {activeTab === 'creative' && (
-          <div className="w-full max-w-lg space-y-3">
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">Choose a Storyline</p>
-              <span className="text-[10px] font-mono text-purple-400 border border-purple-500/30 rounded-full px-2 py-0.5">
-                CREMI-7C3A-COSMIC
-              </span>
-            </div>
-            {STORYLINES.map((s, i) => (
-              <button
-                key={i}
-                onClick={() => onAction(`select_storyline_${i}`)}
-                className={cn(
-                  'w-full text-left p-4 rounded-xl border transition-all',
-                  selectedStoryline === i
-                    ? 'border-primary bg-primary/10 ring-1 ring-primary/30'
-                    : 'border-border/40 bg-zinc-900 hover:border-border'
-                )}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-semibold text-sm text-foreground">{s.title}</span>
-                  <span className="text-[10px] text-primary font-mono">{s.matchPct}% match</span>
-                </div>
-                <p className="text-[10px] text-muted-foreground italic">{s.tone}</p>
-                <p className="text-xs text-muted-foreground/80 leading-relaxed mt-1">{s.description}</p>
-                <p className="text-[10px] text-primary/70 mt-2">{s.keyScene}</p>
-                <div
-                  className="h-1 rounded-full mt-2"
-                  style={{ background: `linear-gradient(to right, ${s.gradient[0]}, ${s.gradient[1]})` }}
-                />
-              </button>
-            ))}
-          </div>
+          <BayPreviewCreative selectedStoryline={selectedStoryline} onAction={onAction} />
         )}
 
         {activeTab === 'storyboard' && (
-          <div className="w-full max-w-lg">
-            <MockVideoPlayer
-              thumbnailUrl={selectedScene.thumbnailUrl}
-              duration={selectedScene.duration}
-              aspectRatio="16:9"
-              className="w-full"
-            />
-            <p className="text-xs text-muted-foreground text-center mt-2">
-              Scene {selectedScene.index + 1} — {selectedScene.subject}
-            </p>
-          </div>
-        )}
-
-        {activeTab === 'generate' && (
-          <div className="flex flex-col items-center gap-4 w-full max-w-sm">
-            {isGenerating ? (
-              <GenerationLoading
-                progress={generateLayer.progress}
-                message={`Generating scene ${selectedScene.index + 1}...`}
-              />
-            ) : (
-              <MockVideoPlayer
-                thumbnailUrl={selectedScene.thumbnailUrl}
-                duration={selectedScene.duration}
-                aspectRatio="16:9"
-                className="w-full"
-              />
-            )}
-          </div>
-        )}
-
-        {activeTab === 'edit' && (
           <div className="w-full max-w-xl">
             <MockVideoPlayer
               thumbnailUrl={selectedScene.thumbnailUrl}
@@ -248,6 +130,94 @@ export function BayPreview({ activeTab, selectedSceneId, onAiAssist, onAction, s
               aspectRatio="16:9"
               className="w-full"
             />
+            <p className="text-xs text-muted-foreground text-center mt-2">
+              Scene {selectedScene.index + 1} — {selectedScene.subject} · {selectedScene.environment}
+            </p>
+          </div>
+        )}
+
+        {activeTab === 'generate' && (
+          <div className="flex flex-col items-center gap-4 w-full max-w-md">
+            {isGenerating ? (
+              <GenerationLoading
+                progress={generateLayer.progress}
+                message={`Generating scene ${selectedScene.index + 1}...`}
+              />
+            ) : (
+              <>
+                <MockVideoPlayer
+                  thumbnailUrl={selectedScene.thumbnailUrl}
+                  duration={selectedScene.duration}
+                  aspectRatio="16:9"
+                  className="w-full"
+                />
+                {/* Scene grid showing generation status */}
+                <div className="grid grid-cols-4 gap-1.5 w-full">
+                  {project.scenes.map((scene) => (
+                    <div key={scene.id} className="relative aspect-video rounded-md overflow-hidden">
+                      <img src={scene.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                      {scene.status === 'completed' && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                          <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'edit' && (
+          <div className="w-full max-w-xl space-y-3">
+            <MockVideoPlayer
+              thumbnailUrl="/assets/export/final-preview.jpg"
+              duration={project.audio.duration}
+              aspectRatio="16:9"
+              className="w-full"
+            />
+            {/* VFX presets row */}
+            <div className="flex gap-2 justify-center flex-wrap">
+              {VFX_PRESETS.map((preset, i) => (
+                <button
+                  key={preset.name}
+                  onClick={() => onAction(`apply_vfx_${preset.name.toLowerCase().replace(/\s+/g, '_')}`)}
+                  className={cn(
+                    'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all',
+                    i === 0
+                      ? 'border-primary bg-primary/15 text-foreground'
+                      : 'border-border/50 bg-muted/40 text-muted-foreground hover:border-border hover:text-foreground'
+                  )}
+                >
+                  <div
+                    className="h-3 w-3 rounded-sm"
+                    style={{ background: `linear-gradient(135deg, ${preset.colors[0]}, ${preset.colors[1]})` }}
+                  />
+                  {preset.name}
+                </button>
+              ))}
+            </div>
+
+            {/* Export format cards */}
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { label: 'YouTube', ratio: '16:9', size: '~320 MB', icon: '▶' },
+                { label: 'TikTok', ratio: '9:16', size: '~180 MB', icon: '♪' },
+                { label: 'Instagram', ratio: '1:1', size: '~220 MB', icon: '□' },
+              ].map((fmt) => (
+                <button
+                  key={fmt.label}
+                  onClick={() => onAction(`export_${fmt.label.toLowerCase()}`)}
+                  className="flex flex-col items-center gap-1 p-3 rounded-xl border border-border/50 bg-muted/30 hover:bg-muted hover:border-border transition-all text-center"
+                >
+                  <span className="text-lg">{fmt.icon}</span>
+                  <span className="text-xs font-medium text-foreground">{fmt.label}</span>
+                  <span className="text-[10px] text-muted-foreground">{fmt.ratio}</span>
+                  <span className="text-[10px] text-muted-foreground">{fmt.size}</span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -256,10 +226,7 @@ export function BayPreview({ activeTab, selectedSceneId, onAiAssist, onAction, s
       <div className="absolute bottom-4 right-4">
         <button
           onClick={onAiAssist}
-          className={cn(
-            'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium',
-            'bg-primary/90 hover:bg-primary text-primary-foreground transition-colors shadow-lg'
-          )}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium bg-primary/90 hover:bg-primary text-primary-foreground transition-colors shadow-lg"
         >
           <Bot className="h-3.5 w-3.5" />
           AI Assist

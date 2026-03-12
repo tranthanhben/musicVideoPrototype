@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { MonitorChatPanel } from './monitor-chat-panel'
+import { MonitorChatPanel } from '@/components/monitor/monitor-chat-panel'
 import { MonitorWorkspace } from './monitor-workspace'
 import type { ChatSuggestion } from '@/lib/chat/types'
 import type { JourneyStateId } from '@/lib/journey/orchestrator'
@@ -44,22 +44,22 @@ export function MonitorLayout({
         <MonitorChatPanel onSend={onSend} onAction={onAction} suggestions={suggestions} />
       </div>
 
-      {/* Divider */}
-      <div className="relative w-[1px] shrink-0 bg-border/60">
-        <div className="absolute inset-y-0 left-0 w-[1px] bg-gradient-to-b from-transparent via-primary/30 to-transparent" />
+      {/* Gradient divider */}
+      <div className="relative w-[2px] shrink-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-primary/40 to-primary/5" />
+        <div className="absolute inset-y-0 left-0 w-[1px] bg-gradient-to-b from-transparent via-cyan-400/20 to-transparent translate-x-[1px]" />
       </div>
 
       {/* Right panel — workspace (64%) */}
       <div className="flex-1 overflow-hidden relative">
-        {/* View change flash */}
         <AnimatePresence>
           {viewChanged && (
             <motion.div
               key={viewHint + '-flash'}
-              initial={{ opacity: 0.15 }}
+              initial={{ opacity: 0.2 }}
               animate={{ opacity: 0 }}
-              transition={{ duration: 0.4 }}
-              className="absolute inset-0 bg-primary/10 pointer-events-none z-20"
+              transition={{ duration: 0.5 }}
+              className="absolute inset-0 bg-primary/8 pointer-events-none z-20"
             />
           )}
         </AnimatePresence>

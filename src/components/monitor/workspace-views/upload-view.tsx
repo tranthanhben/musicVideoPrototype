@@ -37,7 +37,7 @@ export function UploadView({ onTrackSelect }: UploadViewProps) {
       <div className="absolute inset-0 flex items-end justify-center gap-[2px] opacity-[0.035] pointer-events-none overflow-hidden">
         {Array.from({ length: 55 }, (_, i) => (
           <motion.div key={i} className="w-1 rounded-full bg-primary"
-            style={{ height: `${18 + Math.sin(i * 0.5) * 14 + (i * 11) % 18}%` }}
+            style={{ height: `${Math.round(18 + Math.sin(i * 0.5) * 14 + (i * 11) % 18)}%` }}
             animate={{ scaleY: [1, 1.3, 0.8, 1.1, 1] }}
             transition={{ duration: 2 + (i % 3) * 0.4, repeat: Infinity, delay: i * 0.04, ease: 'easeInOut' }}
           />
