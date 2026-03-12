@@ -39,9 +39,9 @@ const VIEW_LABELS: Record<string, string> = {
 }
 
 const variants = {
-  enter: { opacity: 0, y: 10 },
-  center: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -10 },
+  enter: { opacity: 0, y: 12, scale: 0.99 },
+  center: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: -8, scale: 0.99 },
 }
 
 export function MonitorWorkspace({
@@ -108,10 +108,10 @@ export function MonitorWorkspace({
         return (
           <div className="flex h-full items-center justify-center">
             <div className="text-center">
-              <div className="mx-auto mb-4 h-16 w-16 rounded-2xl bg-muted flex items-center justify-center">
+              <div className="mx-auto mb-4 h-16 w-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 flex items-center justify-center">
                 <span className="text-2xl">🎬</span>
               </div>
-              <p className="text-sm font-medium text-foreground">Getting ready...</p>
+              <p className="text-sm font-semibold text-foreground">Getting ready...</p>
             </div>
           </div>
         )
@@ -119,14 +119,19 @@ export function MonitorWorkspace({
   }
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden bg-muted/20">
+    <div className="relative flex h-full flex-col overflow-hidden bg-muted/10">
       {/* View label badge */}
       {label && (
-        <div className="absolute top-4 right-4 z-10">
-          <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary border border-primary/20">
+        <motion.div
+          key={label}
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute top-4 right-4 z-10"
+        >
+          <span className="rounded-full bg-primary/10 border border-primary/25 px-3 py-1 text-[10px] font-semibold text-primary backdrop-blur-sm">
             {label}
           </span>
-        </div>
+        </motion.div>
       )}
 
       <AnimatePresence mode="wait">
@@ -136,7 +141,7 @@ export function MonitorWorkspace({
           initial="enter"
           animate="center"
           exit="exit"
-          transition={{ duration: 0.25, ease: 'easeInOut' }}
+          transition={{ duration: 0.22, ease: 'easeInOut' }}
           className="flex h-full w-full flex-col"
         >
           {renderView()}

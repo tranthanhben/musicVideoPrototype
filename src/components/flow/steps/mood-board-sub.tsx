@@ -2,12 +2,10 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, RefreshCw } from 'lucide-react'
+import { Check, RefreshCw, ThumbsUp, ThumbsDown } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { makeSvgThumb } from '@/lib/flow/mock-data'
 import type { MoodImage } from '@/lib/flow/types'
-
-// --- CSS filter map for visual properties ---
 
 type FilterMap = Record<string, string>
 
@@ -29,7 +27,7 @@ export function resolveImageFilter(visualProps: Record<string, string>): string 
   return [lighting, grading].filter(Boolean).join(' ') || 'none'
 }
 
-// --- Mood composite banner ---
+// --- Mood composite ---
 
 interface MoodCompositeProps {
   images: MoodImage[]
@@ -40,30 +38,42 @@ export function MoodComposite({ images }: MoodCompositeProps) {
 
   if (approved.length === 0) {
     return (
-      <div className="w-full h-[80px] rounded-xl border border-dashed border-border flex items-center justify-center bg-muted/30">
-        <p className="text-[11px] text-muted-foreground italic">Approve images to build your mood.</p>
+      <div className="w-full h-[90px] rounded-xl border border-dashed border-border flex flex-col items-center justify-center gap-1 bg-muted/20">
+        <p className="text-[11px] text-muted-foreground/60 italic">Approve images below to build your mood palette</p>
+        <p className="text-[10px] text-muted-foreground/40">Use the thumbs up button to add images</p>
       </div>
     )
   }
 
   return (
-    <div className="w-full h-[80px] rounded-xl overflow-hidden relative border border-border">
+    <div className="w-full h-[90px] rounded-xl overflow-hidden relative border border-border shadow-md">
       {approved.map((img, idx) => (
         <img
           key={img.id}
-          src={makeSvgThumb(img.colors[0], img.colors[1])}
+          src={img.url ?? makeSvgThumb(img.colors[0], img.colors[1])}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
           style={{
             opacity: 1 / approved.length,
             mixBlendMode: idx === 0 ? 'normal' : 'screen',
           }}
         />
       ))}
-      <div className="absolute inset-0 flex items-end p-2 bg-gradient-to-t from-black/40 to-transparent">
-        <span className="text-[10px] text-white/80 font-medium">
-          {approved.length} image{approved.length > 1 ? 's' : ''} in mood
-        </span>
+      <div className="absolute inset-0 flex items-end p-2.5 bg-gradient-to-t from-black/50 to-transparent">
+        <div className="flex items-center gap-2">
+          <div className="flex gap-1">
+            {approved.slice(0, 5).map((img) => (
+              <div
+                key={img.id}
+                className="h-3 w-3 rounded-full border border-white/30 shrink-0"
+                style={{ background: img.colors[0] }}
+              />
+            ))}
+          </div>
+          <span className="text-[10px] text-white/80 font-medium">
+            {approved.length} image{approved.length > 1 ? 's' : ''} in mood palette
+          </span>
+        </div>
       </div>
     </div>
   )
@@ -86,25 +96,30 @@ export function MoodImageCard({ img, index, categoryKey, imageFilter, onApprove,
   return (
     <motion.div
       key={`${categoryKey}-${img.id}`}
-      initial={{ opacity: 0, filter: 'blur(16px)' }}
-      animate={{ opacity: 1, filter: 'blur(0px)' }}
-      transition={{ duration: 0.8, delay: index * 0.12 }}
+      initial={{ opacity: 0, filter: 'blur(20px)', scale: 0.96 }}
+      animate={{ opacity: 1, filter: 'blur(0px)', scale: 1 }}
+      transition={{ duration: 0.7, delay: index * 0.1 }}
       className={cn(
-        'relative rounded-xl border overflow-hidden transition-colors',
-        img.approved ? 'border-green-500/50 shadow-sm' : 'border-border',
+        'relative rounded-xl border overflow-hidden transition-all duration-200',
+        img.approved
+          ? 'border-green-500/60 shadow-md shadow-green-500/10'
+          : 'border-border hover:border-border/70',
       )}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div className="aspect-[4/3] relative">
+      <div className="aspect-video relative">
         <img
-          src={makeSvgThumb(img.colors[0], img.colors[1])}
+          src={img.url ?? makeSvgThumb(img.colors[0], img.colors[1])}
           alt={img.label}
-          className="absolute inset-0 w-full h-full object-cover transition-all duration-300"
-          style={{ filter: imageFilter }}
+          className="absolute inset-0 w-full h-full object-cover transition-all duration-500"
+          style={{
+            filter: imageFilter,
+            transform: hovered ? 'scale(1.05)' : 'scale(1)',
+          }}
         />
 
-        {/* Action overlay — tied to hovered state, above zoom overlay */}
+        {/* Hover overlay with larger action buttons */}
         <AnimatePresence>
           {hovered && (
             <motion.div
@@ -112,38 +127,58 @@ export function MoodImageCard({ img, index, categoryKey, imageFilter, onApprove,
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.15 }}
-              className="absolute inset-0 z-20 bg-black/40 flex items-center justify-center gap-2"
+              className="absolute inset-0 z-20 bg-black/50 flex flex-col items-center justify-center gap-2"
             >
-          <button
-            onClick={() => onApprove(img.id)}
-            className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-full transition-colors cursor-pointer z-10',
-              img.approved ? 'bg-green-500 text-white' : 'bg-white/90 text-foreground',
-            )}
-          >
-            <Check className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => onRegenerate(img.id)}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-foreground cursor-pointer z-10"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </button>
+              <div className="flex gap-2">
+                <motion.button
+                  whileHover={{ scale: 1.12 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => onApprove(img.id)}
+                  className={cn(
+                    'flex h-9 w-9 items-center justify-center rounded-full transition-colors cursor-pointer shadow-lg',
+                    img.approved
+                      ? 'bg-green-500 text-white shadow-green-500/40'
+                      : 'bg-white/95 text-foreground',
+                  )}
+                  title={img.approved ? 'Remove from mood' : 'Add to mood'}
+                >
+                  {img.approved ? <ThumbsDown className="h-4 w-4" /> : <ThumbsUp className="h-4 w-4" />}
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.12 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => onRegenerate(img.id)}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-foreground cursor-pointer shadow-lg"
+                  title="Regenerate"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </motion.button>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
 
+        {/* Approved badge */}
         {img.approved && (
           <div className="absolute top-1.5 right-1.5 z-10">
-            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500 shadow"
+            >
               <Check className="h-3 w-3 text-white" />
-            </div>
+            </motion.div>
           </div>
         )}
       </div>
 
-      <div className="p-2">
+      <div className="p-2 bg-card">
         <p className="text-[10px] font-medium text-foreground truncate">{img.label}</p>
+        <div className="flex gap-1 mt-1">
+          {img.colors.map((c, i) => (
+            <div key={i} className="h-2 flex-1 rounded-full" style={{ backgroundColor: c }} />
+          ))}
+        </div>
       </div>
     </motion.div>
   )

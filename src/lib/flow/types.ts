@@ -30,6 +30,7 @@ export interface Storyline {
   sceneCount: number
   tone: string
   thumbnailColors: [string, string]
+  thumbnailUrl?: string
 }
 
 export interface MoodImage {
@@ -38,6 +39,7 @@ export interface MoodImage {
   category: 'color' | 'mood' | 'scene'
   colors: [string, string]
   approved: boolean
+  url?: string
 }
 
 export interface VfxPreset {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { GripVertical, Pencil, Trash2, Plus, X, Check, Layers } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { mockProjects } from '@/lib/mock/projects'
@@ -40,10 +40,7 @@ export function StoryboardStep({ trackIndex, onContinue }: StoryboardStepProps) 
   }
 
   function deleteScene(id: string) {
-    setScenes((prev) => {
-      const filtered = prev.filter((s) => s.id !== id)
-      return filtered.map((s, i) => ({ ...s, index: i }))
-    })
+    setScenes((prev) => prev.filter((s) => s.id !== id).map((s, i) => ({ ...s, index: i })))
   }
 
   function insertScene(afterIndex: number) {
@@ -71,29 +68,19 @@ export function StoryboardStep({ trackIndex, onContinue }: StoryboardStepProps) 
     startEdit(newScene)
   }
 
-  function handleDragStart(idx: number) {
-    setDraggedIdx(idx)
-  }
-
-  function handleDragOver(e: React.DragEvent, idx: number) {
-    e.preventDefault()
-    setDragOverIdx(idx)
-  }
+  function handleDragStart(idx: number) { setDraggedIdx(idx) }
+  function handleDragOver(e: React.DragEvent, idx: number) { e.preventDefault(); setDragOverIdx(idx) }
+  function handleDragEnd() { setDraggedIdx(null); setDragOverIdx(null) }
 
   function handleDrop(idx: number) {
-    if (draggedIdx === null || draggedIdx === idx) {
-      setDraggedIdx(null)
-      setDragOverIdx(null)
-      return
-    }
+    if (draggedIdx === null || draggedIdx === idx) { handleDragEnd(); return }
     setScenes((prev) => {
       const copy = [...prev]
       const [moved] = copy.splice(draggedIdx, 1)
       copy.splice(idx, 0, moved)
       return copy.map((s, i) => ({ ...s, index: i }))
     })
-    setDraggedIdx(null)
-    setDragOverIdx(null)
+    handleDragEnd()
   }
 
   return (
@@ -108,7 +95,7 @@ export function StoryboardStep({ trackIndex, onContinue }: StoryboardStepProps) 
           <Layers className="h-4 w-4 text-primary" />
           <div>
             <h2 className="text-lg font-bold text-foreground">Storyboard</h2>
-            <p className="text-xs text-muted-foreground">{scenes.length} scenes | Drag to reorder, click to edit</p>
+            <p className="text-xs text-muted-foreground">{scenes.length} scenes · drag to reorder · click to edit</p>
           </div>
         </div>
         <button
@@ -121,7 +108,7 @@ export function StoryboardStep({ trackIndex, onContinue }: StoryboardStepProps) 
 
       {/* Scene grid */}
       <div className="flex-1 overflow-y-auto">
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 xl:grid-cols-4 gap-3">
           {scenes.map((scene, idx) => {
             const isEditing = editingId === scene.id
             const isDragged = draggedIdx === idx
@@ -129,93 +116,127 @@ export function StoryboardStep({ trackIndex, onContinue }: StoryboardStepProps) 
 
             return (
               <div key={scene.id}>
-                <div
+                <motion.div
+                  layout
                   draggable={!isEditing}
                   onDragStart={() => handleDragStart(idx)}
-                  onDragOver={(e) => handleDragOver(e, idx)}
+                  onDragOver={(e: React.DragEvent) => handleDragOver(e, idx)}
                   onDrop={() => handleDrop(idx)}
-                  onDragEnd={() => { setDraggedIdx(null); setDragOverIdx(null) }}
+                  onDragEnd={handleDragEnd}
                   className={cn(
                     'relative rounded-xl border overflow-hidden transition-all group',
-                    isDragged && 'opacity-40',
-                    isDragOver && 'ring-2 ring-primary ring-offset-1 ring-offset-background',
-                    isEditing ? 'border-primary' : 'border-border',
+                    isDragged && 'opacity-30 scale-95',
+                    isDragOver && 'ring-2 ring-primary ring-offset-2 ring-offset-background scale-[1.02]',
+                    isEditing ? 'border-primary shadow-md shadow-primary/20' : 'border-border hover:border-border/60',
                   )}
                 >
                   {/* Thumbnail */}
-                  <div className="aspect-[4/3] relative bg-muted">
+                  <div className="aspect-video relative bg-muted">
                     <img
                       src={scene.thumbnailUrl}
                       alt={`Scene ${scene.index + 1}`}
-                      className="absolute inset-0 w-full h-full object-cover"
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                    {/* Scene number */}
-                    <div className="absolute top-1.5 left-1.5 flex items-center gap-1">
-                      <GripVertical className="h-3.5 w-3.5 text-white/60 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <span className="rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-bold text-white">
+
+                    {/* Scene number badge — prominent */}
+                    <div className="absolute top-2 left-2 flex items-center gap-1.5">
+                      {!isEditing && (
+                        <GripVertical className="h-3.5 w-3.5 text-white/70 cursor-grab opacity-0 group-hover:opacity-100 transition-opacity" />
+                      )}
+                      <span className="rounded-lg bg-black/70 px-2 py-0.5 text-[11px] font-bold text-white backdrop-blur-sm border border-white/10">
                         S{scene.index + 1}
                       </span>
+                      {scene.isNew && (
+                        <span className="rounded-full bg-primary/80 px-1.5 py-0.5 text-[9px] font-semibold text-primary-foreground">
+                          NEW
+                        </span>
+                      )}
                     </div>
+
                     {/* Action buttons */}
                     {!isEditing && (
-                      <div className="absolute top-1.5 right-1.5 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
+                      <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
                           onClick={() => startEdit(scene)}
-                          className="flex h-6 w-6 items-center justify-center rounded-md bg-black/60 text-white cursor-pointer hover:bg-black/80"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg bg-black/70 text-white cursor-pointer hover:bg-black/90 backdrop-blur-sm"
                         >
                           <Pencil className="h-3 w-3" />
-                        </button>
-                        <button
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
                           onClick={() => deleteScene(scene.id)}
-                          className="flex h-6 w-6 items-center justify-center rounded-md bg-red-500/80 text-white cursor-pointer hover:bg-red-600"
+                          className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-500/80 text-white cursor-pointer hover:bg-red-600 backdrop-blur-sm"
                         >
                           <Trash2 className="h-3 w-3" />
-                        </button>
+                        </motion.button>
                       </div>
                     )}
+
                     {/* Bottom label */}
-                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent">
+                    <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
                       <p className="text-[10px] font-medium text-white truncate">
                         {scene.subject} — {scene.action}
                       </p>
+                      <p className="text-[9px] text-white/50 truncate">{scene.environment}</p>
                     </div>
                   </div>
 
                   {/* Edit form */}
-                  {isEditing && (
-                    <div className="p-2.5 space-y-2 bg-card">
-                      <input
-                        value={editSubject}
-                        onChange={(e) => setEditSubject(e.target.value)}
-                        className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary/50"
-                        placeholder="Subject"
-                      />
-                      <input
-                        value={editAction}
-                        onChange={(e) => setEditAction(e.target.value)}
-                        className="w-full rounded-md border border-border bg-background px-2 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary/50"
-                        placeholder="Action"
-                      />
-                      <div className="flex gap-1.5">
-                        <button onClick={saveEdit} className="flex-1 flex items-center justify-center gap-1 rounded-md bg-primary py-1.5 text-[10px] font-semibold text-primary-foreground cursor-pointer">
-                          <Check className="h-3 w-3" /> Save
-                        </button>
-                        <button onClick={() => setEditingId(null)} className="flex-1 flex items-center justify-center gap-1 rounded-md border border-border py-1.5 text-[10px] font-medium text-muted-foreground cursor-pointer">
-                          <X className="h-3 w-3" /> Cancel
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  <AnimatePresence>
+                    {isEditing && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="p-3 space-y-2 bg-card border-t border-border">
+                          <input
+                            value={editSubject}
+                            onChange={(e) => setEditSubject(e.target.value)}
+                            autoFocus
+                            className="w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary/50 transition-colors"
+                            placeholder="Subject"
+                          />
+                          <input
+                            value={editAction}
+                            onChange={(e) => setEditAction(e.target.value)}
+                            className="w-full rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs text-foreground focus:outline-none focus:border-primary/50 transition-colors"
+                            placeholder="Action"
+                          />
+                          <div className="flex gap-1.5">
+                            <button
+                              onClick={saveEdit}
+                              className="flex-1 flex items-center justify-center gap-1 rounded-lg bg-primary py-1.5 text-[10px] font-semibold text-primary-foreground cursor-pointer hover:bg-primary/90"
+                            >
+                              <Check className="h-3 w-3" /> Save
+                            </button>
+                            <button
+                              onClick={() => setEditingId(null)}
+                              className="flex-1 flex items-center justify-center gap-1 rounded-lg border border-border py-1.5 text-[10px] font-medium text-muted-foreground cursor-pointer hover:bg-muted"
+                            >
+                              <X className="h-3 w-3" /> Cancel
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
 
-                {/* Insert button between scenes */}
-                <div className="flex justify-center py-1">
-                  <button
+                {/* Insert between scenes — always visible with hover reveal */}
+                <div className="flex justify-center py-1.5">
+                  <motion.button
                     onClick={() => insertScene(idx)}
-                    className="flex h-5 w-5 items-center justify-center rounded-full border border-dashed border-border text-muted-foreground opacity-0 hover:opacity-100 focus:opacity-100 transition-opacity cursor-pointer hover:border-primary hover:text-primary"
+                    whileHover={{ scale: 1.2 }}
+                    className="flex h-5 w-5 items-center justify-center rounded-full border border-dashed border-border/60 text-muted-foreground/50 opacity-0 hover:opacity-100 focus:opacity-100 transition-all cursor-pointer hover:border-primary hover:text-primary hover:bg-primary/10 group-hover:opacity-60"
                   >
                     <Plus className="h-3 w-3" />
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             )

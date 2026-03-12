@@ -38,6 +38,7 @@ export const MOCK_STORYLINES: Storyline[] = [
     sceneCount: 8,
     tone: 'Ethereal & Romantic',
     thumbnailColors: ['#7C3AED', '#22D3EE'],
+    thumbnailUrl: '/assets/storylines/celestial-journey.jpg',
   },
   {
     id: 'urban-pulse',
@@ -46,6 +47,7 @@ export const MOCK_STORYLINES: Storyline[] = [
     sceneCount: 6,
     tone: 'Energetic & Bold',
     thumbnailColors: ['#EC4899', '#F97316'],
+    thumbnailUrl: '/assets/storylines/urban-pulse.jpg',
   },
   {
     id: 'ocean-memory',
@@ -54,19 +56,20 @@ export const MOCK_STORYLINES: Storyline[] = [
     sceneCount: 10,
     tone: 'Nostalgic & Serene',
     thumbnailColors: ['#0EA5E9', '#10B981'],
+    thumbnailUrl: '/assets/storylines/ocean-memory.jpg',
   },
 ]
 
 export const MOCK_MOOD_IMAGES: MoodImage[] = [
-  { id: 'mood-1', label: 'Warm golden hour', category: 'color', colors: ['#F59E0B', '#EF4444'], approved: false },
-  { id: 'mood-2', label: 'Cool cosmic tones', category: 'color', colors: ['#7C3AED', '#06B6D4'], approved: false },
-  { id: 'mood-3', label: 'Deep ocean blues', category: 'color', colors: ['#1E3A8A', '#0EA5E9'], approved: false },
-  { id: 'mood-4', label: 'Melancholic & dreamy', category: 'mood', colors: ['#8B5CF6', '#EC4899'], approved: false },
-  { id: 'mood-5', label: 'Euphoric & uplifting', category: 'mood', colors: ['#22D3EE', '#10B981'], approved: false },
-  { id: 'mood-6', label: 'Tense & cinematic', category: 'mood', colors: ['#1E1B4B', '#EF4444'], approved: false },
-  { id: 'mood-7', label: 'Urban nightscape', category: 'scene', colors: ['#0A0A0F', '#FF006E'], approved: false },
-  { id: 'mood-8', label: 'Vast open landscape', category: 'scene', colors: ['#10B981', '#F59E0B'], approved: false },
-  { id: 'mood-9', label: 'Intimate close-up', category: 'scene', colors: ['#EC4899', '#A855F7'], approved: false },
+  { id: 'mood-1', label: 'Warm golden hour', category: 'color', colors: ['#F59E0B', '#EF4444'], approved: false, url: '/assets/mood-board/color-warm-golden.jpg' },
+  { id: 'mood-2', label: 'Cool cosmic tones', category: 'color', colors: ['#7C3AED', '#06B6D4'], approved: false, url: '/assets/mood-board/color-cool-cosmic.jpg' },
+  { id: 'mood-3', label: 'Deep ocean blues', category: 'color', colors: ['#1E3A8A', '#0EA5E9'], approved: false, url: '/assets/mood-board/color-ocean-blues.jpg' },
+  { id: 'mood-4', label: 'Melancholic & dreamy', category: 'mood', colors: ['#8B5CF6', '#EC4899'], approved: false, url: '/assets/mood-board/mood-melancholic.jpg' },
+  { id: 'mood-5', label: 'Euphoric & uplifting', category: 'mood', colors: ['#22D3EE', '#10B981'], approved: false, url: '/assets/mood-board/mood-euphoric.jpg' },
+  { id: 'mood-6', label: 'Tense & cinematic', category: 'mood', colors: ['#1E1B4B', '#EF4444'], approved: false, url: '/assets/mood-board/mood-cinematic.jpg' },
+  { id: 'mood-7', label: 'Urban nightscape', category: 'scene', colors: ['#0A0A0F', '#FF006E'], approved: false, url: '/assets/mood-board/scene-space-station.jpg' },
+  { id: 'mood-8', label: 'Vast open landscape', category: 'scene', colors: ['#10B981', '#F59E0B'], approved: false, url: '/assets/mood-board/scene-vast-starfield.jpg' },
+  { id: 'mood-9', label: 'Intimate close-up', category: 'scene', colors: ['#EC4899', '#A855F7'], approved: false, url: '/assets/mood-board/scene-intimate-portrait.jpg' },
 ]
 
 export const VISUAL_PROPERTIES = [

@@ -79,7 +79,7 @@ export function SceneCardFlip({ scene, isFlipped, onFlip, onUpdate }: SceneCardF
           }}
         >
           {/* Thumbnail */}
-          <div className="relative h-44 overflow-hidden">
+          <div className="relative aspect-video overflow-hidden">
             <img
               src={scene.thumbnailUrl}
               alt={`Scene ${scene.index + 1}`}

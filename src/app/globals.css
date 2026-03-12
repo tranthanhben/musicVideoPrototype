@@ -400,6 +400,15 @@
 }
 
 /* Dark cremi */
+/* Scrollbar-none utility */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
 .dark [data-theme="cremi"] {
   --background: #0A0A0F;
   --foreground: #E5E7EB;

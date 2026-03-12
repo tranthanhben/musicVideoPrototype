@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 interface ActivityMessage {
   id: number
   text: string
-  type: 'info' | 'rendering' | 'complete'
+  type: 'info' | 'rendering' | 'complete' | 'warning'
   timestamp: string
 }
 
@@ -36,14 +36,14 @@ function makeMessage(
   const score = Math.floor(Math.random() * 8) + 88
 
   const templates: Array<{ text: string; type: ActivityMessage['type'] }> = [
-    { text: `Scene ${scene}: Kling 2.6 initializing render pipeline...`, type: 'info' },
-    { text: `Scene ${scene}: Frame ${frame}/${totalFrames} rendered — ${pct}% complete`, type: 'rendering' },
-    { text: `Scene ${scene}: Music-aware motion applied — ${motionType} for ${isHigh ? 'chorus' : 'verse'}`, type: 'info' },
-    { text: `Scene ${Math.min(completedCount + 1, sceneCount)}: Complete! Consistency score: ${score}%`, type: 'complete' },
+    { text: `Scene ${scene}: Kling 2.6 initializing render pipeline`, type: 'info' },
+    { text: `Scene ${scene}: Frame ${frame}/${totalFrames} — ${pct}% complete`, type: 'rendering' },
+    { text: `Scene ${scene}: ${motionType} motion for ${isHigh ? 'chorus' : 'verse'}`, type: 'info' },
+    { text: `Scene ${Math.min(completedCount + 1, sceneCount)}: Done! Score: ${score}%`, type: 'complete' },
     { text: `Scene ${scene}: Temporal coherence check passed`, type: 'info' },
-    { text: `Scene ${scene}: Style transfer blending ${isHigh ? '94' : '91'}% match`, type: 'rendering' },
-    { text: `Scene ${scene}: Beat-sync keyframe locked at ${(Math.random() * 4).toFixed(2)}s`, type: 'info' },
-    { text: `Scene ${scene}: Upscaling to 4K — ESRGAN pass 1/2`, type: 'rendering' },
+    { text: `Scene ${scene}: Style transfer ${isHigh ? '94' : '91'}% match`, type: 'rendering' },
+    { text: `Scene ${scene}: Beat-sync locked at ${(Math.random() * 4).toFixed(2)}s`, type: 'warning' },
+    { text: `Scene ${scene}: Upscaling 4K — ESRGAN pass 1/2`, type: 'rendering' },
   ]
 
   const pick = templates[id % templates.length]
@@ -54,19 +54,25 @@ const TYPE_STYLES: Record<ActivityMessage['type'], string> = {
   info: 'text-zinc-300',
   rendering: 'text-blue-400',
   complete: 'text-green-400',
+  warning: 'text-amber-400',
 }
 
 const TYPE_DOT: Record<ActivityMessage['type'], string> = {
   info: 'bg-zinc-500',
   rendering: 'bg-blue-500',
   complete: 'bg-green-500',
+  warning: 'bg-amber-500',
+}
+
+const TYPE_BG: Record<ActivityMessage['type'], string> = {
+  info: '',
+  rendering: 'bg-blue-500/5',
+  complete: 'bg-green-500/8',
+  warning: 'bg-amber-500/5',
 }
 
 export function GenerationActivityFeed({
-  sceneCount,
-  completedCount,
-  isComplete,
-  highEnergyIndices,
+  sceneCount, completedCount, isComplete, highEnergyIndices,
 }: GenerationActivityFeedProps) {
   const [messages, setMessages] = useState<ActivityMessage[]>([])
   const idRef = useRef(0)
@@ -74,10 +80,10 @@ export function GenerationActivityFeed({
 
   useEffect(() => {
     if (isComplete) return
-    const delay = 800 + Math.random() * 900
+    const delay = 700 + Math.random() * 800
     const t = setTimeout(() => {
       const msg = makeMessage(idRef.current++, sceneCount, completedCount, highEnergyIndices)
-      setMessages((prev) => [...prev.slice(-40), msg])
+      setMessages((prev) => [...prev.slice(-50), msg])
     }, delay)
     return () => clearTimeout(t)
   }, [messages, isComplete, sceneCount, completedCount, highEnergyIndices])
@@ -87,28 +93,34 @@ export function GenerationActivityFeed({
   }, [messages])
 
   return (
-    <div className="flex h-full flex-col rounded-xl border border-white/8 bg-black/40 overflow-hidden">
-      <div className="flex items-center gap-2 border-b border-white/8 px-3 py-2 shrink-0">
+    <div className="flex h-full flex-col rounded-xl border border-white/8 bg-black/50 overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center gap-2 border-b border-white/8 px-3 py-2 shrink-0 bg-black/30">
         <span className="relative flex h-2 w-2">
-          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-60" />
-          <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-500" />
+          {!isComplete && (
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-400 opacity-60" />
+          )}
+          <span className={`relative inline-flex h-2 w-2 rounded-full ${isComplete ? 'bg-green-500' : 'bg-blue-500'}`} />
         </span>
         <span className="text-[10px] font-mono font-semibold uppercase tracking-widest text-zinc-400">
-          Agent Activity
+          {isComplete ? 'Completed' : 'Agent Activity'}
         </span>
+        <span className="ml-auto text-[9px] font-mono text-zinc-600">{messages.length} events</span>
       </div>
-      <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1.5 scrollbar-none">
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5 scrollbar-none">
         <AnimatePresence initial={false}>
-          {messages.map((msg) => (
+          {messages.map((msg, i) => (
             <motion.div
               key={msg.id}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.25 }}
-              className="flex items-start gap-2"
+              initial={{ opacity: 0, y: 8, x: -4 }}
+              animate={{ opacity: 1, y: 0, x: 0 }}
+              transition={{ duration: 0.2 }}
+              className={`flex items-start gap-2 rounded-md px-2 py-1.5 ${TYPE_BG[msg.type]}`}
             >
               <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${TYPE_DOT[msg.type]}`} />
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <p className={`text-[10px] leading-snug font-mono ${TYPE_STYLES[msg.type]}`}>
                   {msg.text}
                 </p>
@@ -119,6 +131,19 @@ export function GenerationActivityFeed({
         </AnimatePresence>
         <div ref={bottomRef} />
       </div>
+
+      {/* Completion message */}
+      {isComplete && (
+        <motion.div
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="border-t border-green-500/20 bg-green-500/10 px-3 py-2 shrink-0"
+        >
+          <p className="text-[10px] font-mono text-green-400 font-semibold text-center">
+            All scenes rendered successfully
+          </p>
+        </motion.div>
+      )}
     </div>
   )
 }

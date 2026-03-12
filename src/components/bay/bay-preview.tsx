@@ -214,6 +214,7 @@ export function BayPreview({ activeTab, selectedSceneId, onAiAssist, onAction, s
               thumbnailUrl={selectedScene.thumbnailUrl}
               duration={selectedScene.duration}
               aspectRatio="16:9"
+              className="w-full"
             />
             <p className="text-xs text-muted-foreground text-center mt-2">
               Scene {selectedScene.index + 1} — {selectedScene.subject}
@@ -245,6 +246,7 @@ export function BayPreview({ activeTab, selectedSceneId, onAiAssist, onAction, s
               thumbnailUrl={selectedScene.thumbnailUrl}
               duration={selectedScene.duration}
               aspectRatio="16:9"
+              className="w-full"
             />
           </div>
         )}
