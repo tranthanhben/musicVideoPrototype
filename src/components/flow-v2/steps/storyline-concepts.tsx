@@ -717,12 +717,22 @@ export function StorylineConceptsSection({ selectedConceptId, onConceptSelect, o
     setVersions([firstVersion])
   }, [mockData])
 
+  // Refs for callbacks used in the loading effect to avoid dependency issues
+  const onConceptSelectRef = useRef(onConceptSelect)
+  onConceptSelectRef.current = onConceptSelect
+  const versionsRef = useRef(versions)
+  versionsRef.current = versions
+
   // Start concept loading only after typewriter finishes on first load
   useEffect(() => {
     if (!typewriterDone || !isFirstLoad) return
     setConceptsLoading(true)
     const t = setTimeout(() => {
       setConceptsLoading(false)
+      // Auto-select first concept by default
+      if (versionsRef.current[0]?.concepts?.[0]) {
+        onConceptSelectRef.current(versionsRef.current[0].concepts[0].id)
+      }
       // Signal parent that concepts are ready — triggers auto-scroll to Ideation
       onConceptsReady?.()
     }, 1800)
@@ -751,14 +761,20 @@ export function StorylineConceptsSection({ selectedConceptId, onConceptSelect, o
       setCurrentVersionIndex(newVersions.length - 1)
       setConceptsLoading(false)
       setIsFirstLoad(false)
+      // Auto-select first concept of new version
+      if (newVersion.concepts?.[0]) {
+        onConceptSelect(newVersion.concepts[0].id)
+      }
     }, 1800)
   }, [mockData, versions, currentVersionIndex, onConceptSelect])
 
   const handleVersionChange = useCallback((index: number) => {
     setCurrentVersionIndex(index)
     setEditedDetails({})
-    onConceptSelect('')
-  }, [onConceptSelect])
+    // Auto-select first concept of switched version
+    const ver = versions[index]
+    onConceptSelect(ver?.concepts?.[0]?.id ?? '')
+  }, [onConceptSelect, versions])
 
   const handleEditDetails = useCallback((conceptId: string, updates: Partial<ConceptDetails>) => {
     setEditedDetails((prev) => ({

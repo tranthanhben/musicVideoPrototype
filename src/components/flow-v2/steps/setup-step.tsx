@@ -317,6 +317,7 @@ export function SetupStep({
                 <div className="space-y-3 pb-1">
                   {/* Video Model */}
                   <ModelSelector />
+                  <SceneReuseToggle />
                   <LipsyncControl value={musicControl} onChange={onMusicControlChange} />
                   <CreativityControl value={lyricsControl} onChange={onLyricsControlChange} />
                 </div>
@@ -381,6 +382,67 @@ function ModelSelector() {
           <svg className="absolute right-2 pointer-events-none" width="8" height="5" viewBox="0 0 8 5"><path d="M0 0l4 5 4-5z" fill="currentColor" opacity="0.4" /></svg>
         </div>
       </div>
+    </div>
+  )
+}
+
+function SceneReuseToggle() {
+  const [enabled, setEnabled] = useState(false)
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-3">
+      <div className="flex items-center justify-between">
+        <div className="flex-1 min-w-0 mr-3">
+          <p className="text-xs font-semibold text-foreground">Scene Reuse</p>
+          <p className="text-[10px] text-muted-foreground">Import scenes from previous projects to save generation credits</p>
+        </div>
+        <button
+          onClick={() => setEnabled(!enabled)}
+          className={cn(
+            'relative w-8 h-[18px] rounded-full transition-colors duration-200 shrink-0 cursor-pointer',
+            enabled ? 'bg-emerald-500' : 'bg-border',
+          )}
+        >
+          <div
+            className={cn(
+              'absolute top-[3px] h-3 w-3 rounded-full bg-white shadow-sm transition-transform duration-200',
+              enabled ? 'translate-x-[17px]' : 'translate-x-[3px]',
+            )}
+          />
+        </button>
+      </div>
+      <AnimatePresence>
+        {enabled && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-2.5 rounded-lg border border-dashed border-border/60 bg-muted/20 p-2.5">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                <span className="text-[10px]">Select a previous project to import scenes</span>
+              </div>
+              <div className="mt-2 space-y-1.5">
+                {['Summer Vibes MV — 12 scenes', 'Midnight Dreams — 8 scenes'].map((project) => (
+                  <button
+                    key={project}
+                    className="w-full text-left rounded-md border border-border/40 bg-background/50 px-2.5 py-1.5 text-[10px] text-foreground/70 hover:border-primary/40 hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    {project}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

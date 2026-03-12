@@ -12,7 +12,7 @@ interface MvTypeStepProps {
 
 function VinylRecord({ colors, isSelected }: { colors: string[]; isSelected: boolean }) {
   return (
-    <div className="relative w-24 h-24 md:w-28 md:h-28">
+    <div className="relative w-[6.5rem] h-[6.5rem] md:w-28 md:h-28">
       {/* SVG vinyl */}
       <svg viewBox="0 0 200 200" className="w-full h-full drop-shadow-2xl">
         {/* Outer disc */}
@@ -112,12 +112,12 @@ export function MvTypeStep({ selected, onSelect }: MvTypeStepProps) {
           className="mb-14 text-center"
         >
           <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight">
-            Choose the type of video<br />you would like to create:
+            Choose your video type to start
           </h2>
         </motion.div>
 
         <motion.div
-          className="space-y-6"
+          className="space-y-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
@@ -145,7 +145,7 @@ export function MvTypeStep({ selected, onSelect }: MvTypeStepProps) {
                   )}>
                     <VinylRecord colors={type.vinylColors} isSelected={isSelected} />
                   </div>
-                  <div className="text-center mt-5 max-w-[11rem]">
+                  <div className="text-center mt-3 max-w-[10rem]">
                     <p className={cn(
                       'text-sm font-bold transition-colors duration-200',
                       isSelected ? 'text-white' : 'text-white/80 group-hover:text-white',
@@ -153,7 +153,7 @@ export function MvTypeStep({ selected, onSelect }: MvTypeStepProps) {
                       {type.label}
                     </p>
                     <p className={cn(
-                      'text-xs mt-1.5 leading-relaxed transition-colors duration-200',
+                      'text-xs mt-1 leading-snug transition-colors duration-200',
                       isSelected ? 'text-white/70' : 'text-white/40 group-hover:text-white/60',
                     )}>
                       {type.description}
@@ -186,7 +186,7 @@ export function MvTypeStep({ selected, onSelect }: MvTypeStepProps) {
                   )}>
                     <VinylRecord colors={type.vinylColors} isSelected={isSelected} />
                   </div>
-                  <div className="text-center mt-5 max-w-[11rem]">
+                  <div className="text-center mt-3 max-w-[10rem]">
                     <p className={cn(
                       'text-sm font-bold transition-colors duration-200',
                       isSelected ? 'text-white' : 'text-white/80 group-hover:text-white',
@@ -194,7 +194,7 @@ export function MvTypeStep({ selected, onSelect }: MvTypeStepProps) {
                       {type.label}
                     </p>
                     <p className={cn(
-                      'text-xs mt-1.5 leading-relaxed transition-colors duration-200',
+                      'text-xs mt-1 leading-snug transition-colors duration-200',
                       isSelected ? 'text-white/70' : 'text-white/40 group-hover:text-white/60',
                     )}>
                       {type.description}
