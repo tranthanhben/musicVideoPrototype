@@ -8,7 +8,6 @@ import { MvTypeStep } from '@/components/flow-v3/steps/mv-type-step'
 import { SetupStep } from '@/components/flow-v3/steps/setup-step'
 import { AnalysisStep } from '@/components/flow-v3/steps/analysis-step'
 import { StoryboardStep } from '@/components/flow-v3/steps/storyboard-step'
-import { GenerationStep } from '@/components/flow-v3/steps/generation-step'
 import { VfxExportStep } from '@/components/flow-v3/steps/vfx-export-step'
 import { FLOW_STEPS, type FlowStep, type FlowConfig, type MvType, type RenderMode } from '@/lib/flow-v3/types'
 import { cn } from '@/lib/utils'
@@ -56,7 +55,6 @@ export default function FlowPage() {
       case 'setup': return config.trackIndex !== null && config.trackIndex >= 0
       case 'analysis': return false // auto-advances via callback
       case 'storyboard': return true
-      case 'generation': return false // auto-advances via callback
       case 'vfx_export': return false
       default: return false
     }
@@ -102,8 +100,6 @@ export default function FlowPage() {
         )
       case 'storyboard':
         return <StoryboardStep trackIndex={config.trackIndex ?? 0} onContinue={nextStep} />
-      case 'generation':
-        return <GenerationStep trackIndex={config.trackIndex ?? 0} onComplete={nextStep} />
       case 'vfx_export':
         return <VfxExportStep trackIndex={config.trackIndex ?? 0} />
       default:
@@ -111,8 +107,8 @@ export default function FlowPage() {
     }
   }
 
-  // Steps that have their own continue logic (analysis, generation have auto-progress)
-  const hasOwnContinue = ['setup', 'analysis', 'storyboard', 'generation', 'vfx_export'].includes(currentStep)
+  // Steps that have their own continue logic
+  const hasOwnContinue = ['setup', 'analysis', 'storyboard', 'vfx_export'].includes(currentStep)
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">

@@ -21,6 +21,8 @@ interface MonitorWorkspaceProps {
   onTrackSelect: (index: number) => void
   onStyleConfirm: (selections: StyleSelections) => void
   onCharacterConfirm: (ids: string[]) => void
+  selectedStoryline?: number | null
+  onStorylineSelect?: (index: number) => void
 }
 
 const VIEW_LABELS: Record<string, string> = {
@@ -47,6 +49,7 @@ const variants = {
 export function MonitorWorkspace({
   viewHint, journeyState, projectIndex,
   onTrackSelect, onStyleConfirm, onCharacterConfirm,
+  selectedStoryline, onStorylineSelect,
 }: MonitorWorkspaceProps) {
   const label = VIEW_LABELS[viewHint] ?? ''
 
@@ -79,7 +82,7 @@ export function MonitorWorkspace({
         )
 
       case 'storyline':
-        return <CreativeView />
+        return <CreativeView onSelect={onStorylineSelect} selectedIndex={selectedStoryline} />
 
       case 'storyboard_loading':
         return (
@@ -119,7 +122,7 @@ export function MonitorWorkspace({
   }
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden bg-muted/10">
+    <div className="relative flex h-full flex-col overflow-hidden bg-muted/10 min-h-0">
       {/* View label badge */}
       {label && (
         <motion.div
@@ -142,7 +145,7 @@ export function MonitorWorkspace({
           animate="center"
           exit="exit"
           transition={{ duration: 0.22, ease: 'easeInOut' }}
-          className="flex h-full w-full flex-col"
+          className="flex h-full w-full flex-col overflow-hidden"
         >
           {renderView()}
         </motion.div>

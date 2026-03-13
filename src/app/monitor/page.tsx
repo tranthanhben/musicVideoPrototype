@@ -36,6 +36,7 @@ export default function MonitorPage() {
   const [suggestions, setSuggestions] = useState<ChatSuggestion[]>([])
   const [projectIndex, setProjectIndex] = useState(0)
   const [viewHint, setViewHint] = useState('upload')
+  const [selectedStoryline, setSelectedStoryline] = useState<number | null>(null)
 
   const {
     layers, currentLayerId,
@@ -185,6 +186,13 @@ export default function MonitorPage() {
     // Storyline loading for 3s then L2 gate will fire (storyline_review)
   }
 
+  function handleStorylineSelect(index: number) {
+    setSelectedStoryline(index)
+    const names = ['Celestial Journey', 'Urban Pulse', 'Ocean Memory']
+    addUserMessage(`Selected storyline: ${names[index]}`)
+    streamChat({ text: `**${names[index]}** selected! This creative direction will guide the storyboard generation. Approve when ready to continue.` })
+  }
+
   function handleSend(message: string) {
     // Intercept demo track selection from suggestions
     if (journeyStateRef.current === 'upload') {
@@ -300,6 +308,8 @@ export default function MonitorPage() {
           onTrackSelect={handleTrackSelect}
           onStyleConfirm={handleStyleConfirm}
           onCharacterConfirm={handleCharacterConfirm}
+          selectedStoryline={selectedStoryline}
+          onStorylineSelect={handleStorylineSelect}
         />
       </div>
       <PipelineProgressBar layers={layers} currentLayerId={currentLayerId} />

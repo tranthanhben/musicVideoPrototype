@@ -93,15 +93,28 @@ export function BayTimeline({ activeTab, selectedSceneId, onSceneClick }: BayTim
         </div>
       </div>
 
+      {/* Timestamp ruler */}
+      <div className="relative h-3 ml-16 mr-3 mt-0.5 shrink-0">
+        {Array.from({ length: Math.floor(duration / 30) + 1 }, (_, i) => i * 30).map((t) => (
+          <span
+            key={`ts-${t}`}
+            className="absolute text-[8px] font-mono text-muted-foreground/50 -translate-x-1/2"
+            style={{ left: `${(t / duration) * 100}%` }}
+          >
+            {Math.floor(t / 60)}:{String(t % 60).padStart(2, '0')}
+          </span>
+        ))}
+      </div>
+
       {/* Segment label row */}
-      <div className="relative h-4 ml-16 mr-3 mt-0.5 shrink-0 overflow-hidden">
+      <div className="relative h-3.5 ml-16 mr-3 shrink-0 overflow-hidden">
         {segments.map((seg) => {
-          const leftPct = (seg.startTime / duration) * 100
+          const midPct = ((seg.startTime + seg.endTime) / 2 / duration) * 100
           return (
             <span
               key={seg.id}
-              className="absolute text-[10px] font-medium whitespace-nowrap"
-              style={{ left: `${leftPct.toFixed(1)}%`, color: seg.color, transform: 'translateX(2px)' }}
+              className="absolute text-[9px] font-medium whitespace-nowrap -translate-x-1/2"
+              style={{ left: `${midPct.toFixed(1)}%`, color: seg.color }}
             >
               {seg.label}
             </span>

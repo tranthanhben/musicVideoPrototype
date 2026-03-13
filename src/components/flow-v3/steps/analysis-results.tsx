@@ -120,6 +120,63 @@ export function AnalysisResults({ audio, selectedConceptId, onConceptSelect, onC
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
+        {/* ── SONG SUMMARY CARD ── */}
+        <motion.div
+          className="rounded-xl border border-border bg-card p-4 space-y-3"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0 }}
+        >
+          {/* Title + artist */}
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <h2 className="text-base font-bold text-foreground leading-tight">&ldquo;{audio.title}&rdquo;</h2>
+              <p className="text-[11px] text-muted-foreground">{audio.artist}</p>
+            </div>
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-semibold text-primary shrink-0">AI Summary</span>
+          </div>
+          {/* AI-generated description */}
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            A high-energy cosmic love ballad with soaring vocals over synth-driven beats. The track features dramatic key changes at the bridge and builds to an explosive chorus climax.
+          </p>
+          {/* Tags: genre, sub-genre, mood */}
+          <div className="flex flex-wrap gap-1.5">
+            <span className="rounded-full bg-[#8B5CF6]/15 px-2 py-0.5 text-[10px] font-semibold text-[#8B5CF6]">Pop</span>
+            {['Dance-Pop', 'Electropop', 'Contemporary R&B'].map((tag) => (
+              <span key={tag} className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">{tag}</span>
+            ))}
+            {['Euphoric', 'Romantic', 'Uplifting'].map((mood) => (
+              <span key={mood} className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400">{mood}</span>
+            ))}
+          </div>
+          {/* Track structure timeline */}
+          <div>
+            <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Track Structure</p>
+            <div className="flex gap-0.5">
+              {audio.segments.map((seg, i) => {
+                const width = ((seg.endTime - seg.startTime) / audio.duration) * 100
+                return (
+                  <motion.div
+                    key={seg.id}
+                    className="h-6 flex items-center justify-center rounded text-[8px] font-bold text-white min-w-0 relative group/seg cursor-default"
+                    style={{ width: `${width}%`, backgroundColor: seg.color }}
+                    initial={{ opacity: 0, scaleX: 0 }}
+                    animate={{ opacity: 1, scaleX: 1 }}
+                    transition={{ duration: 0.3, delay: 0.1 + i * 0.06 }}
+                    title={`${seg.label}: ${Math.floor(seg.startTime / 60)}:${String(Math.floor(seg.startTime % 60)).padStart(2, '0')} – ${Math.floor(seg.endTime / 60)}:${String(Math.floor(seg.endTime % 60)).padStart(2, '0')}`}
+                  >
+                    {width > 7 && <span className="truncate px-1">{seg.label}</span>}
+                    {/* Arrow connector between segments */}
+                    {i < audio.segments.length - 1 && (
+                      <span className="absolute -right-0.5 top-1/2 -translate-y-1/2 z-10 text-white/60 text-[8px]">›</span>
+                    )}
+                  </motion.div>
+                )
+              })}
+            </div>
+          </div>
+        </motion.div>
+
         {/* ── ANALYSIS (read-only) ── */}
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-bold text-foreground">Song Analysis</h2>
@@ -286,27 +343,6 @@ export function AnalysisResults({ audio, selectedConceptId, onConceptSelect, onC
             </motion.div>
           ))}
         </div>
-        {/* Sub-genres */}
-        <motion.div
-          className="flex items-center gap-1.5"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3, delay: 0.35 }}
-        >
-          <span className="text-[10px] text-muted-foreground font-medium shrink-0">Sub-genres</span>
-          {['Dance-Pop', 'Electropop', 'Contemporary R&B'].map((tag, i) => (
-            <motion.span
-              key={tag}
-              className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.25, delay: 0.4 + i * 0.08 }}
-            >
-              {tag}
-            </motion.span>
-          ))}
-        </motion.div>
-
         {/* ── Divider ── */}
         <motion.div
           className="relative flex items-center py-1"

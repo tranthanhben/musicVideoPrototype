@@ -10,6 +10,7 @@ import { MediaLibrary } from './media-library'
 import { DirectorChat } from './director-chat'
 import { EditorTimeline } from './editor-timeline'
 import { VFX_FILTERS, ConfettiParticle, generateParticles } from './vfx-export-sub'
+import { VfxSimpleMode } from './vfx-simple-mode'
 import { VFX_PRESETS, TRANSITION_TYPES } from '@/lib/flow-v3/mock-data'
 
 // ─── Types ──────────────────────────────────────────────────
@@ -144,11 +145,14 @@ function generateScenes(targetCount: number): MockScene[] {
   return result
 }
 
+type VfxMode = 'simple' | 'advanced'
+
 // ─── Component ──────────────────────────────────────────────
 
 export function VfxExportStep({ trackIndex }: VfxExportStepProps) {
   const project = mockProjects[trackIndex] ?? mockProjects[0]
   const audio = project.audio
+  const [vfxMode, setVfxMode] = useState<VfxMode>('simple')
   const [scenes] = useState<MockScene[]>(() => generateScenes(39))
 
   const [activeSceneId, setActiveSceneId] = useState(scenes[0].id)
@@ -264,7 +268,35 @@ export function VfxExportStep({ trackIndex }: VfxExportStepProps) {
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-zinc-950">
-      {/* ─── Top section: 3-column layout ─────────────────── */}
+      {/* ─── Mode toggle ───────────────────────────────────── */}
+      <div className="flex items-center gap-2 px-4 pt-3 shrink-0">
+        <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Mode:</span>
+        {(['simple', 'advanced'] as const).map((mode) => (
+          <button
+            key={mode}
+            onClick={() => setVfxMode(mode)}
+            className={cn(
+              'rounded-full px-3 py-1 text-[11px] font-medium transition-colors cursor-pointer capitalize',
+              vfxMode === mode
+                ? 'bg-primary/20 text-primary border border-primary/30'
+                : 'bg-zinc-800 text-zinc-400 border border-zinc-700 hover:text-zinc-200',
+            )}
+          >
+            {mode}
+          </button>
+        ))}
+      </div>
+
+      {/* ─── Simple mode ───────────────────────────────────── */}
+      {vfxMode === 'simple' && (
+        <div className="flex-1 min-h-0">
+          <VfxSimpleMode scenes={scenes} activeSceneId={activeSceneId} />
+        </div>
+      )}
+
+      {/* ─── Advanced mode: 3-column layout ─────────────────── */}
+      {vfxMode === 'advanced' && (
+        <>
       <div className="flex flex-1 overflow-hidden min-h-0">
         {/* LEFT: Media Library */}
         <div className="shrink-0 overflow-hidden" style={{ width: leftWidth }}>
@@ -522,6 +554,8 @@ export function VfxExportStep({ trackIndex }: VfxExportStepProps) {
         onSceneClick={setActiveSceneId}
         onTimeChange={handleTimeChange}
       />
+        </>
+      )}
     </div>
   )
 }

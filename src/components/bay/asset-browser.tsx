@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronDown, ChevronRight, Music2, ImageIcon, Users, Palette } from 'lucide-react'
+import { ChevronDown, ChevronRight, Music2, ImageIcon, Users, Palette, Pencil, ArrowUp, ArrowDown, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { mockProjects } from '@/lib/mock/projects'
 import { CHARACTER_ARCHETYPES } from '@/lib/mock/characters'
@@ -128,33 +128,59 @@ export function AssetBrowser({ activeTab, selectedSceneId, onSceneSelect, onActi
       {visible.has('scenes') && (
         <Section label="Scenes" icon={<ImageIcon className="h-3 w-3" />}>
           <div className="space-y-0.5 px-2">
-            {project.scenes.map((scene: MockScene) => (
-              <button
-                key={scene.id}
-                onClick={() => onSceneSelect(scene.id)}
-                className={cn(
-                  'flex items-center gap-2 w-full px-1.5 py-1.5 rounded-md text-left transition-all',
-                  selectedSceneId === scene.id
-                    ? 'bg-primary/15 text-foreground ring-1 ring-primary/40'
-                    : 'hover:bg-muted text-muted-foreground hover:text-foreground'
-                )}
-              >
-                <div className="h-8 w-[52px] shrink-0 rounded overflow-hidden relative">
-                  <img src={scene.thumbnailUrl} alt="" className="w-full h-full object-cover" />
-                  <span className="absolute top-0.5 left-0.5 text-[8px] font-bold text-white bg-black/60 rounded px-0.5 leading-tight">
-                    {scene.index + 1}
-                  </span>
-                  <span
-                    className="absolute bottom-0.5 right-0.5 h-1.5 w-1.5 rounded-full"
-                    style={{ background: getSegmentColorForScene(scene) }}
-                  />
+            {project.scenes.map((scene: MockScene) => {
+              const elapsed = project.scenes.slice(0, scene.index).reduce((s, sc) => s + sc.duration, 0)
+              const endTime = elapsed + scene.duration
+              return (
+                <div key={scene.id} className="group relative">
+                  <button
+                    onClick={() => onSceneSelect(scene.id)}
+                    className={cn(
+                      'flex items-center gap-2 w-full px-1.5 py-1.5 rounded-md text-left transition-all',
+                      selectedSceneId === scene.id
+                        ? 'bg-primary/15 text-foreground ring-1 ring-primary/40'
+                        : 'hover:bg-muted text-muted-foreground hover:text-foreground'
+                    )}
+                  >
+                    <div className="h-8 w-[52px] shrink-0 rounded overflow-hidden relative">
+                      <img src={scene.thumbnailUrl} alt="" className="w-full h-full object-cover" />
+                      <span className="absolute top-0.5 left-0.5 text-[8px] font-bold text-white bg-black/60 rounded px-0.5 leading-tight">
+                        {scene.index + 1}
+                      </span>
+                      <span
+                        className="absolute bottom-0.5 right-0.5 h-1.5 w-1.5 rounded-full"
+                        style={{ background: getSegmentColorForScene(scene) }}
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-medium leading-none">Scene {scene.index + 1}</p>
+                      <p className="text-[10px] text-muted-foreground truncate mt-0.5">{scene.subject}</p>
+                      <p className="text-[9px] text-muted-foreground/60 font-mono mt-0.5">
+                        {formatDuration(elapsed)}–{formatDuration(endTime)}
+                      </p>
+                    </div>
+                  </button>
+                  {/* Hover action buttons */}
+                  <div className="absolute top-0.5 right-1 hidden group-hover:flex items-center gap-0.5">
+                    <button title="Edit" className="h-5 w-5 rounded flex items-center justify-center bg-muted/80 hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors">
+                      <Pencil className="h-2.5 w-2.5" />
+                    </button>
+                    <button title="Move up" onClick={(e) => { e.stopPropagation(); onAction?.(`move_up_${scene.index}`) }}
+                      className="h-5 w-5 rounded flex items-center justify-center bg-muted/80 hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors">
+                      <ArrowUp className="h-2.5 w-2.5" />
+                    </button>
+                    <button title="Move down" onClick={(e) => { e.stopPropagation(); onAction?.(`move_down_${scene.index}`) }}
+                      className="h-5 w-5 rounded flex items-center justify-center bg-muted/80 hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors">
+                      <ArrowDown className="h-2.5 w-2.5" />
+                    </button>
+                    <button title="Regenerate" onClick={(e) => { e.stopPropagation(); onAction?.(`regenerate_scene_${scene.index}`) }}
+                      className="h-5 w-5 rounded flex items-center justify-center bg-muted/80 hover:bg-orange-500/20 text-muted-foreground hover:text-orange-400 transition-colors">
+                      <RefreshCw className="h-2.5 w-2.5" />
+                    </button>
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium leading-none">Scene {scene.index + 1}</p>
-                  <p className="text-[10px] text-muted-foreground truncate mt-0.5">{scene.subject}</p>
-                </div>
-              </button>
-            ))}
+              )
+            })}
           </div>
         </Section>
       )}

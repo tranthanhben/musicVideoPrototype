@@ -59,13 +59,54 @@ export function BayProperties({ activeTab, selectedSceneId, className, onAction 
       <div className="flex-1 p-3 space-y-3 overflow-y-auto">
         {activeTab === 'input' && (
           <>
+            {/* Song Summary */}
+            <div className="space-y-1">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Song Summary</p>
+              <div className="bg-primary/5 border border-primary/20 rounded-lg px-2.5 py-2">
+                <p className="text-[11px] text-foreground/90 leading-relaxed">
+                  A high-energy cosmic love ballad with soaring vocals over synth-driven beats. Features dramatic key changes at the bridge and builds to an explosive chorus climax.
+                </p>
+              </div>
+            </div>
+
             <PropRow label="Track Title" value={project.audio.title} />
             <PropRow label="Artist" value={project.audio.artist} />
-            <PropRow label="BPM" value={String(project.audio.bpm)} />
-            <PropRow label="Key" value={project.audio.key} />
-            <PropRow label="Duration" value={`${Math.floor(project.audio.duration / 60)}:${String(project.audio.duration % 60).padStart(2, '0')}`} />
-            <PropRow label="Energy Peaks" value={`${peakCount} peaks detected`} />
+
+            {/* Stats grid */}
+            <div className="grid grid-cols-2 gap-1.5">
+              <div className="bg-muted/60 rounded-md px-2 py-1.5 text-center">
+                <p className="text-[9px] text-muted-foreground">BPM</p>
+                <p className="text-xs font-bold text-foreground">{project.audio.bpm}</p>
+              </div>
+              <div className="bg-muted/60 rounded-md px-2 py-1.5 text-center">
+                <p className="text-[9px] text-muted-foreground">Key</p>
+                <p className="text-xs font-bold text-foreground">{project.audio.key}</p>
+              </div>
+              <div className="bg-muted/60 rounded-md px-2 py-1.5 text-center">
+                <p className="text-[9px] text-muted-foreground">Duration</p>
+                <p className="text-xs font-bold text-foreground">{Math.floor(project.audio.duration / 60)}:{String(project.audio.duration % 60).padStart(2, '0')}</p>
+              </div>
+              <div className="bg-muted/60 rounded-md px-2 py-1.5 text-center">
+                <p className="text-[9px] text-muted-foreground">Peaks</p>
+                <p className="text-xs font-bold text-foreground">{peakCount}</p>
+              </div>
+            </div>
+
+            {/* Genre/Mood tags */}
+            <div className="space-y-1">
+              <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Genre & Mood</p>
+              <div className="flex flex-wrap gap-1">
+                {['Space Opera', 'Synth-Pop', 'Cinematic'].map((tag) => (
+                  <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/30 font-medium">{tag}</span>
+                ))}
+                {['Euphoric', 'Intimate', 'Epic'].map((tag) => (
+                  <span key={tag} className="text-[9px] px-1.5 py-0.5 rounded-full bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 font-medium">{tag}</span>
+                ))}
+              </div>
+            </div>
+
             <PropRow label="Beat Markers" value={`${project.audio.beatMarkers.length} detected`} />
+
             {/* Segments list */}
             <div className="space-y-1">
               <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">Segments</p>
@@ -104,8 +145,17 @@ export function BayProperties({ activeTab, selectedSceneId, className, onAction 
           </>
         )}
 
-        {activeTab === 'storyboard' && (
+        {activeTab === 'storyboard' && (() => {
+          const elapsed = project.scenes.slice(0, scene.index).reduce((s, sc) => s + sc.duration, 0)
+          const endTime = elapsed + scene.duration
+          const fmtTime = (t: number) => `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`
+          return (
           <>
+            {/* Scene header with number + timestamp */}
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-foreground">Scene {scene.index + 1}</span>
+              <span className="text-[10px] font-mono text-primary bg-primary/10 rounded px-1.5 py-0.5">{fmtTime(elapsed)}–{fmtTime(endTime)}</span>
+            </div>
             <PropRow label="Subject" value={scene.subject} />
             <PropRow label="Action" value={scene.action} />
             <PropRow label="Environment" value={scene.environment} />
@@ -136,7 +186,8 @@ export function BayProperties({ activeTab, selectedSceneId, className, onAction 
               </div>
             )}
           </>
-        )}
+          )
+        })()}
 
         {activeTab === 'generate' && (
           <>

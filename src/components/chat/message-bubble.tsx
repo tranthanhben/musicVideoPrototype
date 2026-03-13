@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { Bot, User } from 'lucide-react'
+import { Bot, User, ChevronRight } from 'lucide-react'
 import type { ChatMessage } from '@/lib/chat/types'
 import { ArtifactCardRenderer } from './artifact-cards'
 
@@ -42,21 +42,22 @@ export function MessageBubble({ message, onAction }: MessageBubbleProps) {
           <ArtifactCardRenderer key={artifact.id} artifact={artifact} onAction={onAction} />
         ))}
 
-        {/* Action buttons */}
+        {/* Action buttons — with attention-drawing animations */}
         {message.actions && !message.isStreaming && (
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap animate-[fadeSlideUp_0.4s_ease-out]">
             {message.actions.map((action) => (
               <button
                 key={action.action}
                 onClick={() => onAction?.(action.action)}
                 className={cn(
-                  'px-3 py-1.5 rounded-lg text-xs font-medium transition-colors',
-                  action.variant === 'primary' && 'bg-primary text-primary-foreground hover:bg-primary/90',
-                  action.variant === 'secondary' && 'bg-muted text-muted-foreground hover:bg-muted/80',
+                  'px-3 py-1.5 rounded-lg text-xs font-medium transition-all',
+                  action.variant === 'primary' && 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-md shadow-primary/25 animate-[ctaPulse_2s_ease-in-out_infinite] flex items-center gap-1',
+                  action.variant === 'secondary' && 'bg-muted text-muted-foreground hover:bg-muted/80 border border-border',
                   action.variant === 'destructive' && 'bg-destructive text-white hover:bg-destructive/90',
                 )}
               >
                 {action.label}
+                {action.variant === 'primary' && <ChevronRight className="h-3 w-3" />}
               </button>
             ))}
           </div>

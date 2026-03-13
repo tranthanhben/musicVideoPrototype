@@ -25,7 +25,7 @@ export function CharacterSetupView({ onConfirm }: CharacterSetupViewProps) {
 
   return (
     <div className="flex h-full flex-col p-5 gap-3">
-      <div className="flex items-center justify-between shrink-0">
+      <div className="flex items-center justify-between shrink-0 pr-28">
         <div>
           <h2 className="text-sm font-bold text-foreground">Character Setup</h2>
           <p className="text-[11px] text-muted-foreground mt-0.5">Select 1–3 characters for your music video</p>
@@ -37,7 +37,7 @@ export function CharacterSetupView({ onConfirm }: CharacterSetupViewProps) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               onClick={() => onConfirm(selectedIds)}
-              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 cursor-pointer"
+              className="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 cursor-pointer shadow-md shadow-primary/25 animate-[ctaPulse_2s_ease-in-out_infinite]"
             >
               Continue ({selectedIds.length}) <ChevronRight className="h-3.5 w-3.5" />
             </motion.button>

@@ -3,7 +3,6 @@ export type FlowStep =
   | 'setup'
   | 'analysis'
   | 'storyboard'
-  | 'generation'
   | 'vfx_export'
 
 export type MvType = 'dance' | 'performance' | 'lyrics' | 'full_mv' | 'visualizer'
@@ -78,7 +77,6 @@ export const FLOW_STEPS: { key: FlowStep; label: string; shortLabel: string }[] 
   { key: 'mv_type', label: 'Video Type', shortLabel: 'Type' },
   { key: 'setup', label: 'Upload your song', shortLabel: 'Upload' },
   { key: 'analysis', label: 'Analysis & Ideation', shortLabel: 'Analysis' },
-  { key: 'storyboard', label: 'Storyboard', shortLabel: 'Scenes' },
-  { key: 'generation', label: 'Video Generation', shortLabel: 'Generate' },
+  { key: 'storyboard', label: 'Storyboard & Generate', shortLabel: 'Scenes' },
   { key: 'vfx_export', label: 'VFX & Export', shortLabel: 'Export' },
 ]

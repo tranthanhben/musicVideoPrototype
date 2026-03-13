@@ -22,6 +22,7 @@ interface BayLayoutProps {
   suggestions?: ChatSuggestion[]
   selectedStoryline: number | null
   journeyState: JourneyStateId
+  onTrackSelect?: (index: number) => void
 }
 
 export function BayLayout({
@@ -36,6 +37,7 @@ export function BayLayout({
   suggestions,
   selectedStoryline,
   journeyState,
+  onTrackSelect,
 }: BayLayoutProps) {
   return (
     <div className="flex flex-col h-full">
@@ -62,6 +64,8 @@ export function BayLayout({
           onAiAssist={onChatToggle}
           onAction={onAction}
           selectedStoryline={selectedStoryline}
+          journeyState={journeyState}
+          onTrackSelect={onTrackSelect}
         />
 
         {/* Properties panel — hidden when chat open */}

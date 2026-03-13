@@ -1,9 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Clapperboard, Clock, TrendingUp } from 'lucide-react'
+import { Clapperboard, Clock, TrendingUp, Users, Film, ChevronDown, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useState } from 'react'
 
 export interface StorylineView {
   title: string
@@ -19,101 +19,162 @@ export interface StorylineView {
   gradientFrom: string
   gradientTo: string
   selected?: boolean
+  characters?: string[]
+  sceneSummaries?: string[]
+  emotionBreakdown?: { label: string; pct: number }[]
 }
 
-function CircleProgress({ pct, from, to }: { pct: number; from: string; to: string }) {
-  const r = 20
-  const circ = 2 * Math.PI * r
-  const offset = circ - (pct / 100) * circ
-  const gradId = `cg2-${from.replace('#', '')}`
-  return (
-    <svg width="52" height="52" viewBox="0 0 52 52">
-      <defs>
-        <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={from} />
-          <stop offset="100%" stopColor={to} />
-        </linearGradient>
-      </defs>
-      <circle cx="26" cy="26" r={r} fill="none" stroke="currentColor" strokeWidth={3} className="text-muted/50" />
-      <motion.circle
-        cx="26" cy="26" r={r} fill="none"
-        stroke={`url(#${gradId})`} strokeWidth={3}
-        strokeDasharray={circ}
-        initial={{ strokeDashoffset: circ }}
-        animate={{ strokeDashoffset: offset }}
-        transition={{ duration: 1, ease: 'easeOut', delay: 0.3 }}
-        strokeLinecap="round" transform="rotate(-90 26 26)"
-      />
-      <text x="26" y="30" textAnchor="middle" fontSize="10" fontWeight="bold" fill="white">{pct}%</text>
-    </svg>
-  )
-}
-
-export function CreativeViewCard({ storyline, index }: { storyline: StorylineView; index: number }) {
-  const { title, tone, description, sceneCount, duration, keyMoment, emotionArc, visualKeywords, matchPct, imageUrl, gradientFrom, gradientTo, selected } = storyline
-  const [hovered, setHovered] = useState(false)
+export function CreativeViewCard({ storyline, index, onSelect }: { storyline: StorylineView; index: number; onSelect?: () => void }) {
+  const {
+    title, tone, description, sceneCount, duration, keyMoment, emotionArc,
+    visualKeywords, matchPct, imageUrl, gradientFrom, gradientTo, selected,
+    characters, sceneSummaries, emotionBreakdown,
+  } = storyline
+  const [expanded, setExpanded] = useState(false)
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.1 }}
-      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+      initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.08 }}
+      onClick={onSelect}
       className={cn(
-        'relative rounded-2xl border overflow-hidden transition-all cursor-pointer',
-        selected ? 'border-primary/60 shadow-lg' : 'border-border hover:border-primary/30 hover:shadow-md',
+        'relative rounded-xl border overflow-hidden transition-all cursor-pointer',
+        selected
+          ? 'border-primary/60 shadow-lg ring-2 ring-primary/20'
+          : 'border-border/50 hover:border-primary/30 hover:shadow-md',
       )}
     >
-      <div className="relative aspect-[16/9] overflow-hidden">
-        <img src={imageUrl} alt={title}
-          className={cn('absolute inset-0 w-full h-full object-cover transition-transform duration-500', hovered ? 'scale-110' : 'scale-100')} />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10" />
-        {selected && (
-          <div className="absolute top-3 right-3 rounded-full px-2 py-0.5 text-[9px] font-bold text-white"
-            style={{ background: `linear-gradient(135deg, ${gradientFrom}cc, ${gradientTo}cc)`, backdropFilter: 'blur(4px)' }}>
-            SELECTED
-          </div>
-        )}
-        <div className="absolute bottom-3 left-4 right-4 flex items-end justify-between">
-          <div>
-            <h3 className="text-sm font-bold text-white leading-tight">{title}</h3>
-            <span className="inline-block text-[9px] font-bold px-2 py-0.5 rounded-full mt-1 text-white/90"
-              style={{ backgroundColor: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.2)' }}>
+      {/* Compact header: small image + title + match + meta */}
+      <div className="flex gap-3 p-3 bg-card">
+        {/* Small thumbnail */}
+        <div className="relative h-20 w-28 shrink-0 rounded-lg overflow-hidden">
+          <img src={imageUrl} alt={title} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          {selected && (
+            <div className="absolute top-1 right-1 rounded-full px-1.5 py-0.5 text-[8px] font-bold text-white"
+              style={{ background: `linear-gradient(135deg, ${gradientFrom}cc, ${gradientTo}cc)` }}>
+              SELECTED
+            </div>
+          )}
+          <span
+            className="absolute bottom-1 right-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full text-white"
+            style={{ background: `${gradientFrom}cc` }}
+          >
+            {matchPct}%
+          </span>
+        </div>
+
+        {/* Title + description + meta */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-0.5">
+            <h3 className="text-sm font-bold text-foreground leading-tight truncate">{title}</h3>
+            <span className="text-[9px] font-medium px-1.5 py-0.5 rounded-full shrink-0"
+              style={{ color: gradientFrom, backgroundColor: `${gradientFrom}15`, border: `1px solid ${gradientFrom}30` }}>
               {tone}
             </span>
           </div>
-          <CircleProgress pct={matchPct} from={gradientFrom} to={gradientTo} />
+          <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2 mb-1.5">{description}</p>
+          <div className="flex items-center gap-2 flex-wrap text-[10px]">
+            <span className="flex items-center gap-1 text-muted-foreground">
+              <TrendingUp className="h-2.5 w-2.5" style={{ color: gradientFrom }} />
+              {emotionArc}
+            </span>
+            <span className="text-border">·</span>
+            <span className="flex items-center gap-1 text-muted-foreground">
+              <Clock className="h-2.5 w-2.5" />
+              {duration}
+            </span>
+            <span className="text-border">·</span>
+            <span className="font-medium" style={{ color: gradientFrom }}>{sceneCount} scenes</span>
+          </div>
         </div>
       </div>
 
-      <div className="p-3.5 bg-card">
-        <p className="text-[11px] text-muted-foreground leading-relaxed mb-2.5">{description}</p>
-        <div className="flex items-center gap-1.5 mb-2.5 rounded-lg bg-muted/30 px-2.5 py-1.5">
-          <TrendingUp className="h-3 w-3 shrink-0" style={{ color: gradientFrom }} />
-          <p className="text-[10px] text-muted-foreground font-medium">{emotionArc}</p>
+      {/* Gradient divider */}
+      <div className="h-0.5" style={{ background: `linear-gradient(to right, ${gradientFrom}, ${gradientTo})` }} />
+
+      {/* Key moment + characters row */}
+      <div className="px-3 py-2 bg-card/80 space-y-1.5">
+        <div className="flex items-center gap-1.5">
+          <Clapperboard className="h-3 w-3 shrink-0" style={{ color: gradientFrom }} />
+          <p className="text-[10px] text-muted-foreground truncate">{keyMoment}</p>
         </div>
-        <div className="flex flex-wrap gap-1 mb-2.5">
+
+        {characters && characters.length > 0 && (
+          <div className="flex items-center gap-1.5">
+            <Users className="h-3 w-3 shrink-0" style={{ color: gradientFrom }} />
+            <p className="text-[10px] text-foreground/80 truncate">{characters.join(' · ')}</p>
+          </div>
+        )}
+
+        {/* Visual keywords */}
+        <div className="flex flex-wrap gap-1">
           {visualKeywords.map((kw) => (
             <span key={kw} className="text-[9px] px-1.5 py-0.5 rounded-full border"
-              style={{ color: gradientFrom, borderColor: `${gradientFrom}40`, backgroundColor: `${gradientFrom}10` }}>
+              style={{ color: gradientFrom, borderColor: `${gradientFrom}30`, backgroundColor: `${gradientFrom}08` }}>
               {kw}
             </span>
           ))}
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1.5 rounded-lg bg-muted/50 px-2.5 py-1.5 flex-1">
-            <Clapperboard className="h-3 w-3 shrink-0" style={{ color: gradientFrom }} />
-            <p className="text-[10px] font-mono text-muted-foreground truncate">{keyMoment}</p>
-          </div>
-          <div className="flex items-center gap-1.5 rounded-lg bg-muted/50 px-2.5 py-1.5">
-            <Clock className="h-3 w-3 shrink-0 text-muted-foreground" />
-            <span className="text-[10px] text-muted-foreground font-mono">{duration}</span>
-          </div>
-          <div className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 shrink-0 text-[10px] font-bold"
-            style={{ background: `linear-gradient(135deg, ${gradientFrom}33, ${gradientTo}33)`, border: `1px solid ${gradientFrom}40` }}>
-            <span style={{ color: gradientFrom }}>{sceneCount}</span>
-            <span className="text-muted-foreground">scenes</span>
-          </div>
-        </div>
+
+        {/* Expand toggle for scenes + emotions */}
+        {(sceneSummaries || emotionBreakdown) && (
+          <button
+            onClick={(e) => { e.stopPropagation(); setExpanded(!expanded) }}
+            className="flex items-center gap-1 text-[10px] text-primary/70 hover:text-primary font-medium transition-colors pt-0.5"
+          >
+            {expanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+            {expanded ? 'Hide details' : 'Show scenes & emotions'}
+          </button>
+        )}
       </div>
+
+      {/* Expandable details */}
+      {expanded && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="px-3 pb-3 bg-card/80 space-y-2"
+        >
+          {sceneSummaries && sceneSummaries.length > 0 && (
+            <div className="rounded-lg bg-muted/20 px-2.5 py-2">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <Film className="h-3 w-3 shrink-0" style={{ color: gradientFrom }} />
+                <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-semibold">Scene Breakdown</p>
+              </div>
+              <div className="space-y-1 max-h-28 overflow-y-auto">
+                {sceneSummaries.map((summary, i) => (
+                  <p key={i} className="text-[10px] text-muted-foreground leading-relaxed">
+                    <span className="font-semibold" style={{ color: gradientFrom }}>S{i + 1}:</span> {summary}
+                  </p>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {emotionBreakdown && emotionBreakdown.length > 0 && (
+            <div className="rounded-lg bg-muted/20 px-2.5 py-2">
+              <p className="text-[9px] text-muted-foreground uppercase tracking-wider font-semibold mb-1.5">Emotion Breakdown</p>
+              <div className="space-y-1">
+                {emotionBreakdown.map((e) => (
+                  <div key={e.label} className="flex items-center gap-2">
+                    <span className="text-[10px] text-muted-foreground w-20 shrink-0">{e.label}</span>
+                    <div className="flex-1 h-1.5 rounded-full bg-muted/50 overflow-hidden">
+                      <motion.div
+                        className="h-full rounded-full"
+                        style={{ background: `linear-gradient(90deg, ${gradientFrom}, ${gradientTo})` }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${e.pct}%` }}
+                        transition={{ duration: 0.8, ease: 'easeOut', delay: 0.2 }}
+                      />
+                    </div>
+                    <span className="text-[10px] font-mono text-muted-foreground w-7 text-right">{e.pct}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </motion.div>
+      )}
     </motion.div>
   )
 }

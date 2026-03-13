@@ -198,6 +198,11 @@ export default function BayPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  function handleTrackSelect(_index: number) {
+    // In a real app, this would load a different project
+    // For prototype, we use the same mock project but trigger the demo flow
+  }
+
   return (
     <BayLayout
       activeTab={activeTab}
@@ -211,6 +216,7 @@ export default function BayPage() {
       suggestions={suggestions}
       selectedStoryline={selectedStoryline}
       journeyState={journeyState}
+      onTrackSelect={handleTrackSelect}
     />
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { ShieldCheck, AlertTriangle, XCircle } from 'lucide-react'
+import { ShieldCheck, AlertTriangle, XCircle, ChevronRight } from 'lucide-react'
 import type { ChatArtifact } from '@/lib/chat/types'
 
 interface QualityGateCardProps {
@@ -51,16 +51,17 @@ export function QualityGateCard({ artifact, onAction, className }: QualityGateCa
           <p className="text-xs text-muted-foreground mb-3">{artifact.description}</p>
         )}
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 animate-[fadeSlideUp_0.4s_ease-out]">
           <button
             onClick={() => onAction?.('approve')}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-green-600 text-white hover:bg-green-700 transition-colors"
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-600 text-white hover:bg-green-700 transition-colors shadow-md shadow-green-600/25 animate-[ctaPulse_2s_ease-in-out_infinite]"
           >
             Approve
+            <ChevronRight className="h-3 w-3" />
           </button>
           <button
             onClick={() => onAction?.('revise')}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
+            className="px-3 py-1.5 rounded-lg text-xs font-medium bg-muted text-muted-foreground hover:bg-muted/80 border border-border transition-colors"
           >
             Request Revision
           </button>

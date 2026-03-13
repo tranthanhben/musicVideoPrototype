@@ -18,12 +18,15 @@ interface MonitorLayoutProps {
   onTrackSelect: (index: number) => void
   onStyleConfirm: (selections: StyleSelections) => void
   onCharacterConfirm: (ids: string[]) => void
+  selectedStoryline?: number | null
+  onStorylineSelect?: (index: number) => void
 }
 
 export function MonitorLayout({
   onSend, onAction, suggestions,
   viewHint, journeyState, projectIndex,
   onTrackSelect, onStyleConfirm, onCharacterConfirm,
+  selectedStoryline, onStorylineSelect,
 }: MonitorLayoutProps) {
   const prevViewHint = useRef(viewHint)
   const [viewChanged, setViewChanged] = useState(false)
@@ -71,6 +74,8 @@ export function MonitorLayout({
           onTrackSelect={onTrackSelect}
           onStyleConfirm={onStyleConfirm}
           onCharacterConfirm={onCharacterConfirm}
+          selectedStoryline={selectedStoryline}
+          onStorylineSelect={onStorylineSelect}
         />
       </div>
     </div>
