@@ -769,6 +769,13 @@ export function StorylineConceptsSection({ selectedConceptId, onConceptSelect, o
 
   const selectedConcept = currentVersion?.concepts.find((c) => c.id === selectedConceptId) ?? null
 
+  // Auto-select first concept when concepts finish loading and none is selected
+  useEffect(() => {
+    if (!conceptsLoading && currentVersion?.concepts.length && !selectedConceptId) {
+      onConceptSelect(currentVersion.concepts[0].id)
+    }
+  }, [conceptsLoading, currentVersion, selectedConceptId, onConceptSelect])
+
   // Notify parent of state changes for external rendering of details panel
   useEffect(() => {
     onStateChange?.({

@@ -1,55 +1,22 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Download, CheckCircle2, Sparkles, ArrowLeftRight, SlidersHorizontal, Type, Captions } from 'lucide-react'
+import { Download, CheckCircle2, MessageSquare, SlidersHorizontal, GripHorizontal, Film, Play, Pause, Wand2, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { mockProjects } from '@/lib/mock/projects'
 import type { MockScene } from '@/lib/mock/types'
-import { MediaLibrary } from './media-library'
 import { DirectorChat } from './director-chat'
 import { EditorTimeline } from './editor-timeline'
 import { VFX_FILTERS, ConfettiParticle, generateParticles } from './vfx-export-sub'
-import { VfxSimpleMode } from './vfx-simple-mode'
-import { VFX_PRESETS, TRANSITION_TYPES } from '@/lib/flow-v3/mock-data'
+import { SceneEditToolbar } from './scene-edit-toolbar'
+import { SceneGenShowcase } from './scene-gen-showcase'
 
 // ─── Types ──────────────────────────────────────────────────
 
 interface VfxExportStepProps {
   trackIndex: number
 }
-
-const TOOLBAR_TABS = [
-  { id: 'effects', label: 'Effects', icon: Sparkles },
-  { id: 'transitions', label: 'Transitions', icon: ArrowLeftRight },
-  { id: 'filters', label: 'Filters', icon: SlidersHorizontal },
-  { id: 'text', label: 'Text', icon: Type },
-  { id: 'sub', label: 'Sub', icon: Captions },
-] as const
-
-const FILTER_PRESETS = [
-  { id: 'normal', label: 'Normal', color: '#71717A' },
-  { id: 'warm', label: 'Warm', color: '#F59E0B' },
-  { id: 'cool', label: 'Cool', color: '#06B6D4' },
-  { id: 'vivid', label: 'Vivid', color: '#EC4899' },
-  { id: 'muted', label: 'Muted', color: '#78716C' },
-  { id: 'bw', label: 'B&W', color: '#A1A1AA' },
-  { id: 'teal-orange', label: 'Teal & Orange', color: '#0D9488' },
-  { id: 'cinematic', label: 'Cinematic', color: '#7C3AED' },
-]
-
-const TEXT_OPTIONS = [
-  { id: 'title', label: 'Title Card' },
-  { id: 'lower-third', label: 'Lower Third' },
-  { id: 'lyrics', label: 'Lyrics' },
-  { id: 'custom', label: 'Custom Text' },
-]
-
-const SUB_OPTIONS = [
-  { id: 'auto', label: 'Auto-generated' },
-  { id: 'karaoke', label: 'Karaoke Style' },
-  { id: 'srt', label: 'Import SRT' },
-]
 
 // ─── Real scene image URLs ───────────────────────────────────
 
@@ -135,7 +102,7 @@ function generateScenes(targetCount: number): MockScene[] {
       environment: template.environment,
       cameraAngle: angle,
       cameraMovement: movement,
-      prompt: `${template.subject} ${template.action} in ${template.environment}, ${angle}, ${movement}, cinematic`,
+      prompt: buildScenePrompt({ subject: template.subject, action: template.action, environment: template.environment, cameraAngle: angle, cameraMovement: movement }),
       thumbnailUrl: SCENE_IMAGE_URLS[i % SCENE_IMAGE_URLS.length],
       duration,
       status: 'completed',
@@ -146,6 +113,107 @@ function generateScenes(targetCount: number): MockScene[] {
 }
 
 type VfxMode = 'simple' | 'advanced'
+type RightPanelView = 'chat' | 'properties'
+
+function buildScenePrompt(s: Pick<MockScene, 'subject' | 'action' | 'environment' | 'cameraAngle' | 'cameraMovement'>) {
+  return `${s.subject} ${s.action} in ${s.environment}, ${s.cameraAngle}, ${s.cameraMovement}, cinematic`
+}
+
+// ─── Editable Scene Properties Panel ────────────────────────
+
+function ScenePropertyInput({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="space-y-0.5">
+      <p className="text-[9px] uppercase tracking-wide text-zinc-500 font-semibold">{label}</p>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full text-[11px] text-zinc-200 bg-zinc-800/60 rounded-md px-2.5 py-1.5 leading-relaxed border border-transparent focus:border-primary/40 focus:outline-none transition-colors"
+      />
+    </div>
+  )
+}
+
+function ScenePropertiesPanel({ scene, onUpdate }: { scene: MockScene; onUpdate: (sceneId: string, updates: Partial<MockScene>) => void }) {
+  const [subject, setSubject] = useState(scene.subject)
+  const [action, setAction] = useState(scene.action)
+  const [environment, setEnvironment] = useState(scene.environment)
+  const [cameraAngle, setCameraAngle] = useState(scene.cameraAngle)
+  const [cameraMovement, setCameraMovement] = useState(scene.cameraMovement)
+
+  // Reset form when switching to a different scene
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setSubject(scene.subject)
+    setAction(scene.action)
+    setEnvironment(scene.environment)
+    setCameraAngle(scene.cameraAngle)
+    setCameraMovement(scene.cameraMovement)
+  }, [scene.id])
+
+  const hasChanges =
+    subject !== scene.subject ||
+    action !== scene.action ||
+    environment !== scene.environment ||
+    cameraAngle !== scene.cameraAngle ||
+    cameraMovement !== scene.cameraMovement
+
+  const handleRegen = () => {
+    onUpdate(scene.id, { subject, action, environment, cameraAngle, cameraMovement })
+  }
+
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex-1 overflow-y-auto p-3 space-y-2.5">
+        {/* Header */}
+        <div className="flex items-center gap-2 pb-2 border-b border-zinc-800">
+          <Film className="h-4 w-4 text-primary" />
+          <div>
+            <p className="text-xs font-semibold text-zinc-200">Scene {scene.index + 1}</p>
+            <p className="text-[9px] text-zinc-500">{scene.duration}s</p>
+          </div>
+        </div>
+
+        {/* Thumbnail */}
+        <div className="aspect-video rounded-lg overflow-hidden bg-zinc-900">
+          <img src={scene.thumbnailUrl} alt={`Scene ${scene.index + 1}`} className="w-full h-full object-cover" />
+        </div>
+
+        {/* Editable fields */}
+        <ScenePropertyInput label="Subject" value={subject} onChange={setSubject} />
+        <ScenePropertyInput label="Action" value={action} onChange={setAction} />
+        <ScenePropertyInput label="Environment" value={environment} onChange={setEnvironment} />
+        <ScenePropertyInput label="Camera Angle" value={cameraAngle} onChange={setCameraAngle} />
+        <ScenePropertyInput label="Camera Movement" value={cameraMovement} onChange={setCameraMovement} />
+
+        {/* Prompt (read-only) */}
+        <div className="space-y-0.5">
+          <p className="text-[9px] uppercase tracking-wide text-zinc-500 font-semibold">Full Prompt</p>
+          <p className="text-[10px] text-zinc-400 bg-zinc-800/60 rounded-md px-2.5 py-2 leading-relaxed font-mono">
+            {scene.prompt}
+          </p>
+        </div>
+      </div>
+
+      {/* Regen button — sticky at bottom */}
+      <div className="shrink-0 p-3 border-t border-zinc-800">
+        <button
+          onClick={handleRegen}
+          disabled={!hasChanges}
+          className={cn(
+            'w-full flex items-center justify-center gap-1.5 rounded-lg py-2 text-[11px] font-semibold transition-all cursor-pointer',
+            hasChanges
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+              : 'bg-zinc-800 text-zinc-500 cursor-not-allowed',
+          )}
+        >
+          <RefreshCw className="h-3.5 w-3.5" />
+          {hasChanges ? 'Regen Scene' : 'Edit properties to regen'}
+        </button>
+      </div>
+    </div>
+  )
+}
 
 // ─── Component ──────────────────────────────────────────────
 
@@ -153,31 +221,98 @@ export function VfxExportStep({ trackIndex }: VfxExportStepProps) {
   const project = mockProjects[trackIndex] ?? mockProjects[0]
   const audio = project.audio
   const [vfxMode, setVfxMode] = useState<VfxMode>('simple')
-  const [scenes] = useState<MockScene[]>(() => generateScenes(39))
+  const [scenes, setScenes] = useState<MockScene[]>(() => generateScenes(39))
 
+  // ── Scene generation simulation ──────────────────
+  const [sceneStatuses, setSceneStatuses] = useState<Record<string, 'pending' | 'rendering' | 'done'>>(() => {
+    const map: Record<string, 'pending' | 'rendering' | 'done'> = {}
+    scenes.forEach((s, i) => { map[s.id] = i === 0 ? 'rendering' : 'pending' })
+    return map
+  })
+
+  const doneCount = Object.values(sceneStatuses).filter((s) => s === 'done').length
+  const allDone = doneCount === scenes.length
+
+  useEffect(() => {
+    if (allDone) return
+    const interval = setInterval(() => {
+      setSceneStatuses((prev) => {
+        const updated = { ...prev }
+        const renderingId = Object.keys(updated).find((id) => updated[id] === 'rendering')
+        if (renderingId) {
+          updated[renderingId] = 'done'
+          const nextPendingId = Object.keys(updated).find((id) => updated[id] === 'pending')
+          if (nextPendingId) updated[nextPendingId] = 'rendering'
+        }
+        return updated
+      })
+    }, 400)
+    return () => clearInterval(interval)
+  }, [allDone])
+
+  // ── Core state ──────────────────────────────────
   const [activeSceneId, setActiveSceneId] = useState(scenes[0].id)
   const [selectedVfx, setSelectedVfx] = useState('cosmic-cinema')
   const [selectedTransition, setSelectedTransition] = useState('beat-sync')
+  const [selectedFilter, setSelectedFilter] = useState('normal')
+  const [activeTool, setActiveTool] = useState<string | null>(null)
   const [rendering, setRendering] = useState(false)
   const [renderProgress, setRenderProgress] = useState(0)
   const [exported, setExported] = useState(false)
   const [particles, setParticles] = useState<ReturnType<typeof generateParticles>>([])
   const [currentTime, setCurrentTime] = useState(0)
-  const [activeTab, setActiveTab] = useState<string | null>(null)
-  const [selectedFilter, setSelectedFilter] = useState('normal')
-  const [selectedText, setSelectedText] = useState<string | null>(null)
-  const [selectedSub, setSelectedSub] = useState<string | null>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const playRafRef = useRef<number | null>(null)
+  const lastFrameRef = useRef<number>(0)
 
-  const [leftWidth, setLeftWidth] = useState(220)
-  const [rightWidth, setRightWidth] = useState(300)
+  // ── Unified playback loop (drives both video preview & timeline) ──
+  useEffect(() => {
+    if (!isPlaying) {
+      if (playRafRef.current) cancelAnimationFrame(playRafRef.current)
+      return
+    }
+    lastFrameRef.current = performance.now()
+    const tick = (now: number) => {
+      const delta = (now - lastFrameRef.current) / 1000
+      lastFrameRef.current = now
+      setCurrentTime((prev) => {
+        const next = prev + delta
+        if (next >= audio.duration) {
+          setIsPlaying(false)
+          return 0
+        }
+        return next
+      })
+      playRafRef.current = requestAnimationFrame(tick)
+    }
+    playRafRef.current = requestAnimationFrame(tick)
+    return () => {
+      if (playRafRef.current) cancelAnimationFrame(playRafRef.current)
+    }
+  }, [isPlaying, audio.duration])
+
+  const togglePlay = useCallback(() => {
+    setIsPlaying((p) => !p)
+  }, [])
+
+  // ── Panel state (storyboard pattern) ──────────────
+  const [chatWidth, setChatWidth] = useState(320)
+  const [rightPanelView, setRightPanelView] = useState<RightPanelView>('chat')
+  const containerRef = useRef<HTMLDivElement>(null)
+  const isDraggingRef = useRef(false)
+
+  // ── Drag-to-reorder ──────────────────────────────
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null)
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null)
 
   const activeScene = scenes.find((s) => s.id === activeSceneId) ?? scenes[0]
+  const activeSceneIndex = scenes.findIndex((s) => s.id === activeSceneId)
   const videoFilter = VFX_FILTERS[selectedVfx] ?? 'none'
 
   // ─── Render logic ─────────────────────────────────────────
 
   function startRender() {
-    if (rendering || exported) return
+    if (rendering || exported || !allDone) return
     setRendering(true)
     setRenderProgress(0)
   }
@@ -214,347 +349,398 @@ export function VfxExportStep({ trackIndex }: VfxExportStepProps) {
     })
   }, [scenes, audio.duration])
 
+  // ── Sync active scene from currentTime ────────────────
+  useEffect(() => {
+    const range = sceneTimeRanges.find((r) => currentTime >= r.audioStart && currentTime < r.audioEnd)
+    if (range && range.sceneId !== activeSceneId && sceneStatuses[range.sceneId] === 'done') {
+      setActiveSceneId(range.sceneId)
+    }
+  }, [currentTime, sceneTimeRanges, activeSceneId, sceneStatuses])
+
   const handleTimeChange = useCallback(
     (time: number) => {
-      setCurrentTime(time)
-      const range = sceneTimeRanges.find((r) => time >= r.audioStart && time < r.audioEnd)
-      if (range && range.sceneId !== activeSceneId) {
-        setActiveSceneId(range.sceneId)
+      // Only sync from timeline when we're NOT driving playback ourselves
+      if (!isPlaying) {
+        setCurrentTime(time)
       }
     },
-    [sceneTimeRanges, activeSceneId],
+    [isPlaying],
   )
 
-  const handleSeekToScene = useCallback(
-    (sceneId: string) => {
+  // ─── Scene click from timeline → switch to advanced ────────
+
+  const handleTimelineSceneClick = useCallback((sceneId: string) => {
+    if (sceneId === activeSceneId && vfxMode === 'advanced') {
+      // Same scene clicked again in advanced → toggle right panel
+      setRightPanelView((rpv) => rpv === 'properties' ? 'chat' : 'properties')
+    } else {
+      setVfxMode('advanced')
+      setRightPanelView('properties')
       setActiveSceneId(sceneId)
-    },
-    [],
-  )
+      // Seek to the clicked scene's start so the sync useEffect doesn't override
+      const range = sceneTimeRanges.find((r) => r.sceneId === sceneId)
+      if (range) setCurrentTime(range.audioStart)
+    }
+  }, [activeSceneId, vfxMode, sceneTimeRanges])
 
-  // ─── Resize handlers ─────────────────────────────────────
+  // ─── Resize handler (storyboard pattern) ────────────────────
 
-  const handleLeftResize = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    const startX = e.clientX
-    const startWidth = leftWidth
-    const onMove = (ev: MouseEvent) => {
-      const delta = ev.clientX - startX
-      setLeftWidth(Math.max(160, Math.min(350, startWidth + delta)))
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDraggingRef.current || !containerRef.current) return
+      const rect = containerRef.current.getBoundingClientRect()
+      const newChatWidth = rect.right - e.clientX
+      setChatWidth(Math.max(240, Math.min(newChatWidth, rect.width * 0.5)))
     }
-    const onUp = () => {
-      window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('mouseup', onUp)
+    const handleMouseUp = () => {
+      isDraggingRef.current = false
+      document.body.style.cursor = ''
+      document.body.style.userSelect = ''
     }
-    window.addEventListener('mousemove', onMove)
-    window.addEventListener('mouseup', onUp)
-  }, [leftWidth])
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [])
 
-  const handleRightResize = useCallback((e: React.MouseEvent) => {
-    e.preventDefault()
-    const startX = e.clientX
-    const startWidth = rightWidth
-    const onMove = (ev: MouseEvent) => {
-      const delta = startX - ev.clientX
-      setRightWidth(Math.max(240, Math.min(420, startWidth + delta)))
-    }
-    const onUp = () => {
-      window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('mouseup', onUp)
-    }
-    window.addEventListener('mousemove', onMove)
-    window.addEventListener('mouseup', onUp)
-  }, [rightWidth])
+  const startResize = useCallback(() => {
+    isDraggingRef.current = true
+    document.body.style.cursor = 'col-resize'
+    document.body.style.userSelect = 'none'
+  }, [])
+
+  // ─── Drag-to-reorder handlers ──────────────────────────────
+
+  const handleSceneDragStart = useCallback((idx: number) => { setDraggedIdx(idx) }, [])
+  const handleSceneDragOver = useCallback((_e: React.DragEvent, idx: number) => { setDragOverIdx(idx) }, [])
+  const handleSceneDragEnd = useCallback(() => { setDraggedIdx(null); setDragOverIdx(null) }, [])
+  const handleSceneDrop = useCallback((targetIdx: number) => {
+    if (draggedIdx === null || draggedIdx === targetIdx) return
+    setScenes((prev) => {
+      const updated = [...prev]
+      const [moved] = updated.splice(draggedIdx, 1)
+      updated.splice(targetIdx, 0, moved)
+      return updated.map((s, i) => ({ ...s, index: i }))
+    })
+    setDraggedIdx(null)
+    setDragOverIdx(null)
+  }, [draggedIdx])
+
+  // ─── Tool click handler ────────────────────────────────────
+
+  const handleToolClick = useCallback((toolId: string) => {
+    setActiveTool((prev) => prev === toolId ? null : toolId)
+  }, [])
+
+  // ─── Render ────────────────────────────────────────────────
 
   return (
     <div className="flex h-full flex-col overflow-hidden bg-zinc-950">
-      {/* ─── Mode toggle ───────────────────────────────────── */}
-      <div className="flex items-center gap-2 px-4 pt-3 shrink-0">
-        <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Mode:</span>
-        {(['simple', 'advanced'] as const).map((mode) => (
-          <button
-            key={mode}
-            onClick={() => setVfxMode(mode)}
-            className={cn(
-              'rounded-full px-3 py-1 text-[11px] font-medium transition-colors cursor-pointer capitalize',
-              vfxMode === mode
-                ? 'bg-primary/20 text-primary border border-primary/30'
-                : 'bg-zinc-800 text-zinc-400 border border-zinc-700 hover:text-zinc-200',
-            )}
-          >
-            {mode}
-          </button>
-        ))}
+      {/* ─── Top bar ──────────────────────────────────── */}
+      <div className="flex items-center gap-2 px-4 pt-3 pb-1 shrink-0">
+        {/* Mode toggle (advanced mode) or generation status (simple mode) */}
+        {vfxMode === 'advanced' ? (
+          <>
+            <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">Mode:</span>
+            {(['simple', 'advanced'] as const).map((mode) => (
+              <button
+                key={mode}
+                onClick={() => { setVfxMode(mode); if (mode === 'simple') { setActiveTool(null); setIsPlaying(false) } }}
+                className={cn(
+                  'rounded-full px-3 py-1 text-[11px] font-medium transition-colors cursor-pointer capitalize',
+                  vfxMode === mode
+                    ? 'bg-primary/20 text-primary border border-primary/30'
+                    : 'bg-zinc-800 text-zinc-400 border border-zinc-700 hover:text-zinc-200',
+                )}
+              >
+                {mode}
+              </button>
+            ))}
+          </>
+        ) : (
+          <div className="flex items-center gap-2">
+            <Film className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold text-zinc-200">Preview</span>
+          </div>
+        )}
+
+        {/* Generation progress inline — compact badge when generating */}
+        {!allDone && (
+          <div className="flex items-center gap-1.5 ml-auto">
+            <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-[10px] font-medium text-zinc-400">
+              Generating <span className="text-primary font-semibold tabular-nums">{doneCount}/{scenes.length}</span>
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* ─── Simple mode ───────────────────────────────────── */}
-      {vfxMode === 'simple' && (
-        <div className="flex-1 min-h-0">
-          <VfxSimpleMode scenes={scenes} activeSceneId={activeSceneId} />
-        </div>
-      )}
-
-      {/* ─── Advanced mode: 3-column layout ─────────────────── */}
-      {vfxMode === 'advanced' && (
-        <>
-      <div className="flex flex-1 overflow-hidden min-h-0">
-        {/* LEFT: Media Library */}
-        <div className="shrink-0 overflow-hidden" style={{ width: leftWidth }}>
-          <MediaLibrary
-            scenes={scenes}
-            audio={audio}
-            activeSceneId={activeSceneId}
-            onSceneClick={setActiveSceneId}
-          />
-        </div>
-
-        {/* Left resize handle */}
-        <div
-          className="w-1 shrink-0 bg-white/5 hover:bg-primary/30 cursor-col-resize transition-colors"
-          onMouseDown={handleLeftResize}
-        />
-
-        {/* CENTER: Video Preview */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-zinc-900/50 min-w-0">
-          <div className="flex-1 flex items-center justify-center p-4 relative min-h-0">
-            <div
-              className="relative w-full max-w-4xl rounded-lg overflow-hidden shadow-2xl shadow-black/50"
-              style={{ filter: videoFilter, transition: 'filter 0.4s ease', aspectRatio: '16/9' }}
-            >
-              <img
-                src={activeScene.thumbnailUrl ?? '/assets/export/final-preview.jpg'}
-                alt={`Scene ${activeScene.index + 1}`}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              <div className="absolute top-3 left-3 flex items-center gap-2">
-                <span className="rounded-md bg-black/60 backdrop-blur-sm px-2 py-0.5 text-[10px] font-mono text-white/80">
-                  S{activeScene.index + 1} / {scenes.length}
-                </span>
-                <span className="rounded-md bg-black/60 backdrop-blur-sm px-2 py-0.5 text-[10px] font-mono text-white/60">
-                  {activeScene.subject}
-                </span>
+      {/* ─── Body: Video Preview + Right Panel ───────────── */}
+      <div ref={containerRef} className="flex flex-1 overflow-hidden min-h-0 px-4 py-2 gap-0">
+        {/* Left column: video preview + optional toolbar */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Video preview / Generation showcase */}
+          <div className="flex-1 flex items-center justify-center min-h-0 p-2 overflow-hidden" style={{ containerType: 'size' }}>
+            {!allDone ? (
+              /* ── Scene generation showcase ── */
+              <div className="w-full h-full max-w-2xl">
+                <SceneGenShowcase
+                  scenes={scenes}
+                  sceneStatuses={sceneStatuses}
+                  doneCount={doneCount}
+                  total={scenes.length}
+                />
               </div>
-              <div className="absolute top-3 right-3">
-                <span className="rounded-md bg-black/60 backdrop-blur-sm px-2 py-0.5 text-[10px] font-mono text-emerald-400 flex items-center gap-1">
-                  <Sparkles className="h-2.5 w-2.5" />
-                  {selectedVfx.replace(/-/g, ' ')}
-                </span>
+            ) : (
+              /* ── Normal video preview ── */
+              <div
+                className="relative aspect-video rounded-xl overflow-hidden bg-black shadow-2xl shadow-black/50 group/video cursor-pointer"
+                style={{ width: 'min(100%, 177.78cqh)', maxWidth: '896px' }}
+                onClick={() => {
+                  if (sceneStatuses[activeSceneId] === 'done') togglePlay()
+                }}
+              >
+                <img
+                  src={activeScene.thumbnailUrl}
+                  alt={`Scene ${activeScene.index + 1}`}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  style={{ filter: videoFilter }}
+                />
+                {/* Dark gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30" />
+
+                {/* Top-left: scene info */}
+                <div className="absolute top-3 left-3 flex items-center gap-2">
+                  <span className="rounded-md bg-black/60 backdrop-blur-sm px-2 py-1 text-[11px] font-mono font-bold text-white">
+                    S{activeScene.index + 1} / {scenes.length}
+                  </span>
+                  <span className="text-[10px] text-white/70">{activeScene.subject}</span>
+                </div>
+
+                {/* Top-right: VFX label */}
+                <div className="absolute top-3 right-3 flex items-center gap-1.5">
+                  <span className="rounded-md bg-primary/20 backdrop-blur-sm border border-primary/30 px-2 py-1 text-[10px] font-medium text-primary">
+                    ✦ {selectedVfx.replace('-', ' ')}
+                  </span>
+                </div>
+
+                {/* Center play/pause button */}
+                <div className={cn(
+                  'absolute inset-0 flex items-center justify-center transition-opacity duration-200',
+                  isPlaying ? 'opacity-0 group-hover/video:opacity-100' : 'opacity-100',
+                )}>
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-black/40 backdrop-blur-xl border border-white/20 shadow-2xl transition-transform hover:scale-110 hover:bg-black/50">
+                    {isPlaying ? (
+                      <Pause className="h-9 w-9 text-white" />
+                    ) : (
+                      <Play className="h-9 w-9 text-white ml-1" />
+                    )}
+                  </div>
+                </div>
+
+                {/* Bottom bar: transition + metadata + progress */}
+                <div className="absolute bottom-0 left-0 right-0 px-3 pb-2.5 pt-6 bg-gradient-to-t from-black/80 to-transparent">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-white/60 font-mono">
+                      {selectedTransition.replace('-', ' ')} · {activeScene.cameraAngle}
+                    </span>
+                    {vfxMode === 'simple' && (
+                      <span className="text-[10px] text-white/50 font-mono">
+                        {activeSceneIndex + 1} / {scenes.length}
+                      </span>
+                    )}
+                  </div>
+                  {/* Simple mode: thin progress bar at video bottom */}
+                  {vfxMode === 'simple' && (
+                    <div className="mt-1.5 h-0.5 rounded-full bg-white/20 overflow-hidden">
+                      <motion.div
+                        className="h-full rounded-full bg-white/70"
+                        animate={{ width: `${((activeSceneIndex + 1) / scenes.length) * 100}%` }}
+                        transition={{ duration: 0.3 }}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="absolute bottom-3 left-3">
-                <span className="rounded-md bg-black/60 backdrop-blur-sm px-2 py-0.5 text-[10px] font-mono text-zinc-400">
-                  Trans: {selectedTransition.replace(/-/g, ' ')}
-                </span>
-              </div>
-            </div>
+            )}
           </div>
 
-          {/* Editor Toolbar */}
-          <div className="shrink-0 border-t border-white/5 bg-zinc-950/80">
-            <div className="flex items-center gap-0.5 px-3 py-1.5">
-              {TOOLBAR_TABS.map((tab) => {
-                const Icon = tab.icon
-                const isActive = activeTab === tab.id
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(isActive ? null : tab.id)}
-                    className={cn(
-                      'flex items-center gap-1.5 rounded-md px-2.5 py-1 text-[10px] font-medium transition-colors cursor-pointer',
-                      isActive
-                        ? 'bg-white/10 text-white'
-                        : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5',
-                    )}
-                  >
-                    <Icon className="h-3 w-3" />
-                    {tab.label}
-                  </button>
-                )
-              })}
-              <span className="ml-auto text-[10px] font-mono text-zinc-600">
-                {scenes.length} scenes
-              </span>
-            </div>
+          {/* Scene edit toolbar (advanced mode only) */}
+          {vfxMode === 'advanced' && (
+            <SceneEditToolbar
+              activeSceneIndex={activeSceneIndex}
+              activeTool={activeTool}
+              onToolClick={handleToolClick}
+              selectedVfx={selectedVfx}
+              selectedTransition={selectedTransition}
+              selectedFilter={selectedFilter}
+              onVfxChange={setSelectedVfx}
+              onTransitionChange={setSelectedTransition}
+              onFilterChange={setSelectedFilter}
+            />
+          )}
+        </div>
 
-            <AnimatePresence>
-              {activeTab && (
-                <motion.div
-                  key={activeTab}
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="overflow-hidden border-t border-white/5"
-                >
-                  <div className="px-3 py-2 flex gap-1.5 flex-wrap">
-                    {activeTab === 'effects' &&
-                      VFX_PRESETS.map((vfx) => (
-                        <button
-                          key={vfx.id}
-                          onClick={() => setSelectedVfx(vfx.id)}
-                          className={cn(
-                            'flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[10px] font-medium transition-colors cursor-pointer',
-                            selectedVfx === vfx.id
-                              ? 'bg-primary/15 border-primary/30 text-primary'
-                              : 'border-white/8 bg-white/3 text-zinc-400 hover:text-zinc-200 hover:bg-white/5',
-                          )}
-                        >
-                          <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: vfx.accentColor }} />
-                          {vfx.label}
-                        </button>
-                      ))}
-                    {activeTab === 'transitions' &&
-                      TRANSITION_TYPES.map((t) => (
-                        <button
-                          key={t.id}
-                          onClick={() => setSelectedTransition(t.id)}
-                          className={cn(
-                            'rounded-md border px-2.5 py-1 text-[10px] font-medium transition-colors cursor-pointer',
-                            selectedTransition === t.id
-                              ? 'bg-primary/15 border-primary/30 text-primary'
-                              : 'border-white/8 bg-white/3 text-zinc-400 hover:text-zinc-200 hover:bg-white/5',
-                          )}
-                        >
-                          {t.label}
-                        </button>
-                      ))}
-                    {activeTab === 'filters' &&
-                      FILTER_PRESETS.map((f) => (
-                        <button
-                          key={f.id}
-                          onClick={() => setSelectedFilter(f.id)}
-                          className={cn(
-                            'flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[10px] font-medium transition-colors cursor-pointer',
-                            selectedFilter === f.id
-                              ? 'bg-white/10 border-white/20 text-white'
-                              : 'border-white/8 bg-white/3 text-zinc-400 hover:text-zinc-200 hover:bg-white/5',
-                          )}
-                        >
-                          <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: f.color }} />
-                          {f.label}
-                        </button>
-                      ))}
-                    {activeTab === 'text' &&
-                      TEXT_OPTIONS.map((t) => (
-                        <button
-                          key={t.id}
-                          onClick={() => setSelectedText(selectedText === t.id ? null : t.id)}
-                          className={cn(
-                            'rounded-md border px-2.5 py-1 text-[10px] font-medium transition-colors cursor-pointer',
-                            selectedText === t.id
-                              ? 'bg-amber-500/15 border-amber-500/30 text-amber-400'
-                              : 'border-white/8 bg-white/3 text-zinc-400 hover:text-zinc-200 hover:bg-white/5',
-                          )}
-                        >
-                          {t.label}
-                        </button>
-                      ))}
-                    {activeTab === 'sub' &&
-                      SUB_OPTIONS.map((s) => (
-                        <button
-                          key={s.id}
-                          onClick={() => setSelectedSub(selectedSub === s.id ? null : s.id)}
-                          className={cn(
-                            'rounded-md border px-2.5 py-1 text-[10px] font-medium transition-colors cursor-pointer',
-                            selectedSub === s.id
-                              ? 'bg-cyan-500/15 border-cyan-500/30 text-cyan-400'
-                              : 'border-white/8 bg-white/3 text-zinc-400 hover:text-zinc-200 hover:bg-white/5',
-                          )}
-                        >
-                          {s.label}
-                        </button>
-                      ))}
-                  </div>
+        {/* Resize handle */}
+        <div
+          onMouseDown={startResize}
+          className="shrink-0 w-3 flex items-center justify-center cursor-col-resize group/handle hover:bg-zinc-800/50 transition-colors rounded"
+        >
+          <GripHorizontal className="h-4 w-4 text-zinc-600 group-hover/handle:text-zinc-400 transition-colors rotate-90" />
+        </div>
+
+        {/* Right panel */}
+        <div className="shrink-0 min-w-0 flex flex-col gap-2" style={{ width: chatWidth }}>
+          {/* Toggle: Chat / Properties */}
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={() => setRightPanelView('chat')}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-[10px] font-medium transition-colors cursor-pointer',
+                rightPanelView === 'chat'
+                  ? 'bg-primary/15 text-primary border border-primary/30'
+                  : 'bg-zinc-800/50 text-zinc-400 hover:bg-zinc-800',
+              )}
+            >
+              <MessageSquare className="h-3 w-3" /> Director
+            </button>
+            <button
+              onClick={() => setRightPanelView('properties')}
+              className={cn(
+                'flex-1 flex items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-[10px] font-medium transition-colors cursor-pointer',
+                rightPanelView === 'properties'
+                  ? 'bg-primary/15 text-primary border border-primary/30'
+                  : 'bg-zinc-800/50 text-zinc-400 hover:bg-zinc-800',
+              )}
+            >
+              <SlidersHorizontal className="h-3 w-3" /> Properties
+            </button>
+          </div>
+
+          {/* Panel content */}
+          <div className="flex-1 min-h-0 rounded-xl border border-zinc-800 overflow-hidden">
+            <AnimatePresence mode="wait">
+              {rightPanelView === 'chat' ? (
+                <motion.div key="chat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="h-full">
+                  <DirectorChat
+                    scenes={scenes}
+                    selectedVfx={selectedVfx}
+                    selectedTransition={selectedTransition}
+                    onVfxChange={setSelectedVfx}
+                    onTransitionChange={setSelectedTransition}
+                    onSeekToScene={(sceneId) => setActiveSceneId(sceneId)}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div key="properties" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }} className="h-full">
+                  <ScenePropertiesPanel
+                    scene={activeScene}
+                    onUpdate={(sceneId, updates) => {
+                      setScenes((prev) =>
+                        prev.map((s) => {
+                          if (s.id !== sceneId) return s
+                          const merged = { ...s, ...updates }
+                          return { ...merged, prompt: buildScenePrompt(merged) }
+                        }),
+                      )
+                    }}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
-        </div>
 
-        {/* Right resize handle */}
-        <div
-          className="w-1 shrink-0 bg-white/5 hover:bg-primary/30 cursor-col-resize transition-colors"
-          onMouseDown={handleRightResize}
-        />
-
-        {/* RIGHT: Director Chat + Render button */}
-        <div className="shrink-0 overflow-hidden flex flex-col gap-2" style={{ width: rightWidth }}>
-          <div className="flex-1 min-h-0">
-            <DirectorChat
-              scenes={scenes}
-              selectedVfx={selectedVfx}
-              selectedTransition={selectedTransition}
-              onVfxChange={setSelectedVfx}
-              onTransitionChange={setSelectedTransition}
-              onSeekToScene={handleSeekToScene}
-            />
-          </div>
-          <div className="shrink-0 space-y-1.5 px-2 pb-2">
-            <div className="relative">
-              <AnimatePresence>
-                {exported &&
-                  particles.map((p) => (
-                    <ConfettiParticle
-                      key={p.id}
-                      color={p.color}
-                      x={p.x}
-                      delay={p.delay}
-                      duration={p.duration}
-                      size={p.size}
-                      xOffset={p.xOffset}
-                    />
+          {/* Action buttons */}
+          <div className="shrink-0 space-y-2">
+            {/* Confetti container */}
+            {particles.length > 0 && (
+              <div className="relative h-0">
+                <div className="absolute bottom-0 left-0 right-0 pointer-events-none overflow-hidden" style={{ height: 200 }}>
+                  {particles.map((p, i) => (
+                    <ConfettiParticle key={i} {...p} />
                   ))}
-              </AnimatePresence>
-
-              {rendering && (
-                <div className="absolute -top-1 left-0 right-0 h-0.5 rounded-full overflow-hidden bg-zinc-800">
-                  <div
-                    className="h-full bg-primary rounded-full transition-all"
-                    style={{ width: `${renderProgress * 100}%` }}
-                  />
                 </div>
-              )}
+              </div>
+            )}
 
+            {/* Edit Studio button (simple mode only) */}
+            {vfxMode === 'simple' && (
               <button
-                onClick={startRender}
-                disabled={rendering || exported}
-                className={cn(
-                  'w-full rounded-xl py-3 text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1.5',
-                  exported
-                    ? 'border border-green-500/30 bg-green-500/10 text-green-400'
-                    : rendering
-                      ? 'bg-primary/50 text-primary-foreground cursor-not-allowed'
-                      : 'bg-primary text-primary-foreground hover:bg-primary/90',
-                )}
+                onClick={() => setVfxMode('advanced')}
+                className="w-full rounded-xl py-2.5 text-sm font-semibold transition-all cursor-pointer flex items-center justify-center gap-2 border border-zinc-700 bg-zinc-800/80 text-zinc-200 hover:bg-zinc-700 hover:border-zinc-600 hover:text-white"
               >
-                {exported ? (
-                  <>
-                    <CheckCircle2 className="h-3.5 w-3.5" /> Export Ready
-                  </>
-                ) : rendering ? (
-                  <>Rendering… {Math.round(renderProgress * 100)}%</>
-                ) : (
-                  <>
-                    <Download className="h-3.5 w-3.5" /> Render & Export
-                  </>
-                )}
+                <Wand2 className="h-4 w-4 text-primary" />
+                Open Edit Studio
               </button>
-            </div>
-            <p className="text-center text-[10px] text-muted-foreground">
-              Estimated cost: 0 credit
+            )}
+
+            {/* Progress bar */}
+            {rendering && (
+              <div className="h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-emerald-400"
+                  animate={{ width: `${renderProgress * 100}%` }}
+                  transition={{ duration: 0.1 }}
+                />
+              </div>
+            )}
+
+            <button
+              onClick={startRender}
+              disabled={rendering || exported || !allDone}
+              className={cn(
+                'w-full rounded-xl py-3 text-sm font-semibold transition-colors cursor-pointer flex items-center justify-center gap-1.5',
+                exported
+                  ? 'border border-green-500/30 bg-green-500/10 text-green-400'
+                  : rendering
+                    ? 'bg-primary/50 text-primary-foreground cursor-not-allowed'
+                    : !allDone
+                      ? 'bg-zinc-700 text-zinc-400 cursor-not-allowed'
+                      : 'bg-primary text-primary-foreground hover:bg-primary/90',
+              )}
+            >
+              {exported ? (
+                <>
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Export Ready
+                </>
+              ) : rendering ? (
+                <>Rendering... {Math.round(renderProgress * 100)}%</>
+              ) : (
+                <>
+                  <Download className="h-3.5 w-3.5" /> Render & Export
+                </>
+              )}
+            </button>
+            <p className="text-center text-[10px] text-zinc-500">
+              {exported ? 'Your video is ready to download' : 'Estimated cost: 0 credits'}
             </p>
           </div>
         </div>
       </div>
 
-      {/* ─── Bottom: Multi-track Timeline ─────────────────── */}
-      <EditorTimeline
-        scenes={scenes}
-        audio={audio}
-        activeSceneId={activeSceneId}
-        onSceneClick={setActiveSceneId}
-        onTimeChange={handleTimeChange}
-      />
-        </>
+      {/* ─── Bottom: Editor Timeline (advanced mode only) ─── */}
+      {vfxMode === 'advanced' && (
+      <div className="shrink-0">
+        <EditorTimeline
+          scenes={scenes}
+          audio={audio}
+          activeSceneId={activeSceneId}
+          onSceneClick={handleTimelineSceneClick}
+          onTimeChange={handleTimeChange}
+          playing={isPlaying}
+          onTogglePlay={togglePlay}
+          draggable={vfxMode === 'advanced'}
+          onSceneDragStart={handleSceneDragStart}
+          onSceneDragOver={handleSceneDragOver}
+          onSceneDrop={handleSceneDrop}
+          onSceneDragEnd={handleSceneDragEnd}
+          draggedIdx={draggedIdx}
+          dragOverIdx={dragOverIdx}
+          sceneStatuses={allDone ? undefined : sceneStatuses}
+        />
+      </div>
       )}
     </div>
   )

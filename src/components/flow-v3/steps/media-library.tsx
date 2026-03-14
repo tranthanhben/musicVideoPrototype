@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Plus, Film, Music, Type, Sparkles } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { Search, Plus, Film, Music, Type, Sparkles, Loader2, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { MockScene, MockAudio } from '@/lib/mock/types'
 
@@ -12,6 +13,7 @@ interface MediaLibraryProps {
   audio: MockAudio
   activeSceneId: string
   onSceneClick: (sceneId: string) => void
+  sceneStatuses?: Record<string, 'pending' | 'rendering' | 'done'>
 }
 
 type TabId = 'media' | 'audio' | 'text' | 'effects'
@@ -43,7 +45,7 @@ const EFFECT_PRESETS = [
 
 // ─── Component ──────────────────────────────────────────────
 
-export function MediaLibrary({ scenes, audio, activeSceneId, onSceneClick }: MediaLibraryProps) {
+export function MediaLibrary({ scenes, audio, activeSceneId, onSceneClick, sceneStatuses }: MediaLibraryProps) {
   const [activeTab, setActiveTab] = useState<TabId>('media')
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -102,6 +104,26 @@ export function MediaLibrary({ scenes, audio, activeSceneId, onSceneClick }: Med
                   alt={`Scene ${scene.index + 1}`}
                   className="absolute inset-0 w-full h-full object-cover"
                 />
+                {/* Generation status overlays */}
+                {sceneStatuses && sceneStatuses[scene.id] === 'rendering' && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <motion.div animate={{ rotate: 360 }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}>
+                      <Loader2 className="h-4 w-4 text-blue-400" />
+                    </motion.div>
+                  </div>
+                )}
+                {sceneStatuses && sceneStatuses[scene.id] === 'pending' && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <span className="text-[7px] font-mono text-white/40">Queued</span>
+                  </div>
+                )}
+                {sceneStatuses && sceneStatuses[scene.id] === 'done' && (
+                  <div className="absolute top-0.5 right-0.5">
+                    <div className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-green-500/90">
+                      <Check className="h-2 w-2 text-white" />
+                    </div>
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <div className="absolute bottom-0 left-0 right-0 px-1.5 py-1">
                   <span className="text-[8px] font-mono text-white/70">S{scene.index + 1}</span>

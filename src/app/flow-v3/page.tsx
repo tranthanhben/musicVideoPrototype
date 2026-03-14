@@ -76,6 +76,7 @@ export default function FlowPage() {
       case 'setup':
         return (
           <SetupStep
+            mvType={config.mvType}
             trackIndex={config.trackIndex}
             prompt={config.prompt}
             mode={config.mode}

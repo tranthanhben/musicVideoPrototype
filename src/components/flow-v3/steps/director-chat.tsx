@@ -382,7 +382,7 @@ export function DirectorChat({ scenes, selectedVfx, selectedTransition, onVfxCha
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="What story do you want to tell?"
+            placeholder="What edit do you want to make?"
             className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-[11px] text-zinc-200 placeholder:text-zinc-600 outline-none focus:border-white/20 transition-colors"
           />
           <button

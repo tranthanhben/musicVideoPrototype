@@ -13,7 +13,7 @@ export function FlowStepIndicator({ currentStep, onStepClick }: FlowStepIndicato
   const currentIndex = FLOW_STEPS.findIndex((s) => s.key === currentStep)
 
   return (
-    <div className="flex items-center gap-1 px-4 py-3 border-b border-border bg-card/50 backdrop-blur-sm overflow-x-auto">
+    <div className="flex items-center justify-center gap-1 px-4 py-3 border-b border-border bg-card/50 backdrop-blur-sm overflow-x-auto">
       {FLOW_STEPS.map((step, i) => {
         const isComplete = i < currentIndex
         const isCurrent = i === currentIndex

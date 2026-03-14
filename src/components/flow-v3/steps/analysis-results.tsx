@@ -86,6 +86,36 @@ export function AnalysisResults({ audio, selectedConceptId, onConceptSelect, onC
   const selectedDuration = trimEnd - trimStart
   const durationRatio = selectedDuration / audio.duration
 
+  // Play state
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [playPosition, setPlayPosition] = useState(trimStart)
+  const playRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const togglePlay = useCallback(() => {
+    if (isPlaying) {
+      if (playRef.current) clearInterval(playRef.current)
+      playRef.current = null
+      setIsPlaying(false)
+    } else {
+      setPlayPosition(trimStart)
+      setIsPlaying(true)
+      playRef.current = setInterval(() => {
+        setPlayPosition((pos) => {
+          const next = pos + 0.1
+          if (next >= trimEnd) {
+            if (playRef.current) clearInterval(playRef.current)
+            playRef.current = null
+            setIsPlaying(false)
+            return trimStart
+          }
+          return next
+        })
+      }, 100)
+    }
+  }, [isPlaying, trimStart, trimEnd])
+
+  useEffect(() => () => { if (playRef.current) clearInterval(playRef.current) }, [])
+
   // Ref for the Ideation heading — scroll target
   const ideationRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
@@ -120,25 +150,43 @@ export function AnalysisResults({ audio, selectedConceptId, onConceptSelect, onC
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
       >
-        {/* ── SONG SUMMARY CARD ── */}
+        {/* ── SONG ANALYSIS (combined summary + waveform) ── */}
         <motion.div
           className="rounded-xl border border-border bg-card p-4 space-y-3"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0 }}
         >
-          {/* Title + artist */}
+          {/* Title + artist + badge */}
           <div className="flex items-start justify-between gap-2">
             <div>
               <h2 className="text-base font-bold text-foreground leading-tight">&ldquo;{audio.title}&rdquo;</h2>
               <p className="text-[11px] text-muted-foreground">{audio.artist}</p>
             </div>
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-semibold text-primary shrink-0">AI Summary</span>
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[9px] font-semibold text-primary shrink-0">Cremi Analysis</span>
           </div>
+
           {/* AI-generated description */}
           <p className="text-[11px] text-muted-foreground leading-relaxed">
-            A high-energy cosmic love ballad with soaring vocals over synth-driven beats. The track features dramatic key changes at the bridge and builds to an explosive chorus climax.
+            <span className="font-semibold text-foreground/70">Lyrics:</span> Two lovers separated across galaxies chase each other through nebulae, asteroid fields, and wormholes — until they finally touch and send a shockwave of light through the cosmos.
           </p>
+
+          {/* Metrics row */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {metrics.map((m, i) => (
+              <motion.span
+                key={m.label}
+                className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2 py-0.5"
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, delay: i * 0.06 }}
+              >
+                <span className="text-[10px] font-bold" style={{ color: m.color }}>{m.value}</span>
+                <span className="text-[9px] text-muted-foreground">{m.label}</span>
+              </motion.span>
+            ))}
+          </div>
+
           {/* Tags: genre, sub-genre, mood */}
           <div className="flex flex-wrap gap-1.5">
             <span className="rounded-full bg-[#8B5CF6]/15 px-2 py-0.5 text-[10px] font-semibold text-[#8B5CF6]">Pop</span>
@@ -149,47 +197,10 @@ export function AnalysisResults({ audio, selectedConceptId, onConceptSelect, onC
               <span key={mood} className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400">{mood}</span>
             ))}
           </div>
-          {/* Track structure timeline */}
-          <div>
-            <p className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">Track Structure</p>
-            <div className="flex gap-0.5">
-              {audio.segments.map((seg, i) => {
-                const width = ((seg.endTime - seg.startTime) / audio.duration) * 100
-                return (
-                  <motion.div
-                    key={seg.id}
-                    className="h-6 flex items-center justify-center rounded text-[8px] font-bold text-white min-w-0 relative group/seg cursor-default"
-                    style={{ width: `${width}%`, backgroundColor: seg.color }}
-                    initial={{ opacity: 0, scaleX: 0 }}
-                    animate={{ opacity: 1, scaleX: 1 }}
-                    transition={{ duration: 0.3, delay: 0.1 + i * 0.06 }}
-                    title={`${seg.label}: ${Math.floor(seg.startTime / 60)}:${String(Math.floor(seg.startTime % 60)).padStart(2, '0')} – ${Math.floor(seg.endTime / 60)}:${String(Math.floor(seg.endTime % 60)).padStart(2, '0')}`}
-                  >
-                    {width > 7 && <span className="truncate px-1">{seg.label}</span>}
-                    {/* Arrow connector between segments */}
-                    {i < audio.segments.length - 1 && (
-                      <span className="absolute -right-0.5 top-1/2 -translate-y-1/2 z-10 text-white/60 text-[8px]">›</span>
-                    )}
-                  </motion.div>
-                )
-              })}
-            </div>
-          </div>
-        </motion.div>
 
-        {/* ── ANALYSIS (read-only) ── */}
-        <div className="flex items-center gap-2">
-          <h2 className="text-lg font-bold text-foreground">Song Analysis</h2>
-          <span className="rounded-full bg-muted px-2 py-0.5 text-[9px] font-medium text-muted-foreground">Auto-detected</span>
-        </div>
-
-        {/* Song Structure (combined waveform + energy curve + trim) */}
-        <div>
-          <div className="rounded-xl border border-border bg-card p-2 relative overflow-hidden">
-            {/* Track title overlay */}
-            <p className="text-[10px] text-white/50 font-medium mb-1 truncate">&quot;{audio.title}&quot; — {audio.artist}</p>
-            {/* Waveform + Energy curve + Trim handles */}
-            <div ref={waveContainerRef} className="h-20 relative">
+          {/* Waveform + Energy curve + Trim handles */}
+          <div className="rounded-lg bg-background/50 p-2 relative overflow-hidden">
+            <div ref={waveContainerRef} className="h-20 relative group/wave">
               <svg width="100%" height="100%" viewBox="0 0 200 60" preserveAspectRatio="none">
                 {/* Audio waveform bars — colored by song segment */}
                 {Array.from({ length: 80 }).map((_, i) => {
@@ -232,24 +243,23 @@ export function AnalysisResults({ audio, selectedConceptId, onConceptSelect, onC
                   animate={{ pathLength: 1, opacity: 1 }}
                   transition={{ duration: 1.5, ease: 'easeInOut', delay: 0.2 }}
                 />
-                {/* Peak dots */}
-                {peaks.map((p, i) => {
-                  const cx = (p.time / audio.duration) * 200
-                  const cy = 50 - p.energy * 44
-                  return (
-                    <motion.circle
-                      key={i}
-                      cx={cx}
-                      cy={cy}
-                      r="2.5"
-                      fill="#EF4444"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 12, delay: 1.6 + i * 0.12 }}
-                    />
-                  )
-                })}
               </svg>
+
+              {/* Peak dots — rendered as HTML so they stay perfectly circular */}
+              {peaks.map((p, i) => {
+                const left = (p.time / audio.duration) * 100
+                const top = ((1 - p.energy) * 0.733 + 0.1) * 100 // maps energy to vertical position within waveform
+                return (
+                  <motion.div
+                    key={i}
+                    className="absolute w-[7px] h-[7px] rounded-full bg-red-500 -translate-x-1/2 -translate-y-1/2 pointer-events-none shadow-[0_0_4px_rgba(239,68,68,0.5)]"
+                    style={{ left: `${left}%`, top: `${top}%` }}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 12, delay: 1.6 + i * 0.12 }}
+                  />
+                )
+              })}
 
               {/* Dim overlays outside trim selection */}
               <div className="absolute inset-y-0 left-0 bg-black/30 pointer-events-none rounded-l" style={{ width: `${(trimStart / audio.duration) * 100}%` }} />
@@ -278,6 +288,28 @@ export function AnalysisResults({ audio, selectedConceptId, onConceptSelect, onC
                 <div className="absolute inset-y-0 left-1/2 w-[2px] -translate-x-1/2 bg-white/80 group-hover/trimR:bg-white group-hover/trimR:shadow-[0_0_6px_rgba(255,255,255,0.4)] transition-all" />
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-4 w-1.5 rounded-sm bg-white shadow-sm" />
               </div>
+
+              {/* Playhead */}
+              {isPlaying && (
+                <div
+                  className="absolute inset-y-0 z-20 pointer-events-none"
+                  style={{ left: `${(playPosition / audio.duration) * 100}%` }}
+                >
+                  <div className="absolute inset-y-0 left-0 w-[2px] bg-white shadow-[0_0_6px_rgba(255,255,255,0.6)]" />
+                </div>
+              )}
+
+              {/* Centered play/pause overlay */}
+              <button
+                onClick={togglePlay}
+                className={`absolute z-30 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex h-9 w-9 items-center justify-center rounded-full bg-black/50 backdrop-blur-sm border border-white/20 transition-all duration-200 cursor-pointer ${isPlaying ? 'opacity-80 hover:opacity-100' : 'opacity-0 group-hover/wave:opacity-70 hover:!opacity-100'}`}
+              >
+                {isPlaying ? (
+                  <svg width="11" height="11" viewBox="0 0 10 10" fill="white"><rect x="1.5" y="1" width="2.5" height="8" rx="0.5" /><rect x="6" y="1" width="2.5" height="8" rx="0.5" /></svg>
+                ) : (
+                  <svg width="11" height="11" viewBox="0 0 10 10" fill="white"><polygon points="3,0 10,5 3,10" /></svg>
+                )}
+              </button>
             </div>
             {/* Segment bar — HTML so text isn't stretched */}
             <div className="flex gap-0.5 mt-1">
@@ -317,32 +349,7 @@ export function AnalysisResults({ audio, selectedConceptId, onConceptSelect, onC
               Emotional peaks
             </span>
           </div>
-        </div>
-
-        {/* Genre + Metrics */}
-        <div className="grid grid-cols-5 gap-2">
-          <motion.div
-            className="rounded-xl border border-border bg-card px-2 py-1.5 text-center"
-            initial={{ opacity: 0, scale: 0.85 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.35, delay: 0 }}
-          >
-            <p className="text-sm font-bold text-[#8B5CF6]">Pop</p>
-            <p className="text-[9px] text-muted-foreground font-medium">Genre</p>
-          </motion.div>
-          {metrics.map((m, i) => (
-            <motion.div
-              key={m.label}
-              className="rounded-xl border border-border bg-card px-2 py-1.5 text-center"
-              initial={{ opacity: 0, scale: 0.85 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.35, delay: (i + 1) * 0.07 }}
-            >
-              <p className="text-sm font-bold" style={{ color: m.color }}>{m.value}</p>
-              <p className="text-[9px] text-muted-foreground font-medium">{m.label}</p>
-            </motion.div>
-          ))}
-        </div>
+        </motion.div>
         {/* ── Divider ── */}
         <motion.div
           className="relative flex items-center py-1"
@@ -364,7 +371,6 @@ export function AnalysisResults({ audio, selectedConceptId, onConceptSelect, onC
           transition={{ delay: 0.5 }}
         >
           <h2 className="text-lg font-bold text-foreground">Music Video Ideation</h2>
-          <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[9px] font-semibold text-amber-500">Action required</span>
         </motion.div>
 
         {/* Storyline + Visual Concepts */}

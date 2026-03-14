@@ -1,6 +1,7 @@
 'use client'
 
-import { X } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { X, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { MockScene } from '@/lib/mock/types'
 
@@ -9,18 +10,59 @@ interface StoryboardPropertiesProps {
   sceneIndex: number
   timestamp: string
   onClose: () => void
+  onUpdate?: (sceneId: string, updates: Partial<MockScene>) => void
 }
 
-function PropRow({ label, value }: { label: string; value: string }) {
+function EditablePropRow({
+  label,
+  value,
+  onChange,
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+}) {
   return (
     <div className="space-y-0.5">
       <p className="text-[9px] uppercase tracking-wide text-muted-foreground font-semibold">{label}</p>
-      <p className="text-[11px] text-foreground bg-muted/60 rounded-md px-2.5 py-1.5 leading-relaxed">{value}</p>
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full text-[11px] text-foreground bg-muted/60 rounded-md px-2.5 py-1.5 leading-relaxed border border-transparent focus:border-primary/40 focus:outline-none transition-colors"
+      />
     </div>
   )
 }
 
-export function StoryboardProperties({ scene, sceneIndex, timestamp, onClose }: StoryboardPropertiesProps) {
+export function StoryboardProperties({ scene, sceneIndex, timestamp, onClose, onUpdate }: StoryboardPropertiesProps) {
+  const [subject, setSubject] = useState(scene.subject)
+  const [action, setAction] = useState(scene.action)
+  const [environment, setEnvironment] = useState(scene.environment)
+  const [cameraAngle, setCameraAngle] = useState(scene.cameraAngle)
+  const [cameraMovement, setCameraMovement] = useState(scene.cameraMovement)
+
+  // Sync when scene changes
+  useEffect(() => {
+    setSubject(scene.subject)
+    setAction(scene.action)
+    setEnvironment(scene.environment)
+    setCameraAngle(scene.cameraAngle)
+    setCameraMovement(scene.cameraMovement)
+  }, [scene.id, scene.subject, scene.action, scene.environment, scene.cameraAngle, scene.cameraMovement])
+
+  const hasChanges =
+    subject !== scene.subject ||
+    action !== scene.action ||
+    environment !== scene.environment ||
+    cameraAngle !== scene.cameraAngle ||
+    cameraMovement !== scene.cameraMovement
+
+  const handleRegen = () => {
+    if (onUpdate) {
+      onUpdate(scene.id, { subject, action, environment, cameraAngle, cameraMovement })
+    }
+  }
+
   return (
     <div className="flex flex-col h-full bg-card border-l border-border overflow-hidden">
       {/* Header */}
@@ -48,12 +90,16 @@ export function StoryboardProperties({ scene, sceneIndex, timestamp, onClose }: 
           />
         </div>
 
-        <PropRow label="Subject" value={scene.subject} />
-        <PropRow label="Action" value={scene.action} />
-        <PropRow label="Environment" value={scene.environment} />
-        <PropRow label="Camera Angle" value={scene.cameraAngle} />
-        <PropRow label="Camera Movement" value={scene.cameraMovement} />
-        <PropRow label="Duration" value={`${scene.duration}s`} />
+        <EditablePropRow label="Subject" value={subject} onChange={setSubject} />
+        <EditablePropRow label="Action" value={action} onChange={setAction} />
+        <EditablePropRow label="Environment" value={environment} onChange={setEnvironment} />
+        <EditablePropRow label="Camera Angle" value={cameraAngle} onChange={setCameraAngle} />
+        <EditablePropRow label="Camera Movement" value={cameraMovement} onChange={setCameraMovement} />
+
+        <div className="space-y-0.5">
+          <p className="text-[9px] uppercase tracking-wide text-muted-foreground font-semibold">Duration</p>
+          <p className="text-[11px] text-foreground bg-muted/60 rounded-md px-2.5 py-1.5 leading-relaxed">{scene.duration}s</p>
+        </div>
 
         {/* Prompt */}
         <div className="space-y-0.5">
@@ -92,6 +138,23 @@ export function StoryboardProperties({ scene, sceneIndex, timestamp, onClose }: 
             <p className="text-[10px] text-muted-foreground">No takes yet — generate to see options</p>
           </div>
         )}
+      </div>
+
+      {/* Regen button — sticky at bottom */}
+      <div className="shrink-0 p-3 border-t border-border">
+        <button
+          onClick={handleRegen}
+          disabled={!hasChanges}
+          className={cn(
+            'w-full flex items-center justify-center gap-1.5 rounded-lg py-2 text-[11px] font-semibold transition-all cursor-pointer',
+            hasChanges
+              ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+              : 'bg-muted text-muted-foreground cursor-not-allowed',
+          )}
+        >
+          <RefreshCw className="h-3.5 w-3.5" />
+          {hasChanges ? 'Regen Image' : 'Edit properties to regen'}
+        </button>
       </div>
     </div>
   )

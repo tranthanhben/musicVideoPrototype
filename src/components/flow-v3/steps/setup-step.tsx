@@ -10,6 +10,7 @@ import { RENDER_MODES } from '@/lib/flow-v3/mock-data'
 import type { RenderMode } from '@/lib/flow-v3/types'
 
 interface SetupStepProps {
+  mvType?: string
   trackIndex: number | null
   prompt: string
   mode: RenderMode
@@ -45,12 +46,26 @@ function formatDuration(s: number): string {
 }
 
 export function SetupStep({
-  trackIndex, prompt, mode, musicControl, lyricsControl,
+  mvType, trackIndex, prompt, mode, musicControl, lyricsControl,
   onTrackSelect, onPromptChange, onModeChange, onMusicControlChange, onLyricsControlChange, onGenerate,
 }: SetupStepProps) {
   const [hoveredTrack, setHoveredTrack] = useState<number | null>(null)
   const [showErrors, setShowErrors] = useState(false)
   const [advancedOpen, setAdvancedOpen] = useState(false)
+
+  // Determine defaults based on video type
+  const isPerformance = mvType === 'performance'
+  const isNonNarrative = mvType === 'dance' || mvType === 'lyrics' || mvType === 'visualizer'
+  const showScriptDirection = !isNonNarrative
+
+  // Set lipsync default based on video type
+  useEffect(() => {
+    if (isPerformance) {
+      onMusicControlChange(100) // All lines
+    } else if (isNonNarrative) {
+      onMusicControlChange(0) // None
+    }
+  }, [mvType]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const isTrackSelected = trackIndex !== null && trackIndex >= 0
   const isModeSelected = !!mode
@@ -317,8 +332,11 @@ export function SetupStep({
                 <div className="space-y-3 pb-1">
                   {/* Video Model */}
                   <ModelSelector />
+                  <SceneReuseToggle />
                   <LipsyncControl value={musicControl} onChange={onMusicControlChange} />
-                  <CreativityControl value={lyricsControl} onChange={onLyricsControlChange} />
+                  {showScriptDirection && (
+                    <CreativityControl value={lyricsControl} onChange={onLyricsControlChange} />
+                  )}
                 </div>
               </motion.div>
             )}
@@ -381,6 +399,67 @@ function ModelSelector() {
           <svg className="absolute right-2 pointer-events-none" width="8" height="5" viewBox="0 0 8 5"><path d="M0 0l4 5 4-5z" fill="currentColor" opacity="0.4" /></svg>
         </div>
       </div>
+    </div>
+  )
+}
+
+function SceneReuseToggle() {
+  const [enabled, setEnabled] = useState(false)
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-3">
+      <div className="flex items-center justify-between">
+        <div className="flex-1 min-w-0 mr-3">
+          <p className="text-xs font-semibold text-foreground">Scene Reuse</p>
+          <p className="text-[10px] text-muted-foreground">Import scenes from previous projects to save generation credits</p>
+        </div>
+        <button
+          onClick={() => setEnabled(!enabled)}
+          className={cn(
+            'relative w-8 h-[18px] rounded-full transition-colors duration-200 shrink-0 cursor-pointer',
+            enabled ? 'bg-emerald-500' : 'bg-border',
+          )}
+        >
+          <div
+            className={cn(
+              'absolute top-[3px] h-3 w-3 rounded-full bg-white shadow-sm transition-transform duration-200',
+              enabled ? 'translate-x-[17px]' : 'translate-x-[3px]',
+            )}
+          />
+        </button>
+      </div>
+      <AnimatePresence>
+        {enabled && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="overflow-hidden"
+          >
+            <div className="mt-2.5 rounded-lg border border-dashed border-border/60 bg-muted/20 p-2.5">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                <span className="text-[10px]">Select a previous project to import scenes</span>
+              </div>
+              <div className="mt-2 space-y-1.5">
+                {['Summer Vibes MV — 12 scenes', 'Midnight Dreams — 8 scenes'].map((project) => (
+                  <button
+                    key={project}
+                    className="w-full text-left rounded-md border border-border/40 bg-background/50 px-2.5 py-1.5 text-[10px] text-foreground/70 hover:border-primary/40 hover:text-foreground transition-colors cursor-pointer"
+                  >
+                    {project}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }
@@ -539,6 +618,35 @@ function WaveformTrimSelector({ audio, trimStart, trimEnd, onTrimChange }: {
 }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<'start' | 'end' | null>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [playPosition, setPlayPosition] = useState(trimStart)
+  const playRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const togglePlay = useCallback(() => {
+    if (isPlaying) {
+      if (playRef.current) clearInterval(playRef.current)
+      playRef.current = null
+      setIsPlaying(false)
+    } else {
+      setPlayPosition(trimStart)
+      setIsPlaying(true)
+      playRef.current = setInterval(() => {
+        setPlayPosition((pos) => {
+          const next = pos + 0.1
+          if (next >= trimEnd) {
+            if (playRef.current) clearInterval(playRef.current)
+            playRef.current = null
+            setIsPlaying(false)
+            return trimStart
+          }
+          return next
+        })
+      }, 100)
+    }
+  }, [isPlaying, trimStart, trimEnd])
+
+  // Cleanup on unmount
+  useEffect(() => () => { if (playRef.current) clearInterval(playRef.current) }, [])
   const trimRef = useRef({ start: trimStart, end: trimEnd })
   const callbackRef = useRef(onTrimChange)
   trimRef.current = { start: trimStart, end: trimEnd }
@@ -589,7 +697,7 @@ function WaveformTrimSelector({ audio, trimStart, trimEnd, onTrimChange }: {
   return (
     <div className="px-4 pb-3">
       {/* Waveform area */}
-      <div ref={containerRef} className="relative h-12 mt-1">
+      <div ref={containerRef} className="relative h-12 mt-1 group/wave">
         <svg width="100%" height="100%" viewBox="0 0 400 48" preserveAspectRatio="none" className="block">
           {Array.from({ length: TRIM_BAR_COUNT }).map((_, i) => {
             const x = (i / TRIM_BAR_COUNT) * 400
@@ -644,6 +752,36 @@ function WaveformTrimSelector({ audio, trimStart, trimEnd, onTrimChange }: {
           <div className="absolute inset-y-0 left-1/2 w-[2px] -translate-x-1/2 bg-white/80 group-hover/trimR:bg-white group-hover/trimR:shadow-[0_0_6px_rgba(255,255,255,0.4)] transition-all" />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-4 w-1.5 rounded-sm bg-white shadow-sm" />
         </div>
+
+        {/* Playhead */}
+        {isPlaying && (
+          <div
+            className="absolute inset-y-0 z-20 pointer-events-none"
+            style={{ left: `${(playPosition / audio.duration) * 100}%` }}
+          >
+            <div className="absolute inset-y-0 left-0 w-[2px] bg-white shadow-[0_0_6px_rgba(255,255,255,0.6)]" />
+          </div>
+        )}
+
+        {/* Centered play/pause overlay */}
+        <button
+          onClick={togglePlay}
+          className={cn(
+            'absolute z-30 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+            'flex h-8 w-8 items-center justify-center rounded-full',
+            'bg-black/50 backdrop-blur-sm border border-white/20',
+            'transition-all duration-200 cursor-pointer',
+            isPlaying
+              ? 'opacity-80 hover:opacity-100'
+              : 'opacity-0 group-hover/wave:opacity-70 hover:!opacity-100',
+          )}
+        >
+          {isPlaying ? (
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="white"><rect x="1.5" y="1" width="2.5" height="8" rx="0.5" /><rect x="6" y="1" width="2.5" height="8" rx="0.5" /></svg>
+          ) : (
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="white"><polygon points="3,0 10,5 3,10" /></svg>
+          )}
+        </button>
       </div>
 
       {/* Segment color strip */}

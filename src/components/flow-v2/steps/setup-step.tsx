@@ -10,6 +10,7 @@ import { RENDER_MODES } from '@/lib/flow-v2/mock-data'
 import type { RenderMode } from '@/lib/flow-v2/types'
 
 interface SetupStepProps {
+  mvType?: string
   trackIndex: number | null
   prompt: string
   mode: RenderMode
@@ -45,12 +46,26 @@ function formatDuration(s: number): string {
 }
 
 export function SetupStep({
-  trackIndex, prompt, mode, musicControl, lyricsControl,
+  mvType, trackIndex, prompt, mode, musicControl, lyricsControl,
   onTrackSelect, onPromptChange, onModeChange, onMusicControlChange, onLyricsControlChange, onGenerate,
 }: SetupStepProps) {
   const [hoveredTrack, setHoveredTrack] = useState<number | null>(null)
   const [showErrors, setShowErrors] = useState(false)
   const [advancedOpen, setAdvancedOpen] = useState(false)
+
+  // Determine defaults based on video type
+  const isPerformance = mvType === 'performance'
+  const isNonNarrative = mvType === 'dance' || mvType === 'lyrics' || mvType === 'visualizer'
+  const showScriptDirection = !isNonNarrative
+
+  // Set lipsync default based on video type
+  useEffect(() => {
+    if (isPerformance) {
+      onMusicControlChange(100) // All lines
+    } else if (isNonNarrative) {
+      onMusicControlChange(0) // None
+    }
+  }, [mvType]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const isTrackSelected = trackIndex !== null && trackIndex >= 0
   const isModeSelected = !!mode
@@ -319,7 +334,9 @@ export function SetupStep({
                   <ModelSelector />
                   <SceneReuseToggle />
                   <LipsyncControl value={musicControl} onChange={onMusicControlChange} />
-                  <CreativityControl value={lyricsControl} onChange={onLyricsControlChange} />
+                  {showScriptDirection && (
+                    <CreativityControl value={lyricsControl} onChange={onLyricsControlChange} />
+                  )}
                 </div>
               </motion.div>
             )}

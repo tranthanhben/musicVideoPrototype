@@ -14,6 +14,17 @@ interface EditorTimelineProps {
   onSceneClick: (sceneId: string) => void
   onPlayStateChange?: (isPlaying: boolean) => void
   onTimeChange?: (time: number) => void
+  /** Controlled playing state — when provided, overrides internal state */
+  playing?: boolean
+  onTogglePlay?: () => void
+  draggable?: boolean
+  onSceneDragStart?: (sceneIndex: number) => void
+  onSceneDragOver?: (e: React.DragEvent, sceneIndex: number) => void
+  onSceneDrop?: (sceneIndex: number) => void
+  onSceneDragEnd?: () => void
+  draggedIdx?: number | null
+  dragOverIdx?: number | null
+  sceneStatuses?: Record<string, 'pending' | 'rendering' | 'done'>
 }
 
 interface TimeRange {
@@ -76,8 +87,20 @@ export function EditorTimeline({
   onSceneClick,
   onPlayStateChange,
   onTimeChange,
+  playing: controlledPlaying,
+  onTogglePlay,
+  draggable,
+  onSceneDragStart,
+  onSceneDragOver,
+  onSceneDrop,
+  onSceneDragEnd,
+  draggedIdx,
+  dragOverIdx,
+  sceneStatuses,
 }: EditorTimelineProps) {
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [internalPlaying, setInternalPlaying] = useState(false)
+  const isControlled = controlledPlaying !== undefined
+  const isPlaying = isControlled ? controlledPlaying : internalPlaying
   const [currentTime, setCurrentTime] = useState(0)
   const [zoom, setZoom] = useState(100)
   const timelineRef = useRef<HTMLDivElement>(null)
@@ -97,7 +120,11 @@ export function EditorTimeline({
         setCurrentTime((prev) => {
           const next = prev + delta
           if (next >= duration) {
-            setIsPlaying(false)
+            if (isControlled) {
+              onTogglePlay?.()
+            } else {
+              setInternalPlaying(false)
+            }
             onPlayStateChange?.(false)
             return 0
           }
@@ -110,19 +137,23 @@ export function EditorTimeline({
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
-  }, [isPlaying, duration, onPlayStateChange])
+  }, [isPlaying, duration, onPlayStateChange, isControlled, onTogglePlay])
 
   useEffect(() => {
     onTimeChange?.(currentTime)
   }, [currentTime, onTimeChange])
 
   const togglePlay = useCallback(() => {
-    setIsPlaying((p) => {
-      const next = !p
-      onPlayStateChange?.(next)
-      return next
-    })
-  }, [onPlayStateChange])
+    if (isControlled) {
+      onTogglePlay?.()
+    } else {
+      setInternalPlaying((p) => {
+        const next = !p
+        onPlayStateChange?.(next)
+        return next
+      })
+    }
+  }, [isControlled, onTogglePlay, onPlayStateChange])
 
   const skipBackward = useCallback(() => {
     setCurrentTime((prev) => Math.max(0, prev - 5))
@@ -234,54 +265,6 @@ export function EditorTimeline({
 
       {/* Track lanes */}
       <div className="relative flex flex-col" ref={timelineRef}>
-        {/* B-roll track */}
-        <div className="flex items-center h-12 border-b border-white/5">
-          <div className="w-24 shrink-0 flex items-center px-3">
-            <span className="text-[10px] font-medium text-zinc-500">B-roll</span>
-          </div>
-          <div className="flex-1 relative h-full bg-zinc-900/30" onClick={handleTimelineClick}>
-            {/* B-roll clips — show every 3rd scene as b-roll */}
-            {timeRanges.filter((_, i) => i % 3 === 0).map((range) => {
-              const leftPct = (range.audioStart / duration) * 100
-              const widthPct = ((range.audioEnd - range.audioStart) / duration) * 100
-              const scene = scenes.find((s) => s.id === range.sceneId)
-              return (
-                <div
-                  key={range.sceneId}
-                  className={cn(
-                    'absolute top-1.5 bottom-1.5 rounded-md overflow-hidden cursor-pointer transition-all',
-                    range.sceneId === activeSceneId
-                      ? 'ring-1 ring-primary'
-                      : 'ring-1 ring-white/10 hover:ring-white/20',
-                  )}
-                  style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onSceneClick(range.sceneId)
-                  }}
-                >
-                  <div className="absolute inset-0 bg-zinc-800/80" />
-                  {scene && (
-                    <img
-                      src={scene.thumbnailUrl}
-                      alt=""
-                      className="absolute inset-0 w-full h-full object-cover opacity-30"
-                    />
-                  )}
-                  <span className="relative z-10 px-1.5 py-0.5 text-[8px] font-mono text-zinc-400 truncate block">
-                    B{scenes.findIndex((s) => s.id === range.sceneId) + 1}
-                  </span>
-                </div>
-              )
-            })}
-            {/* Playhead */}
-            <div
-              className="absolute top-0 bottom-0 w-px bg-white/60 z-10 pointer-events-none"
-              style={{ left: `${playheadPct}%` }}
-            />
-          </div>
-        </div>
-
         {/* Main track */}
         <div className="flex items-center h-14 border-b border-white/5">
           <div className="w-24 shrink-0 flex items-center px-3">
@@ -292,15 +275,26 @@ export function EditorTimeline({
               const leftPct = (range.audioStart / duration) * 100
               const widthPct = ((range.audioEnd - range.audioStart) / duration) * 100
               const scene = scenes.find((s) => s.id === range.sceneId)
+              const sceneIdx = scenes.findIndex((s) => s.id === range.sceneId)
               const isActive = range.sceneId === activeSceneId
+              const isDragged = draggable && draggedIdx === sceneIdx
+              const isDragOver = draggable && dragOverIdx === sceneIdx
+              const status = sceneStatuses?.[range.sceneId]
               return (
                 <div
                   key={range.sceneId}
+                  draggable={draggable}
+                  onDragStart={draggable ? () => onSceneDragStart?.(sceneIdx) : undefined}
+                  onDragOver={draggable ? (e) => { e.preventDefault(); onSceneDragOver?.(e, sceneIdx) } : undefined}
+                  onDrop={draggable ? () => onSceneDrop?.(sceneIdx) : undefined}
+                  onDragEnd={draggable ? () => onSceneDragEnd?.() : undefined}
                   className={cn(
                     'absolute top-1.5 bottom-1.5 rounded-md overflow-hidden cursor-pointer transition-all',
                     isActive
                       ? 'ring-2 ring-primary z-[5]'
                       : 'ring-1 ring-white/10 hover:ring-white/20',
+                    isDragged && 'opacity-40',
+                    isDragOver && 'ring-2 ring-primary/80 z-[5]',
                   )}
                   style={{ left: `${leftPct}%`, width: `${widthPct}%` }}
                   onClick={(e) => {
@@ -312,16 +306,29 @@ export function EditorTimeline({
                     <img
                       src={scene.thumbnailUrl}
                       alt=""
-                      className="absolute inset-0 w-full h-full object-cover opacity-50"
+                      className={cn(
+                        'absolute inset-0 w-full h-full object-cover opacity-50',
+                        status === 'pending' && 'opacity-20 grayscale',
+                        status === 'rendering' && 'opacity-30',
+                      )}
                     />
                   )}
                   <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-transparent" />
                   <div className="relative z-10 flex items-center gap-1 px-1.5 py-0.5">
-                    <span className="text-[9px] font-mono font-medium text-white/80">S{scenes.findIndex((s) => s.id === range.sceneId) + 1}</span>
+                    <span className="text-[9px] font-mono font-medium text-white/80">S{sceneIdx + 1}</span>
                     {scene && (
                       <span className="text-[8px] text-white/50 truncate">{scene.subject}</span>
                     )}
                   </div>
+                  {/* Generation status overlay */}
+                  {status === 'rendering' && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                      <div className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
+                    </div>
+                  )}
+                  {status === 'pending' && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40" />
+                  )}
                 </div>
               )
             })}

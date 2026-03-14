@@ -79,7 +79,7 @@ function VinylRecord({ colors, isSelected }: { colors: string[]; isSelected: boo
         <div
           className="absolute inset-0 rounded-full pointer-events-none"
           style={{
-            boxShadow: `0 0 40px ${colors[0]}60, 0 0 80px ${colors[0]}30`,
+            boxShadow: `0 0 30px ${colors[0]}aa, 0 0 60px ${colors[0]}80, 0 0 120px ${colors[0]}50`,
           }}
         />
       )}

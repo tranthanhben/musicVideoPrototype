@@ -59,7 +59,7 @@ export const MOCK_STORYLINES: Storyline[] = [
   },
 ]
 
-export const MOCK_STORYLINE_TEXT = `After their crystal ship shatters in a wormhole collapse, Aria floats alone in a violet nebula. A mysterious signal pulses from her chest — the same frequency Kael tracks from his surviving cockpit. She reaches through asteroid fields; he navigates spiraling wormholes. On a silver moon they share a dream-dance, but their hands pass through each other like holograms. Aria sings before an exploding supernova, channeling raw longing into the void. Kael's ship finally breaches Saturn's rings — and there she is. Their hands touch for real, sending a light-shockwave through the cosmos. In celebration, Kael plays guitar on a blazing comet. They reunite at the edge of the universe. Their embrace creates a new star.`
+export const MOCK_STORYLINE_TEXT = `Aria floats alone in a violet nebula after their crystal ship shatters. A signal pulses from her chest — the same frequency Kael tracks from his cockpit. They chase each other through asteroid fields and spiraling wormholes, almost touching on a silver moon but passing through like holograms. Kael finally breaches Saturn's rings, their hands connect for real, and a shockwave of light ripples through the cosmos — their embrace creating a new star.`
 
 export const MOCK_CONCEPTS: VisualConcept[] = [
   {
