@@ -9,9 +9,6 @@ const prototypes = [
   {
     id: 'prototype-1',
     name: 'PROTOTYPE #1',
-    description: 'AI Director + Split Panel — Chat-driven workflow with AI analyzing BPM, key & emotion curve. Generates storyline options mapped to timestamps. Renders music-aware video in parallel.',
-    metaphor: "Director's Monitor",
-    ratio: '40/60 Split',
     accent: '#22D3EE',
     accentGlow: 'rgba(34, 211, 238, 0.3)',
     icon: SplitSquareVertical,
@@ -20,9 +17,6 @@ const prototypes = [
   {
     id: 'prototype-2',
     name: 'PROTOTYPE #2',
-    description: 'Pro NLE + AI Copilot — Full editing bay with segment-aware timeline, emotion curve overlay, properties panel, shared style seed, 1-click effect presets, and multi-platform export.',
-    metaphor: 'Editing Bay',
-    ratio: '15/85 Editor',
     accent: '#10B981',
     accentGlow: 'rgba(16, 185, 129, 0.3)',
     icon: Film,
@@ -31,9 +25,6 @@ const prototypes = [
   {
     id: 'prototype-3',
     name: 'PROTOTYPE #3',
-    description: 'Guided Wizard — Step-by-step flow with real images, AI-assisted storyboarding, progressive video rendering, and professional VFX & export pipeline.',
-    metaphor: 'Step-by-Step Flow',
-    ratio: 'Wizard Flow',
     accent: '#A855F7',
     accentGlow: 'rgba(168, 85, 247, 0.3)',
     icon: Workflow,
@@ -85,14 +76,9 @@ export default function HomePage() {
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl" style={{ background: `${proto.accent}22` }}>
                       <Icon className="h-5 w-5" style={{ color: proto.accent }} />
                     </div>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full border" style={{ color: proto.accent, borderColor: `${proto.accent}40` }}>
-                      {proto.ratio}
-                    </span>
                   </div>
 
                   <h2 className="mb-1 text-lg font-bold tracking-wide" style={{ color: proto.accent }}>{proto.name}</h2>
-                  <p className="text-xs text-muted-foreground italic mb-2">{proto.metaphor}</p>
-                  <p className="text-sm leading-relaxed text-muted-foreground">{proto.description}</p>
 
                   <div className="mt-4 flex items-center text-xs font-medium" style={{ color: proto.accent }}>
                     Explore prototype
