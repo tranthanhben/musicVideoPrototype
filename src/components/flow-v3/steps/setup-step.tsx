@@ -2,12 +2,15 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, Music, Play, Plus, X, User } from 'lucide-react'
+import { Upload, Music, Play, Plus, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { mockProjects } from '@/lib/mock/projects'
 import type { MockAudio } from '@/lib/mock/types'
 import { RENDER_MODES } from '@/lib/flow-v3/mock-data'
 import type { RenderMode } from '@/lib/flow-v3/types'
+import { InfoTooltip } from '@/components/flow-v3/product/info-tooltip'
+import { CostEstimateTag } from '@/components/flow-v3/product/cost-estimate-tag'
+import { calculateProjectCost } from '@/lib/flow-v3/cost-calculator'
 
 interface SetupStepProps {
   mvType?: string
@@ -16,11 +19,17 @@ interface SetupStepProps {
   mode: RenderMode
   musicControl: number
   lyricsControl: number
+  model?: string
+  quality?: string
+  aspectRatio?: string
   onTrackSelect: (index: number) => void
   onPromptChange: (prompt: string) => void
   onModeChange: (mode: RenderMode) => void
   onMusicControlChange: (val: number) => void
   onLyricsControlChange: (val: number) => void
+  onModelChange?: (model: string) => void
+  onQualityChange?: (quality: string) => void
+  onAspectRatioChange?: (aspectRatio: string) => void
   onGenerate?: () => void
 }
 
@@ -47,7 +56,9 @@ function formatDuration(s: number): string {
 
 export function SetupStep({
   mvType, trackIndex, prompt, mode, musicControl, lyricsControl,
-  onTrackSelect, onPromptChange, onModeChange, onMusicControlChange, onLyricsControlChange, onGenerate,
+  model, quality, aspectRatio,
+  onTrackSelect, onPromptChange, onModeChange, onMusicControlChange, onLyricsControlChange,
+  onModelChange, onQualityChange, onAspectRatioChange, onGenerate,
 }: SetupStepProps) {
   const [hoveredTrack, setHoveredTrack] = useState<number | null>(null)
   const [showErrors, setShowErrors] = useState(false)
@@ -259,7 +270,7 @@ export function SetupStep({
         {/* Video style & Output quality */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="flex gap-3">
           <div className="flex-1">
-            <h3 className="text-xs font-bold text-foreground mb-2">VIDEO STYLE</h3>
+            <h3 className="text-xs font-bold text-foreground mb-2 flex items-center">VIDEO STYLE<InfoTooltip content="Choose the visual rendering style for your music video scenes." /></h3>
             <div className="relative inline-flex items-center rounded-lg border border-border bg-card px-3 py-2">
               <select
                 value={mode}
@@ -274,9 +285,9 @@ export function SetupStep({
             </div>
           </div>
           <div className="flex-1">
-            <h3 className="text-xs font-bold text-foreground mb-2">ASPECT RATIO</h3>
+            <h3 className="text-xs font-bold text-foreground mb-2 flex items-center">ASPECT RATIO<InfoTooltip content="Select the frame ratio. 16:9 for YouTube, 9:16 for TikTok/Reels." /></h3>
             <div className="relative inline-flex items-center rounded-lg border border-border bg-card px-3 py-2">
-              <select defaultValue="16:9" className="text-[11px] font-semibold text-foreground bg-transparent border-none outline-none cursor-pointer appearance-none pr-5">
+              <select value={aspectRatio ?? '16:9'} onChange={(e) => onAspectRatioChange?.(e.target.value)} className="text-[11px] font-semibold text-foreground bg-transparent border-none outline-none cursor-pointer appearance-none pr-5">
                 <option value="16:9">16:9 Landscape</option>
                 <option value="9:16">9:16 Portrait</option>
                 <option value="1:1">1:1 Square</option>
@@ -286,9 +297,9 @@ export function SetupStep({
             </div>
           </div>
           <div className="flex-1">
-            <h3 className="text-xs font-bold text-foreground mb-2">OUTPUT QUALITY</h3>
+            <h3 className="text-xs font-bold text-foreground mb-2 flex items-center">OUTPUT QUALITY<InfoTooltip content="Higher quality uses more credits per second of video." /></h3>
             <div className="relative inline-flex items-center rounded-lg border border-border bg-card px-3 py-2">
-              <select defaultValue="480p" className="text-[11px] font-semibold text-foreground bg-transparent border-none outline-none cursor-pointer appearance-none pr-5">
+              <select value={quality ?? '480p'} onChange={(e) => onQualityChange?.(e.target.value)} className="text-[11px] font-semibold text-foreground bg-transparent border-none outline-none cursor-pointer appearance-none pr-5">
                 <option value="480p">SD 480p</option>
                 <option value="720p">HD 720p</option>
                 <option value="1080p">Full HD 1080p</option>
@@ -331,7 +342,7 @@ export function SetupStep({
               >
                 <div className="space-y-3 pb-1">
                   {/* Video Model */}
-                  <ModelSelector />
+                  <ModelSelector value={model ?? 'cremi-signature'} onChange={onModelChange ?? (() => {})} />
                   <SceneReuseToggle />
                   <LipsyncControl value={musicControl} onChange={onMusicControlChange} />
                   {showScriptDirection && (
@@ -345,6 +356,14 @@ export function SetupStep({
 
         {/* Generate button */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="pt-2">
+          {(() => {
+            const estimatedCost = calculateProjectCost({ model: model ?? 'cremi-signature', quality: quality ?? '480p', sceneCount: 39 })
+            return (
+              <div className="flex items-center justify-center gap-1.5 mb-2">
+                <CostEstimateTag credits={estimatedCost.total} label="estimated" size="md" />
+              </div>
+            )
+          })()}
           <button
             onClick={handleGenerate}
             className={cn(
@@ -376,9 +395,7 @@ const VIDEO_MODELS = [
   { value: 'wan', label: 'Wan', cost: 6 },
 ]
 
-function ModelSelector() {
-  const [selected, setSelected] = useState('cremi-signature')
-
+function ModelSelector({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div className="rounded-xl border border-border bg-card p-3">
       <div className="flex items-center justify-between">
@@ -388,8 +405,8 @@ function ModelSelector() {
         </div>
         <div className="relative inline-flex items-center rounded-lg border border-border bg-background px-2.5 py-1.5 ml-3 shrink-0">
           <select
-            value={selected}
-            onChange={(e) => setSelected(e.target.value)}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
             className="text-[11px] font-semibold text-foreground bg-transparent border-none outline-none cursor-pointer appearance-none pr-4"
           >
             {VIDEO_MODELS.map((m) => (
@@ -574,33 +591,6 @@ function CreativityControl({ value, onChange }: { value: number; onChange: (v: n
           </button>
         ))}
       </div>
-    </div>
-  )
-}
-
-function SliderControl({ label, description, value, onChange, accentColor }: {
-  label: string; description: string; value: number; onChange: (v: number) => void; accentColor: string
-}) {
-  return (
-    <div className="rounded-xl border border-border bg-card p-3">
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <p className="text-xs font-semibold text-foreground">{label}</p>
-          <p className="text-[10px] text-muted-foreground">{description}</p>
-        </div>
-        <span className="text-sm font-bold tabular-nums" style={{ color: accentColor }}>{value}%</span>
-      </div>
-      <input
-        type="range"
-        min={0}
-        max={100}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-1.5 rounded-full appearance-none cursor-pointer"
-        style={{
-          background: `linear-gradient(to right, ${accentColor} ${value}%, var(--border) ${value}%)`,
-        }}
-      />
     </div>
   )
 }

@@ -17,6 +17,9 @@ export interface FlowConfig {
   musicControl: number
   lyricsControl: number
   selectedConceptId: string | null
+  model: string
+  quality: string
+  aspectRatio: string
 }
 
 export interface ColorSwatch {

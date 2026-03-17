@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, RefreshCw } from 'lucide-react'
+import { X, RefreshCw, Maximize2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { MockScene } from '@/lib/mock/types'
 
@@ -11,6 +11,7 @@ interface StoryboardPropertiesProps {
   timestamp: string
   onClose: () => void
   onUpdate?: (sceneId: string, updates: Partial<MockScene>) => void
+  onOpenEditModal?: (scene: MockScene) => void
 }
 
 function EditablePropRow({
@@ -34,7 +35,7 @@ function EditablePropRow({
   )
 }
 
-export function StoryboardProperties({ scene, sceneIndex, timestamp, onClose, onUpdate }: StoryboardPropertiesProps) {
+export function StoryboardProperties({ scene, sceneIndex, timestamp, onClose, onUpdate, onOpenEditModal }: StoryboardPropertiesProps) {
   const [subject, setSubject] = useState(scene.subject)
   const [action, setAction] = useState(scene.action)
   const [environment, setEnvironment] = useState(scene.environment)
@@ -71,12 +72,20 @@ export function StoryboardProperties({ scene, sceneIndex, timestamp, onClose, on
           <span className="text-[11px] font-semibold text-foreground">Scene {sceneIndex + 1}</span>
           <span className="ml-2 text-[9px] font-mono text-muted-foreground">{timestamp}</span>
         </div>
-        <button
-          onClick={onClose}
-          className="flex h-5 w-5 items-center justify-center rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground cursor-pointer"
-        >
-          <X className="h-3 w-3" />
-        </button>
+        <div className="flex items-center gap-1">
+          {onOpenEditModal && (
+            <button
+              onClick={() => onOpenEditModal(scene)}
+              className="flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+              title="Open full editor"
+            >
+              <Maximize2 className="h-2.5 w-2.5" /> Edit
+            </button>
+          )}
+          <button onClick={onClose} className="flex h-5 w-5 items-center justify-center rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground cursor-pointer">
+            <X className="h-3 w-3" />
+          </button>
+        </div>
       </div>
 
       {/* Properties list */}

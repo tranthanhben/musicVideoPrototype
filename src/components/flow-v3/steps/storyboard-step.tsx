@@ -9,12 +9,16 @@ import type { MockScene } from '@/lib/mock/types'
 import { StoryboardWaveform, computeSceneTimeRanges } from './storyboard-waveform'
 import { StoryboardChat } from './storyboard-chat'
 import { StoryboardProperties } from './storyboard-properties'
+import { SceneEditModal } from './scene-edit-modal'
+import { calculateProjectCost } from '@/lib/flow-v3/cost-calculator'
 
 // ─── Types ──────────────────────────────────────────────────
 
 interface StoryboardStepProps {
   trackIndex: number
   onContinue: () => void
+  model?: string
+  quality?: string
 }
 
 interface EditableScene extends MockScene {
@@ -100,7 +104,7 @@ function fmt(s: number) {
 
 // ─── Component ──────────────────────────────────────────────
 
-export function StoryboardStep({ trackIndex, onContinue }: StoryboardStepProps) {
+export function StoryboardStep({ trackIndex, onContinue, model = 'cremi-signature', quality = '480p' }: StoryboardStepProps) {
   const project = mockProjects[trackIndex] ?? mockProjects[0]
   const audio = project.audio
 
@@ -116,6 +120,10 @@ export function StoryboardStep({ trackIndex, onContinue }: StoryboardStepProps) 
   // ── Right panel state ────────────────────────────
   const [rightPanelView, setRightPanelView] = useState<RightPanelView>('chat')
   const [selectedSceneId, setSelectedSceneId] = useState<string | null>(null)
+
+  // ── Modal / drawer / cost ────────────────────────
+  const [editModalScene, setEditModalScene] = useState<EditableScene | null>(null)
+  const costBreakdown = calculateProjectCost({ model, quality, sceneCount: scenes.length })
 
   // ── Resizable panel ─────────────────────────────
   const [chatWidth, setChatWidth] = useState(320)
@@ -226,8 +234,20 @@ export function StoryboardStep({ trackIndex, onContinue }: StoryboardStepProps) 
     setScenes((prev) => prev.map((s) => s.id === sceneId ? { ...s, ...updates } : s))
   }, [])
 
-  const handleChatDeleteScene = useCallback((sceneId: string) => { deleteScene(sceneId) }, [])
-  const handleChatInsertScene = useCallback((afterIndex: number) => { insertScene(afterIndex) }, [])
+  const handleChatDeleteScene = useCallback((sceneId: string) => {
+    setScenes((prev) => prev.filter((s) => s.id !== sceneId).map((s, i) => ({ ...s, index: i })))
+    setSelectedSceneId((prev) => prev === sceneId ? null : prev)
+  }, [])
+  const handleChatInsertScene = useCallback((afterIndex: number) => {
+    const newId = `new-scene-${Date.now()}`
+    const newScene: EditableScene = {
+      id: newId, index: afterIndex + 1, subject: 'New Scene', action: 'describe action here',
+      environment: 'environment', cameraAngle: 'medium shot', cameraMovement: 'slow pan', prompt: '',
+      thumbnailUrl: `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="400" height="300" fill="%2327272a"/><text x="200" y="150" fill="%23a1a1aa" font-size="14" text-anchor="middle" dominant-baseline="middle">New Scene</text></svg>`,
+      duration: 20, status: 'init', takes: [], isNew: true, videoStatus: 'pending',
+    }
+    setScenes((prev) => { const copy = [...prev]; copy.splice(afterIndex + 1, 0, newScene); return copy.map((s, i) => ({ ...s, index: i })) })
+  }, [])
 
   const handleResizeScenes = useCallback((leftIdx: number, rightIdx: number, leftDur: number, rightDur: number) => {
     setScenes((prev) => prev.map((s, i) => {
@@ -243,23 +263,13 @@ export function StoryboardStep({ trackIndex, onContinue }: StoryboardStepProps) 
   // ── Render ──────────────────────────────────────
 
   return (
-    <div className="flex h-full flex-col overflow-hidden pt-4 px-4">
+    <div className="flex h-full flex-col overflow-hidden px-4 pt-2">
       {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between mb-3 shrink-0"
-      >
-        <div className="flex items-center gap-2">
-          <Layers className="h-4 w-4 text-primary" />
-          <div>
-            <h2 className="text-base font-bold text-foreground">Storyboard</h2>
-            <p className="text-[10px] text-muted-foreground">
-              {scenes.length} scenes | Drag to reorder, click to edit or inspect
-            </p>
-          </div>
-        </div>
-      </motion.div>
+      <div className="flex items-center gap-2 mb-2 shrink-0">
+        <Layers className="h-3.5 w-3.5 text-primary shrink-0" />
+        <span className="text-xs font-bold text-foreground shrink-0">Storyboard</span>
+        <span className="text-[10px] text-muted-foreground">{scenes.length} scenes · click to edit, drag to reorder</span>
+      </div>
 
       {/* Body */}
       <div ref={containerRef} className="flex flex-1 overflow-hidden min-h-0">
@@ -410,6 +420,7 @@ export function StoryboardStep({ trackIndex, onContinue }: StoryboardStepProps) 
                       timestamp={selectedSceneTimeRange ? `${fmt(selectedSceneTimeRange.audioStart)}–${fmt(selectedSceneTimeRange.audioEnd)}` : ''}
                       onClose={() => { setSelectedSceneId(null); setRightPanelView('chat') }}
                       onUpdate={handleChatEditScene}
+                      onOpenEditModal={(scene) => setEditModalScene(scene as EditableScene)}
                     />
                   ) : (
                     <div className="h-full flex flex-col items-center justify-center gap-2 text-center p-6">
@@ -422,14 +433,12 @@ export function StoryboardStep({ trackIndex, onContinue }: StoryboardStepProps) 
             </AnimatePresence>
           </div>
 
-          {/* Generate button */}
-          <div className="shrink-0 space-y-1.5">
-            <button onClick={onContinue} className="w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 cursor-pointer">
+          {/* Generate button — always visible, credits inline */}
+          <div className="shrink-0">
+            <button onClick={onContinue} className="w-full rounded-xl bg-primary py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 cursor-pointer flex items-center justify-center gap-2">
               Generate Videos
+              <span className="text-[10px] font-medium text-primary-foreground/70">· ✦ {costBreakdown.sceneGeneration.toLocaleString()} credits</span>
             </button>
-            <p className="text-center text-[10px] text-muted-foreground">
-              Estimated cost: 2,550 credits for Video Scenes
-            </p>
           </div>
         </div>
       </div>
@@ -442,6 +451,26 @@ export function StoryboardStep({ trackIndex, onContinue }: StoryboardStepProps) 
           lipsyncSceneIds={lipsyncSceneIds}
         />
       </div>
+
+      {/* Scene edit modal */}
+      <SceneEditModal
+        scene={editModalScene}
+        open={editModalScene !== null}
+        onOpenChange={(open) => { if (!open) setEditModalScene(null) }}
+        onUpdate={(sceneId, updates) => {
+          setScenes((prev) => prev.map((s) => s.id === sceneId ? { ...s, ...updates } : s))
+          setEditModalScene(null)
+        }}
+        onRegenerate={(sceneId) => {
+          // Simulate regen: just close modal
+          setEditModalScene(null)
+        }}
+        onDelete={(sceneId) => {
+          setScenes((prev) => prev.filter((s) => s.id !== sceneId).map((s, i) => ({ ...s, index: i })))
+          setEditModalScene(null)
+        }}
+      />
+
     </div>
   )
 }

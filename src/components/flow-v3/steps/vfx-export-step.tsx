@@ -11,11 +11,14 @@ import { EditorTimeline } from './editor-timeline'
 import { VFX_FILTERS, ConfettiParticle, generateParticles } from './vfx-export-sub'
 import { SceneEditToolbar } from './scene-edit-toolbar'
 import { SceneGenShowcase } from './scene-gen-showcase'
+import { calculateProjectCost } from '@/lib/flow-v3/cost-calculator'
 
 // ─── Types ──────────────────────────────────────────────────
 
 interface VfxExportStepProps {
   trackIndex: number
+  model?: string
+  quality?: string
 }
 
 // ─── Real scene image URLs ───────────────────────────────────
@@ -217,7 +220,7 @@ function ScenePropertiesPanel({ scene, onUpdate }: { scene: MockScene; onUpdate:
 
 // ─── Component ──────────────────────────────────────────────
 
-export function VfxExportStep({ trackIndex }: VfxExportStepProps) {
+export function VfxExportStep({ trackIndex, model = 'cremi-signature', quality = '480p' }: VfxExportStepProps) {
   const project = mockProjects[trackIndex] ?? mockProjects[0]
   const audio = project.audio
   const [vfxMode, setVfxMode] = useState<VfxMode>('simple')
@@ -249,6 +252,9 @@ export function VfxExportStep({ trackIndex }: VfxExportStepProps) {
     }, 400)
     return () => clearInterval(interval)
   }, [allDone])
+
+  // ── Assets drawer + cost ─────────────────────────
+  const costBreakdown = calculateProjectCost({ model, quality, sceneCount: scenes.length })
 
   // ── Core state ──────────────────────────────────
   const [activeSceneId, setActiveSceneId] = useState(scenes[0].id)
@@ -475,6 +481,7 @@ export function VfxExportStep({ trackIndex }: VfxExportStepProps) {
             </span>
           </div>
         )}
+
       </div>
 
       {/* ─── Body: Video Preview + Right Panel ───────────── */}
@@ -710,12 +717,13 @@ export function VfxExportStep({ trackIndex }: VfxExportStepProps) {
               ) : (
                 <>
                   <Download className="h-3.5 w-3.5" /> Render & Export
+                  <span className="text-[10px] font-medium text-primary-foreground/70">· ✦ {(costBreakdown.vfxProcessing + costBreakdown.export).toLocaleString()}</span>
                 </>
               )}
             </button>
-            <p className="text-center text-[10px] text-zinc-500">
-              {exported ? 'Your video is ready to download' : 'Estimated cost: 0 credits'}
-            </p>
+            {exported && (
+              <p className="text-center text-[10px] text-emerald-400 mt-1">Your video is ready to download</p>
+            )}
           </div>
         </div>
       </div>
@@ -742,6 +750,8 @@ export function VfxExportStep({ trackIndex }: VfxExportStepProps) {
         />
       </div>
       )}
+
+      {/* Project assets drawer */}
     </div>
   )
 }
