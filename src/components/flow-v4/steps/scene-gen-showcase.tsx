@@ -91,19 +91,19 @@ function ProgressRing({ progress, size = 120, strokeWidth = 4 }: { progress: num
 
 // ─── Currently rendering scene "hero" ───────────────────────
 
-function RenderingHero({ scene, doneCount, total }: { scene: MockScene | undefined; doneCount: number; total: number }) {
+function RenderingHero({ scene, doneCount, total, progress, pct }: { scene: MockScene | undefined; doneCount: number; total: number; progress: number; pct: number }) {
   const phaseLabel = PRODUCTION_PHASES[doneCount % PRODUCTION_PHASES.length]
 
   return (
-    <div className="relative flex flex-col items-center gap-4">
-      {/* Film gate frame around the scene */}
-      <div className="relative">
+    <div className="relative flex flex-col items-center gap-3 w-full">
+      {/* Film gate frame around the scene — nearly full width */}
+      <div className="relative w-full max-w-5xl mx-auto">
         {/* Sprocket columns on sides */}
         <SprocketColumn side="left" />
         <SprocketColumn side="right" />
 
         {/* The scene image with film-gate styling */}
-        <div className="relative w-56 aspect-video rounded-sm overflow-hidden border-2 border-zinc-700/60 bg-zinc-900 shadow-xl shadow-black/40">
+        <div className="relative w-full aspect-video rounded-sm overflow-hidden border-2 border-zinc-700/60 bg-zinc-900 shadow-xl shadow-black/40">
           {scene && (
             <>
               <img
@@ -128,27 +128,47 @@ function RenderingHero({ scene, doneCount, total }: { scene: MockScene | undefin
           )}
 
           {/* Scene number badge */}
-          <div className="absolute top-1.5 left-1.5">
-            <span className="bg-black/70 backdrop-blur-sm text-[9px] font-mono font-bold text-white px-1.5 py-0.5 rounded">
+          <div className="absolute top-2 left-2">
+            <span className="bg-black/70 backdrop-blur-sm text-[10px] font-mono font-bold text-white px-2 py-1 rounded">
               S{scene ? scene.index + 1 : '?'}
             </span>
           </div>
+
+          {/* ── Progress ring overlay centered on scene ── */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="relative flex items-center justify-center">
+              <ProgressRing progress={progress} size={140} strokeWidth={4} />
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <motion.span
+                  key={doneCount}
+                  initial={{ scale: 1.2, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                  className="text-3xl font-bold text-white tabular-nums leading-none drop-shadow-lg"
+                >
+                  {doneCount}
+                </motion.span>
+                <span className="text-[9px] text-zinc-300 font-medium mt-0.5 drop-shadow">of {total} scenes</span>
+                <span className="text-[10px] text-primary font-semibold mt-0.5 drop-shadow">{pct}%</span>
+              </div>
+            </div>
+
+            {/* Phase label below ring */}
+            <AnimatePresence mode="wait">
+              <motion.p
+                key={phaseLabel}
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.3 }}
+                className="text-[11px] text-zinc-300 font-medium tracking-wide mt-2 drop-shadow"
+              >
+                {phaseLabel}...
+              </motion.p>
+            </AnimatePresence>
+          </div>
         </div>
       </div>
-
-      {/* Phase label */}
-      <AnimatePresence mode="wait">
-        <motion.p
-          key={phaseLabel}
-          initial={{ opacity: 0, y: 4 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -4 }}
-          transition={{ duration: 0.3 }}
-          className="text-[11px] text-zinc-400 font-medium tracking-wide"
-        >
-          {phaseLabel}...
-        </motion.p>
-      </AnimatePresence>
     </div>
   )
 }
@@ -182,7 +202,7 @@ function CompletedFilmStrip({ scenes, sceneStatuses }: { scenes: MockScene[]; sc
               initial={{ opacity: 0, scale: 0.7 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: 0.05 }}
-              className="relative h-8 w-[34px] shrink-0 rounded-[3px] overflow-hidden border border-zinc-700/50 bg-zinc-800"
+              className="relative h-10 w-[42px] shrink-0 rounded-[3px] overflow-hidden border border-zinc-700/50 bg-zinc-800"
             >
               <img src={scene.thumbnailUrl} alt="" className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
@@ -212,33 +232,14 @@ export function SceneGenShowcase({ scenes, sceneStatuses, doneCount, total }: Sc
   const pct = Math.round(progress * 100)
 
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full gap-3 select-none">
-      {/* Top section: progress ring + rendering hero */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-2 min-h-0">
-        {/* Progress ring with count inside */}
-        <div className="relative flex items-center justify-center">
-          <ProgressRing progress={progress} size={110} strokeWidth={3.5} />
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <motion.span
-              key={doneCount}
-              initial={{ scale: 1.2, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-              className="text-2xl font-bold text-white tabular-nums leading-none"
-            >
-              {doneCount}
-            </motion.span>
-            <span className="text-[9px] text-zinc-500 font-medium mt-0.5">of {total} scenes</span>
-            <span className="text-[10px] text-primary font-semibold mt-0.5">{pct}%</span>
-          </div>
-        </div>
-
-        {/* Currently rendering scene */}
-        <RenderingHero scene={renderingScene} doneCount={doneCount} total={total} />
+    <div className="flex flex-col items-center justify-center h-full w-full gap-3 select-none px-6">
+      {/* Scene preview with progress ring overlay */}
+      <div className="flex-1 flex items-center justify-center min-h-0 w-full">
+        <RenderingHero scene={renderingScene} doneCount={doneCount} total={total} progress={progress} pct={pct} />
       </div>
 
       {/* Bottom: completed film strip */}
-      <div className="w-full shrink-0 max-w-xl">
+      <div className="w-full shrink-0 max-w-3xl">
         <CompletedFilmStrip scenes={scenes} sceneStatuses={sceneStatuses} />
       </div>
     </div>

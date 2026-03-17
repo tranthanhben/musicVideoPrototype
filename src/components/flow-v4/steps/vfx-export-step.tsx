@@ -485,7 +485,7 @@ export function VfxExportStep({ trackIndex }: VfxExportStepProps) {
           <div className="flex-1 flex items-center justify-center min-h-0 p-2 overflow-hidden" style={{ containerType: 'size' }}>
             {!allDone ? (
               /* ── Scene generation showcase ── */
-              <div className="w-full h-full max-w-2xl">
+              <div className="w-full h-full">
                 <SceneGenShowcase
                   scenes={scenes}
                   sceneStatuses={sceneStatuses}
@@ -497,7 +497,7 @@ export function VfxExportStep({ trackIndex }: VfxExportStepProps) {
               /* ── Normal video preview ── */
               <div
                 className="relative aspect-video rounded-xl overflow-hidden bg-black shadow-2xl shadow-black/50 group/video cursor-pointer"
-                style={{ width: 'min(100%, 177.78cqh)', maxWidth: '896px' }}
+                style={{ width: 'min(100%, 177.78cqh)' }}
                 onClick={() => {
                   if (sceneStatuses[activeSceneId] === 'done') togglePlay()
                 }}

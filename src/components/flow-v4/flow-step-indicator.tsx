@@ -10,7 +10,9 @@ interface FlowStepIndicatorProps {
 }
 
 export function FlowStepIndicator({ currentStep, onStepClick }: FlowStepIndicatorProps) {
-  const currentIndex = FLOW_STEPS.findIndex((s) => s.key === currentStep)
+  // Steps 3-4-5 (analysis/storyboard/vfx_export) are unified — all map to the 'analysis' tab
+  const effectiveStep = currentStep === 'storyboard' || currentStep === 'vfx_export' ? 'analysis' : currentStep
+  const currentIndex = FLOW_STEPS.findIndex((s) => s.key === effectiveStep)
 
   return (
     <div className="flex items-center justify-center gap-1 px-4 py-3 border-b border-border bg-card/50 backdrop-blur-sm overflow-x-auto">

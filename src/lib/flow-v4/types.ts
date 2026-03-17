@@ -1,3 +1,5 @@
+export type WorkPhase = 'analysis' | 'storyboard' | 'vfx_export'
+
 export type FlowStep =
   | 'mv_type'
   | 'setup'
@@ -76,7 +78,5 @@ export interface VfxPreset {
 export const FLOW_STEPS: { key: FlowStep; label: string; shortLabel: string }[] = [
   { key: 'mv_type', label: 'Video Type', shortLabel: 'Type' },
   { key: 'setup', label: 'Upload your song', shortLabel: 'Upload' },
-  { key: 'analysis', label: 'Analysis & Ideation', shortLabel: 'Analysis' },
-  { key: 'storyboard', label: 'Storyboard', shortLabel: 'Scenes' },
-  { key: 'vfx_export', label: 'Video & Edit', shortLabel: 'Edit' },
+  { key: 'analysis', label: 'Music Video Space', shortLabel: 'MV Space' },
 ]

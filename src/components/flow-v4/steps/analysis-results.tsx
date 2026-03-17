@@ -30,9 +30,10 @@ interface AnalysisResultsProps {
   selectedConceptId: string | null
   onConceptSelect: (id: string) => void
   onContinue: () => void
+  hideIdeation?: boolean
 }
 
-export function AnalysisResults({ audio, selectedConceptId, onConceptSelect, onContinue }: AnalysisResultsProps) {
+export function AnalysisResults({ audio, selectedConceptId, onConceptSelect, onContinue, hideIdeation }: AnalysisResultsProps) {
   const peaks = audio.energyCurve.filter((p) => p.isPeak)
   const bpmCount = useCountUp(audio.bpm, 900)
   const peakCount = useCountUp(peaks.length, 600)
@@ -145,7 +146,7 @@ export function AnalysisResults({ audio, selectedConceptId, onConceptSelect, onC
   return (
     <div ref={scrollContainerRef} className="flex h-full justify-center overflow-y-auto p-6">
       <motion.div
-        className="w-full max-w-3xl space-y-4"
+        className="w-full space-y-4"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
@@ -350,37 +351,41 @@ export function AnalysisResults({ audio, selectedConceptId, onConceptSelect, onC
             </span>
           </div>
         </motion.div>
-        {/* ── Divider ── */}
-        <motion.div
-          className="relative flex items-center py-1"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.45 }}
-        >
-          <div className="flex-1 border-t border-border" />
-          <span className="px-3 text-[9px] text-muted-foreground/50 uppercase tracking-widest">your turn</span>
-          <div className="flex-1 border-t border-border" />
-        </motion.div>
+        {!hideIdeation && (
+          <>
+            {/* ── Divider ── */}
+            <motion.div
+              className="relative flex items-center py-1"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.45 }}
+            >
+              <div className="flex-1 border-t border-border" />
+              <span className="px-3 text-[9px] text-muted-foreground/50 uppercase tracking-widest">your turn</span>
+              <div className="flex-1 border-t border-border" />
+            </motion.div>
 
-        {/* ── IDEATION (interactive) ── */}
-        <motion.div
-          ref={ideationRef}
-          className="flex items-center gap-2"
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <h2 className="text-lg font-bold text-foreground">Music Video Ideation</h2>
-        </motion.div>
+            {/* ── IDEATION (interactive) ── */}
+            <motion.div
+              ref={ideationRef}
+              className="flex items-center gap-2"
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <h2 className="text-lg font-bold text-foreground">Music Video Ideation</h2>
+            </motion.div>
 
-        {/* Storyline + Visual Concepts */}
-        <StorylineConceptsSection
-          selectedConceptId={selectedConceptId}
-          onConceptSelect={onConceptSelect}
-          onContinue={onContinue}
-          onConceptsReady={handleConceptsReady}
-          durationRatio={durationRatio}
-        />
+            {/* Storyline + Visual Concepts */}
+            <StorylineConceptsSection
+              selectedConceptId={selectedConceptId}
+              onConceptSelect={onConceptSelect}
+              onContinue={onContinue}
+              onConceptsReady={handleConceptsReady}
+              durationRatio={durationRatio}
+            />
+          </>
+        )}
       </motion.div>
     </div>
   )

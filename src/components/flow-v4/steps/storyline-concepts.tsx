@@ -224,7 +224,7 @@ function ConceptCard({ concept, isSelected, anySelected, onSelect, index }: Conc
         )}
       >
         {/* Gradient thumbnail — taller */}
-        <div className="relative h-36 overflow-hidden">
+        <div className="relative h-52 overflow-hidden">
           <img src={concept.thumbnailUrl ?? makeSvgThumb(from, to)} alt={concept.title} className="absolute inset-0 w-full h-full object-cover" />
           {/* Animated shimmer on hover */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
@@ -674,11 +674,12 @@ interface StorylineConceptsSectionProps {
   onContinue: () => void
   onConceptsReady?: () => void
   hideInlineDetails?: boolean
+  hideContinueButton?: boolean
   onStateChange?: (state: ConceptPanelState) => void
   durationRatio?: number
 }
 
-export function StorylineConceptsSection({ selectedConceptId, onConceptSelect, onContinue, onConceptsReady, hideInlineDetails, onStateChange, durationRatio = 1 }: StorylineConceptsSectionProps) {
+export function StorylineConceptsSection({ selectedConceptId, onConceptSelect, onContinue, onConceptsReady, hideInlineDetails, hideContinueButton, onStateChange, durationRatio = 1 }: StorylineConceptsSectionProps) {
   // Import mock data inline to avoid circular deps
   const [mockData, setMockData] = useState<{
     storylineText: string
@@ -862,7 +863,7 @@ export function StorylineConceptsSection({ selectedConceptId, onConceptSelect, o
       )}
 
       {/* Generate button (inline — hidden when parent renders externally) */}
-      {!hideInlineDetails && (
+      {!hideInlineDetails && !hideContinueButton && (
         <AnimatePresence>
           {selectedConceptId && !conceptsLoading && (
             <motion.div

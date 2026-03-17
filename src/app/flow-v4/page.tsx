@@ -6,9 +6,7 @@ import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { FlowStepIndicator } from '@/components/flow-v4/flow-step-indicator'
 import { MvTypeStep } from '@/components/flow-v4/steps/mv-type-step'
 import { SetupStep } from '@/components/flow-v4/steps/setup-step'
-import { AnalysisStep } from '@/components/flow-v4/steps/analysis-step'
-import { StoryboardStep } from '@/components/flow-v4/steps/storyboard-step'
-import { VfxExportStep } from '@/components/flow-v4/steps/vfx-export-step'
+import { UnifiedWorkspace } from '@/components/flow-v4/steps/unified-workspace'
 import { FLOW_STEPS, type FlowStep, type FlowConfig, type MvType, type RenderMode } from '@/lib/flow-v4/types'
 import { cn } from '@/lib/utils'
 
@@ -17,6 +15,9 @@ const variants = {
   center: { opacity: 1, x: 0 },
   exit: { opacity: 0, x: -30 },
 }
+
+// Steps 3-4-5 are unified under the workspace — use a stable key
+const isUnifiedStep = (step: FlowStep) => step === 'analysis' || step === 'storyboard' || step === 'vfx_export'
 
 export default function FlowPage() {
   const [currentStep, setCurrentStep] = useState<FlowStep>('mv_type')
@@ -30,9 +31,10 @@ export default function FlowPage() {
     selectedConceptId: null,
   })
 
-  const currentIndex = FLOW_STEPS.findIndex((s) => s.key === currentStep)
+  // Unified steps (storyboard/vfx_export) map to the 'analysis' entry in FLOW_STEPS
+  const effectiveStep = isUnifiedStep(currentStep) ? 'analysis' : currentStep
+  const currentIndex = FLOW_STEPS.findIndex((s) => s.key === effectiveStep)
   const isFirstStep = currentIndex === 0
-  const isLastStep = currentIndex === FLOW_STEPS.length - 1
 
   const goToStep = useCallback((step: FlowStep) => setCurrentStep(step), [])
 
@@ -44,21 +46,25 @@ export default function FlowPage() {
 
   function prevStep() {
     if (currentIndex > 0) {
-      setCurrentStep(FLOW_STEPS[currentIndex - 1].key)
+      // If we're in the unified workspace and going back, go to setup
+      if (isUnifiedStep(currentStep)) {
+        setCurrentStep('setup')
+      } else {
+        setCurrentStep(FLOW_STEPS[currentIndex - 1].key)
+      }
     }
   }
 
-  // Can we proceed to next step?
   function canContinue(): boolean {
     switch (currentStep) {
       case 'mv_type': return config.mvType !== null
       case 'setup': return config.trackIndex !== null && config.trackIndex >= 0
-      case 'analysis': return false // auto-advances via callback
-      case 'storyboard': return true
-      case 'vfx_export': return false
       default: return false
     }
   }
+
+  // Determine the animation key — unified steps share a stable key
+  const animationKey = isUnifiedStep(currentStep) ? 'workspace' : currentStep
 
   function renderStep() {
     switch (currentStep) {
@@ -68,7 +74,6 @@ export default function FlowPage() {
             selected={config.mvType}
             onSelect={(type: MvType) => {
               setConfig((c) => ({ ...c, mvType: type }))
-              // Auto-advance after selection with brief delay
               setTimeout(() => setCurrentStep('setup'), 400)
             }}
           />
@@ -87,29 +92,26 @@ export default function FlowPage() {
             onModeChange={(mode: RenderMode) => setConfig((c) => ({ ...c, mode }))}
             onMusicControlChange={(val: number) => setConfig((c) => ({ ...c, musicControl: val }))}
             onLyricsControlChange={(val: number) => setConfig((c) => ({ ...c, lyricsControl: val }))}
-            onGenerate={nextStep}
+            onGenerate={() => setCurrentStep('analysis')}
           />
         )
       case 'analysis':
+      case 'storyboard':
+      case 'vfx_export':
         return (
-          <AnalysisStep
+          <UnifiedWorkspace
             trackIndex={config.trackIndex ?? 0}
             selectedConceptId={config.selectedConceptId}
             onConceptSelect={(id: string) => setConfig((c) => ({ ...c, selectedConceptId: id }))}
-            onAnalysisComplete={nextStep}
           />
         )
-      case 'storyboard':
-        return <StoryboardStep trackIndex={config.trackIndex ?? 0} onContinue={nextStep} />
-      case 'vfx_export':
-        return <VfxExportStep trackIndex={config.trackIndex ?? 0} />
       default:
         return null
     }
   }
 
-  // Steps that have their own continue logic
-  const hasOwnContinue = ['setup', 'analysis', 'storyboard', 'vfx_export'].includes(currentStep)
+  // In unified mode, the workspace handles its own navigation
+  const showContinue = currentStep === 'mv_type' && canContinue()
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
@@ -120,7 +122,7 @@ export default function FlowPage() {
       <div className="flex-1 overflow-hidden relative">
         <AnimatePresence mode="wait">
           <motion.div
-            key={currentStep}
+            key={animationKey}
             variants={variants}
             initial="enter"
             animate="center"
@@ -133,52 +135,54 @@ export default function FlowPage() {
         </AnimatePresence>
       </div>
 
-      {/* Bottom navigation bar */}
-      <div className="shrink-0 border-t border-border bg-card/80 backdrop-blur-sm px-6 py-3 flex items-center justify-between">
-        <button
-          onClick={prevStep}
-          disabled={isFirstStep}
-          className={cn(
-            'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer',
-            isFirstStep
-              ? 'text-muted-foreground/40 cursor-not-allowed'
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted',
-          )}
-        >
-          <ArrowLeft className="h-3.5 w-3.5" />
-          Back
-        </button>
-
-        <div className="flex items-center gap-1.5">
-          {FLOW_STEPS.map((_, i) => (
-            <div
-              key={i}
-              className={cn(
-                'h-1 rounded-full transition-all',
-                i === currentIndex ? 'w-6 bg-primary' : i < currentIndex ? 'w-1.5 bg-green-500' : 'w-1.5 bg-muted',
-              )}
-            />
-          ))}
-        </div>
-
-        {!hasOwnContinue && !isLastStep ? (
+      {/* Bottom navigation bar — simplified for unified layout */}
+      {!isUnifiedStep(currentStep) && (
+        <div className="shrink-0 border-t border-border bg-card/80 backdrop-blur-sm px-6 py-3 flex items-center justify-between">
           <button
-            onClick={nextStep}
-            disabled={!canContinue()}
+            onClick={prevStep}
+            disabled={isFirstStep}
             className={cn(
-              'flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-semibold transition-colors cursor-pointer',
-              canContinue()
-                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                : 'bg-muted text-muted-foreground cursor-not-allowed',
+              'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer',
+              isFirstStep
+                ? 'text-muted-foreground/40 cursor-not-allowed'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted',
             )}
           >
-            Continue
-            <ArrowRight className="h-3.5 w-3.5" />
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back
           </button>
-        ) : (
-          <div className="w-20" /> // Spacer for alignment
-        )}
-      </div>
+
+          <div className="flex items-center gap-1.5">
+            {FLOW_STEPS.map((_, i) => (
+              <div
+                key={i}
+                className={cn(
+                  'h-1 rounded-full transition-all',
+                  i === currentIndex ? 'w-6 bg-primary' : i < currentIndex ? 'w-1.5 bg-green-500' : 'w-1.5 bg-muted',
+                )}
+              />
+            ))}
+          </div>
+
+          {showContinue ? (
+            <button
+              onClick={nextStep}
+              disabled={!canContinue()}
+              className={cn(
+                'flex items-center gap-1.5 rounded-lg px-4 py-1.5 text-xs font-semibold transition-colors cursor-pointer',
+                canContinue()
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                  : 'bg-muted text-muted-foreground cursor-not-allowed',
+              )}
+            >
+              Continue
+              <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+          ) : (
+            <div className="w-20" />
+          )}
+        </div>
+      )}
     </div>
   )
 }
