@@ -419,6 +419,13 @@
   --secondary-foreground: #1A1A2E;
   --popover: #FFFFFF;
   --popover-foreground: #1A1A2E;
+  /* Liquid Glass */
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-bg-hover: rgba(255, 255, 255, 0.8);
+  --glass-border-top: rgba(255, 255, 255, 0.9);
+  --glass-border-bottom: rgba(0, 0, 0, 0.1);
+  --glass-shadow: 0 2px 16px rgba(0, 0, 0, 0.08);
+  --glass-input-bg: rgba(255, 255, 255, 0.6);
 }
 
 /* Dark cremi */
@@ -450,4 +457,146 @@
   --secondary-foreground: #E5E7EB;
   --popover: #111120;
   --popover-foreground: #E5E7EB;
+  /* Liquid Glass */
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-bg-hover: rgba(255, 255, 255, 0.1);
+  --glass-border-top: rgba(255, 255, 255, 0.15);
+  --glass-border-bottom: rgba(255, 255, 255, 0.04);
+  --glass-shadow: 0 2px 24px rgba(0, 0, 0, 0.3);
+  --glass-input-bg: rgba(255, 255, 255, 0.05);
+}
+
+/* ============================================================
+   LIQUID GLASS UTILITIES
+   ============================================================ */
+
+.glass-surface {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  position: relative;
+  box-shadow: var(--glass-shadow);
+}
+
+.glass-surface::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    var(--glass-border-top) 0%,
+    var(--glass-border-bottom) 100%
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.glass-input {
+  background: var(--glass-input-bg);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid var(--glass-border-bottom);
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+.glass-input:focus,
+.glass-input:focus-within {
+  border-color: var(--glass-border-top);
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.15), 0 0 20px rgba(124, 58, 237, 0.08);
+  background: var(--glass-bg);
+}
+
+.glass-button {
+  background: linear-gradient(
+    135deg,
+    rgba(124, 58, 237, 0.85) 0%,
+    rgba(124, 58, 237, 0.95) 100%
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow:
+    0 0 20px rgba(124, 58, 237, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: box-shadow 0.2s, transform 0.15s;
+}
+
+.glass-button:hover:not(:disabled) {
+  box-shadow:
+    0 0 30px rgba(124, 58, 237, 0.4),
+    0 0 60px rgba(124, 58, 237, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+.glass-button:disabled {
+  opacity: 0.5;
+  box-shadow: none;
+  transform: none;
+}
+
+.glass-toggle {
+  background: var(--glass-input-bg);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border-bottom);
+}
+
+.glass-toggle-active {
+  background: rgba(124, 58, 237, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(124, 58, 237, 0.3);
+  box-shadow: 0 0 12px rgba(124, 58, 237, 0.3);
+}
+
+@keyframes blob-float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 15px) scale(0.95); }
+}
+
+@keyframes blob-float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-25px, 25px) scale(1.08); }
+  66% { transform: translate(15px, -30px) scale(0.92); }
+}
+
+@keyframes blob-float-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(20px, 30px) scale(0.96); }
+  66% { transform: translate(-30px, -10px) scale(1.04); }
+}
+
+/* ============================================================
+   CARD FLIP ANIMATION
+   ============================================================ */
+
+.card-flip-container {
+  perspective: 1000px;
+}
+
+.card-flip-inner {
+  position: relative;
+  transition: transform 0.6s ease;
+  transform-style: preserve-3d;
+}
+
+.card-flip-inner.flipped {
+  transform: rotateY(180deg);
+}
+
+.card-flip-front,
+.card-flip-back {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.card-flip-back {
+  transform: rotateY(180deg);
+  position: absolute;
+  inset: 0;
 }

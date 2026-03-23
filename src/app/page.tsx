@@ -38,6 +38,14 @@ const prototypes = [
     icon: Workflow,
     href: '/flow-v4',
   },
+  {
+    id: 'prototype-5',
+    name: 'PROTOTYPE #5',
+    accent: '#EC4899',
+    accentGlow: 'rgba(236, 72, 153, 0.3)',
+    icon: Workflow,
+    href: '/flow-v5',
+  },
 ]
 
 const containerVariants = {
@@ -60,11 +68,11 @@ export default function HomePage() {
       <motion.div className="mb-10 text-center" initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
         <h1 className="text-6xl font-bold tracking-tight text-foreground mb-3">Cremi</h1>
         <p className="text-lg text-muted-foreground mb-1">Agentic Chat + Video Editor Prototypes</p>
-        <p className="text-sm text-muted-foreground/60">4 interaction patterns — selected for development</p>
+        <p className="text-sm text-muted-foreground/60">5 interaction patterns — selected for development</p>
       </motion.div>
 
       <motion.div
-        className="grid w-full max-w-5xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4"
+        className="grid w-full max-w-6xl grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-5"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
