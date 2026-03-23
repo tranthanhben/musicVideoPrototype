@@ -7,8 +7,14 @@ import { FlowStepIndicator } from '@/components/flow-v4/flow-step-indicator'
 import { MvTypeStep } from '@/components/flow-v4/steps/mv-type-step'
 import { SetupStep } from '@/components/flow-v4/steps/setup-step'
 import { UnifiedWorkspace } from '@/components/flow-v4/steps/unified-workspace'
+import { EditProjectModal } from '@/components/flow-v4/product/edit-project-modal'
+import { AssetsManager } from '@/components/flow-v4/product/assets-manager'
+import { CreditsSpendingPanel } from '@/components/flow-v4/product/credits-spending-panel'
+import { ProjectInfoPanel, type ProjectMeta } from '@/components/flow-v4/product/project-info-panel'
 import { FLOW_STEPS, type FlowStep, type FlowConfig, type MvType, type RenderMode } from '@/lib/flow-v4/types'
+import { calculateProjectCost } from '@/lib/flow-v4/cost-calculator'
 import { cn } from '@/lib/utils'
+import type { MockScene } from '@/lib/mock/types'
 
 const variants = {
   enter: { opacity: 0, x: 30 },
@@ -19,8 +25,28 @@ const variants = {
 // Steps 3-4-5 are unified under the workspace — use a stable key
 const isUnifiedStep = (step: FlowStep) => step === 'analysis' || step === 'storyboard' || step === 'vfx_export'
 
+const SCENE_IMAGES = [
+  '/assets/scenes/scene-01-the-void.jpg', '/assets/scenes/scene-02-aria-reaching.jpg',
+  '/assets/scenes/scene-03-crystal-ship.jpg', '/assets/scenes/scene-04-moon-dance.jpg',
+  '/assets/scenes/scene-05-supernova-voice.jpg', '/assets/scenes/scene-06-saturn-embrace.jpg',
+  '/assets/scenes/scene-07-comet-guitar.jpg', '/assets/scenes/scene-08-edge-of-universe.jpg',
+]
+
+const drawerScenes: MockScene[] = Array.from({ length: 8 }, (_, i) => ({
+  id: `drawer-${i}`, index: i, subject: ['Singer', 'Couple', 'Dancer', 'Band', 'Woman', 'Man', 'Crowd', 'Singer'][i],
+  action: '', environment: '', cameraAngle: '', cameraMovement: '', prompt: '', duration: 4, status: 'completed', takes: [],
+  thumbnailUrl: SCENE_IMAGES[i],
+}))
+
+const MOCK_BALANCE = 1250
+
 export default function FlowPage() {
   const [currentStep, setCurrentStep] = useState<FlowStep>('mv_type')
+  const [projectName, setProjectName] = useState('Untitled Music Video')
+  const [showSettings, setShowSettings] = useState(false)
+  const [showAssets, setShowAssets] = useState(false)
+  const [showCredits, setShowCredits] = useState(false)
+  const [showInfo, setShowInfo] = useState(false)
   const [config, setConfig] = useState<FlowConfig>({
     mvType: 'full_mv' as MvType,
     trackIndex: null,
@@ -30,6 +56,8 @@ export default function FlowPage() {
     lyricsControl: 66,
     selectedConceptId: null,
   })
+
+  const estimatedCost = calculateProjectCost(39)
 
   // Unified steps (storyboard/vfx_export) map to the 'analysis' entry in FLOW_STEPS
   const effectiveStep = isUnifiedStep(currentStep) ? 'analysis' : currentStep
@@ -46,7 +74,6 @@ export default function FlowPage() {
 
   function prevStep() {
     if (currentIndex > 0) {
-      // If we're in the unified workspace and going back, go to setup
       if (isUnifiedStep(currentStep)) {
         setCurrentStep('setup')
       } else {
@@ -63,7 +90,6 @@ export default function FlowPage() {
     }
   }
 
-  // Determine the animation key — unified steps share a stable key
   const animationKey = isUnifiedStep(currentStep) ? 'workspace' : currentStep
 
   function renderStep() {
@@ -110,13 +136,69 @@ export default function FlowPage() {
     }
   }
 
-  // In unified mode, the workspace handles its own navigation
   const showContinue = currentStep === 'mv_type' && canContinue()
+
+  const projectMeta: ProjectMeta = {
+    name: projectName,
+    mvType: config.mvType,
+    renderMode: config.mode,
+    duration: '3:24',
+    bpm: 128,
+    sceneCount: 39,
+    estimatedRenderTime: '~12 min',
+    createdAt: 'Mar 23, 2026',
+    lastModified: 'Just now',
+    quality: 'SD 480p',
+    aspectRatio: '16:9',
+    status: isUnifiedStep(currentStep) ? 'in_progress' : 'draft',
+  }
 
   return (
     <div className="flex h-screen flex-col overflow-hidden">
-      {/* Step indicator */}
-      <FlowStepIndicator currentStep={currentStep} onStepClick={goToStep} />
+      <FlowStepIndicator
+        currentStep={currentStep}
+        onStepClick={goToStep}
+        onBack={prevStep}
+        isFirstStep={isFirstStep}
+        estimatedCost={estimatedCost.total}
+        costBreakdown={estimatedCost}
+        projectName={projectName}
+        onProjectNameChange={setProjectName}
+        onSettingsClick={() => setShowSettings(true)}
+        onAssetsClick={() => setShowAssets(true)}
+        onCreditsClick={() => setShowCredits(true)}
+        onInfoClick={() => setShowInfo(true)}
+        balance={MOCK_BALANCE}
+      />
+
+      {/* Panels / Modals */}
+      <EditProjectModal
+        projectName={projectName}
+        onSave={(data) => setProjectName(data.name)}
+        open={showSettings}
+        onOpenChange={setShowSettings}
+      />
+
+      <AssetsManager
+        open={showAssets}
+        onOpenChange={setShowAssets}
+        scenes={drawerScenes}
+      />
+
+      <CreditsSpendingPanel
+        open={showCredits}
+        onOpenChange={setShowCredits}
+        balance={MOCK_BALANCE}
+        breakdown={estimatedCost}
+      />
+
+      <ProjectInfoPanel
+        open={showInfo}
+        onOpenChange={setShowInfo}
+        meta={projectMeta}
+        onNameChange={setProjectName}
+        onSettingsClick={() => setShowSettings(true)}
+      />
 
       {/* Main content */}
       <div className="flex-1 overflow-hidden relative">
@@ -135,7 +217,7 @@ export default function FlowPage() {
         </AnimatePresence>
       </div>
 
-      {/* Bottom navigation bar — simplified for unified layout */}
+      {/* Bottom navigation bar */}
       {!isUnifiedStep(currentStep) && (
         <div className="shrink-0 border-t border-border bg-card/80 backdrop-blur-sm px-6 py-3 flex items-center justify-between">
           <button
